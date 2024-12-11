@@ -9,20 +9,71 @@ public class Main
 	{
 		// to be broadcast
 		// if the org shape is (2,3,2)
-		// and if the new shape (1,3,2) thi is not broadcastable
+		// and if the new shape (1,3,2) this is not broadcastable
 		// because th items in shepe can be 1 , but only in original shope.
 		// if the original shape items is not 1 then the new shape also must be the same items at partucular index.
 		new Main().a();
-		
+
 		// test text.
 
 	}
 	void a() throws Exception
 	{
+
+		System.out.println("getFlat() benchmark.");
+
+		Storage str=new Storage(3, 10, 5);
+		for (;;)
+		{
+			long c=0;
+			for (int k=0;k < 20;k++)
+			{
+				long l=System.currentTimeMillis();
+				for (int i=0;i < 10000;i++)
+				{
+					str.getFlat(i % str.length);
+				}
+				l = System.currentTimeMillis() - l;
+				c += l;
+			}
+			c = c / 10;
+			System.out.println(c + " millis in average");
+		}
+
+	}
+	void storageGetFlatTest() throws Exception
+	{
+		// works good.
+		Storage str=new Storage(3, 1, 2);
+		System.out.println(str);
+		System.out.println("== " + str.base.values.length);
+		// fill data to the array.
+		for (int i=0;i < str.base.values.length;i++)
+			str.base.values[i] = i + 1;
+
+		str.brodcast(2, 3, 5, 2);
+		System.out.println(str);
+
+		// getting value at index.
+		int ps=0;
+		for (int i=0;i < str.shape[0];i++)
+			for (int j=0;j < str.shape[1];j++)
+				for (int k=0;k < str.shape[2];k++)
+					for (int l=0;l < str.shape[3];l++)
+					{
+						float v1=str.getFlat(ps);
+						float v2=str.getFloat(i, j, k, l);
+						System.out.println(">> " + ps + " = " + v1 + " (" + i + ", " + j + ", " + k + ") = " + v2 + " === " + (v1 == v2));
+						ps++;
+					}
+
+	}
+	void shapeGenUsingIndexTest() throws Exception
+	{
 		Storage str=new Storage(5, 2);
 		System.out.println(str);
 
-		int sum[]=str.sum;
+		int sum[]=str.shape;
 		int[] tmp=new int[sum.length];
 		for (int k=0;k < 20;k++)
 		{
@@ -30,7 +81,7 @@ public class Main
 			int cnt=k;
 			for (int i=sum.length - 1;i >= 0;i--)
 			{
-				System.out.println(i);
+				System.out.print(sum[i] + ", ");
 				tmp[i] = cnt % sum[i];
 				cnt = cnt / sum[i];
 			}

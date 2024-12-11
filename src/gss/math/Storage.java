@@ -44,7 +44,7 @@ public class Storage implements AbsStorage
 		// System.out.println(Arrays.toString(sum));
 		this.dim = sh.length;
 		this.offset = off;
-		this.length = sum.length == 0 ?1: sum[0];
+		this.length = length(this.shape);//  sum.length == 0 ?1: sum[0];
 		// System.out.println(Arrays.toString(sum));
 	}
 	public Storage get(int...index)
@@ -131,8 +131,14 @@ public class Storage implements AbsStorage
 //	}
 	public float getFloat(int...index) // this method works.
 	{
-		if (index.length != shape.length)
+		if (index.length > shape.length)
 			throw new IndexOutOfBoundsException();
+		if (index.length < shape.length)
+		{
+			// if the index length is less than the shape length. we fill the rest with (0). eg.
+			// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6];
+			// todo.
+		}
 		int newPos=0;
 		for (int i=0;i < index.length;i++)
 		{
@@ -153,12 +159,32 @@ public class Storage implements AbsStorage
 	public float getFlat(int index)
 	{
 		if (index >= length || index < 0)
-			throw new IndexOutOfBoundsException();
+		 	throw new IndexOutOfBoundsException();
+		int ind=index;
+		// competiionally expensive. avoid it u can.
+		// System.out.println("getting value at index =" + index);
+		int[] indShape=new int[this.shape.length];
+		for (int i=this.shape.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
+		{
+			indShape[i] = index % this.shape[i];
+			index = index / this.shape[i];
+		}
+		// System.out.println("shape at index (" + ind + ") = " + Arrays.toString(indShape));
+		/*
+		 merge the getFloat loop inside this method.
+		 in that case we can use one loop instead o two loops iterate through the same shape.
+		 // TO-DO merge loops to this method and getride of getFloat(indShape); call.
+		 */
+		return getFloat(indShape);
+		/*
+		 the code down below is just for access index without considering shape and broadcasting.
+		 */
 		// System.out.println("input index " + index);
 		// System.out.println("computed index " + index);
-		index = offset + index;
+
+		// index = offset + index;
 		// System.out.println("real index " + index);
-		return base.values[index % base.length];
+		// return base.values[index % base.length];
 		// throw new IndexOutOfBoundsException();
 	}
 	/*
@@ -195,6 +221,6 @@ public class Storage implements AbsStorage
 	@Override
 	public String toString()
 	{
-		return "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape null" + /* Arrays.toString(baseShape) +*/ ", offset :" + offset + ")";
+		return "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape " + Arrays.toString(baseShape) + ", offset :" + offset + ")";
 	}
 }
