@@ -1,2 +1,2 @@
 # NDArray
-This repository helps to create N-dimesnional array and making data handling computations. Using java.
+This repository helps to create N-dimesnional array and it makes easier data handling. Using java.
