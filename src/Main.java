@@ -13,8 +13,8 @@ public class Main
 		// because th items in shepe can be 1 , but only in original shope.
 		// if the original shape items is not 1 then the new shape also must be the same items at partucular index.
 		new Main().a();
-
-
+		
+		// test text.
 
 	}
 	void a() throws Exception
