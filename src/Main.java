@@ -19,7 +19,59 @@ public class Main
 	}
 	void a() throws Exception
 	{
+		Storage str=new Storage(4, 1, 2);
+		fillRand(str);
+		System.out.println("not boradcasted.");
+		System.out.println(str);
+		print(str);
+		System.out.println("==broadcasted");
+		str.brodcast(4, 2, 2);
+		System.out.println(str);
+		print(str);
 
+		System.out.println("after copy");
+		// str = str.copy();
+		// System.out.println(str);
+		// print(str);
+
+		System.out.println(str.getFloat(2,0,0));
+		
+		System.out.println("========");
+
+		str = str.get(2);
+		System.out.println(str);
+		print(str);
+
+	}
+	void storageViewTest() throws Exception
+	{
+		Storage str=new Storage(3, 3, 2);
+		fillRand(str);
+		System.out.println(str);
+		print(str);
+		System.out.println("-------------");
+		str.view(3,  2 , 3); // by modifieng the base class we can achieve view. but modifieng the base is not neccesary.
+		System.out.println(str);
+		print(str);
+
+	}
+	void arrTest() throws Exception
+	{
+		// Util.getAt(arr,index) and getAtR(arr,index) test.
+		float[] arr={1,2};
+		System.out.println("forward access");
+		System.out.println(0 + ", " + getAt(arr,  0));
+		System.out.println(1 + ", " + getAt(arr,  1));
+		System.out.println("backward access");
+		System.out.println(-1 + " " + getAt(arr,  -1));
+		System.out.println(-2 + ", " + getAt(arr,  -2));
+		System.out.println("backward access method 2");
+		System.out.println(0 + ", " + getAtR(arr,  0));
+		System.out.println(1 + ", " + getAtR(arr,  1));
+
+	}
+	void getFlatBench() throws Exception
+	{
 		System.out.println("getFlat() benchmark.");
 
 		Storage str=new Storage(3, 10, 5);
@@ -252,6 +304,17 @@ public class Main
 				print(str.get(i));
 				System.out.println();
 			}
+	}
+	public void fill(Storage str, float val)
+	{
+		for (int i=0;i < str.base.values.length;i++)
+			str.base.values[i] = val;
+	}
+	public void fillRand(Storage str)
+	{
+		Random r=new Random(123);
+		for (int i=0;i < str.base.values.length;i++)
+			str.base.values[i] = r.nextFloat();
 	}
 	void create() throws Exception
 	{

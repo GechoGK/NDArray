@@ -104,5 +104,42 @@ public class Util
 		}
 		return into;
 	}
-
+	/*
+	 usage.
+	 float[] arr={1,2,3};
+	 // forward access.
+	 float v1=getAt(arr,0); //  1,
+	 float v1=getAt(arr,1); //  2,
+	 float v1=getAt(arr,2); //  3,
+	 // backward access.
+	 float v1=getAt(arr,-1); //  3,
+	 float v1=getAt(arr,-2); //  2,
+	 float v1=getAt(arr,-3); //  1,
+	 */
+	public static float getAt(float[] arr, int index)
+	{
+		if (index < 0)
+			return arr[arr.length + index]; // accessing backward array.
+		return arr[index]; // the default array access.
+	}
+	public static int getAt(int[] arr, int index)
+	{
+		if (index < 0)
+			return arr[arr.length + index]; // accessing backward array.
+		return arr[index]; // the default array access.
+	}
+	/*
+	 float[] arr={1,2,3};
+	 float v1=getAt(arr,0); //  3,
+	 float v1=getAt(arr,1); //  2,
+	 float v1=getAt(arr,2); //  1,
+	 */
+	public static float getAtR(float[] arr, int index)
+	{
+		return arr[arr.length - index - 1]; // 
+	}
+	public static int getAtR(int[] arr, int index)
+	{
+		return arr[arr.length - index - 1]; // 
+	}
 }
