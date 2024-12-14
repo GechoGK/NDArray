@@ -19,29 +19,52 @@ public class Main
 	}
 	void a() throws Exception
 	{
-		Storage str=new Storage(4, 1, 2);
+
+		getStrAndGetFloatTest();
+
+	}
+	void getStrAndGetFloatTest() throws Exception
+	{
+		// works
+		tstBrdGet();
+
+		System.out.println("--------------------");
+
+		Storage str=new Storage(3, 2, 1);
 		fillRand(str);
-		System.out.println("not boradcasted.");
+		System.out.println("== " + Arrays.toString(str.base.values));
 		System.out.println(str);
 		print(str);
-		System.out.println("==broadcasted");
-		str.brodcast(4, 2, 2);
+		str.brodcast(2, 3, 2, 5);	
 		System.out.println(str);
 		print(str);
-
-		System.out.println("after copy");
-		// str = str.copy();
-		// System.out.println(str);
-		// print(str);
-
-		System.out.println(str.getFloat(2,0,0));
-		
-		System.out.println("========");
-
-		str = str.get(2);
+		System.out.println("=======");
+		str = str.get(0, 2, 0);
 		System.out.println(str);
 		print(str);
 
+
+	}
+	void tstBrdGet()
+	{
+		// problem.
+
+		Storage str=new Storage(3, 3, 1);
+		fillRand(str);
+		System.out.println(Arrays.toString(str.base.values));
+		System.out.println(str);
+		print(str);
+		System.out.println("=======");
+		for (int i=0;i < str.length;i++)
+			System.out.println(str.get(str.getShape(i)).getFlat(0));
+
+		System.out.println("==.... ");
+		str = str.brodcast(3, 3, 3);
+		print(str);
+		System.out.println(str);
+		System.out.println(Arrays.toString(str.base.values));
+		for (int i=0;i < str.length;i++)
+			System.out.println(i + " = " + str.get(str.getShape(i)).getFlat(0));
 	}
 	void storageViewTest() throws Exception
 	{
@@ -141,7 +164,7 @@ public class Main
 		}
 		// System.out.println(i / 3 + ", " + i % 3);
 	}
-	int[] getSh(int count, int[]sum, int[] tmp)
+	int[] getShapeFromIndex(int count, int[]sum, int[] tmp)
 	{
 		if (tmp == null)
 			tmp = new int[sum.length];

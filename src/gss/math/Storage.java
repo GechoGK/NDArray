@@ -12,7 +12,7 @@ public class Storage implements AbsStorage
 	public int dim;
 	public int offset;
 	public int length;
-	public int[] sum;
+	public int[] baseSum;
 	public boolean broadcasted=false;
 
 	public Storage(int...shape)
@@ -35,15 +35,17 @@ public class Storage implements AbsStorage
 	}
 	private void prepare(int[]sh, int off)
 	{
+		// this.sum = new int[sh.length];
 		this.baseShape = new int[sh.length];
 		Arrays.fill(baseShape, 1);
 		overlap(base.shape, baseShape);
 		// System.out.println("====== base = " + Arrays.toString(base.shape) + ",\nbaseb= " + Arrays.toString(baseShape) + ",\ncurr = " + Arrays.toString(shape));
-		this.sum = sumShapes(baseShape, sum); // sum shapes according to baseShape.
-		// System.out.println(Arrays.toString(sum));
+		// this.sum = sumShapes(sh, sum);
+		this.baseSum = sumShapes(baseShape, baseSum); // sum shapes according to baseShape.
+		// System.out.println(Arrays.toString(baseSum));
 		this.dim = sh.length;
 		this.offset = off;
-		this.length = length(this.shape);//  sum.length == 0 ?1: sum[0];
+		this.length = length(sh);//  sum.length == 0 ?1: sum[0];
 		broadcasted = false;
 		// System.out.println(Arrays.toString(sum));
 	}
@@ -60,11 +62,11 @@ public class Storage implements AbsStorage
 			int newPos=0;
 			for (int i=0;i < index.length;i++)
 			{
-				int shapeInd=index[i]; // Math.min(index[i], baseShape[i]);
+				int shapeInd=Math.min(index[i], baseShape[i] - 1);
 				// check if the index at i is not out o bound.
 				if (shapeInd >= shape[i])
 					throw new IndexOutOfBoundsException();
-				newPos += shapeInd * (i == index.length - 1 ?1: sum[i + 1]); // sum[i+1] -> maybe a problem.
+				newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]); // sum[i+1] -> is a problem.(IndexOutOfBoundException)
 				// System.out.println("== " + newPos);
 			}
 			// System.out.println("final pos to return " + newPos);
@@ -93,11 +95,11 @@ public class Storage implements AbsStorage
 				}
 				if (i < index.length)
 				{
-					int shapeInd = index[i]; // Math.min(index[i], baseShape[i]); // index[i];
+					int shapeInd = Math.min(index[i], baseShape[i] - 1); // index[i];
 					if (shapeInd >= shape[i])
 						throw new IndexOutOfBoundsException();
 
-					newPos += shapeInd * sum[i + 1];
+					newPos += shapeInd * baseSum[i + 1];
 				}
 				// System.out.println("== " + (sm));
 			}
@@ -150,12 +152,12 @@ public class Storage implements AbsStorage
 			// check if the index at i is not out of bound.
 			if (shapeInd >= shape[i])
 				throw new IndexOutOfBoundsException();
-			newPos += shapeInd * (i == index.length - 1 ?1: sum[i + 1]);
+			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
 		}
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		return base.values[(offset + (finalIndex % length)) % base.length];
+		return base.values[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
 	@Override
 	public float getFlat(int index)
@@ -173,24 +175,14 @@ public class Storage implements AbsStorage
 		 +++ always check bemchmarks before deciding which one to use.
 
 		 */
-		if (index >= length || index < 0)
-		 	throw new IndexOutOfBoundsException();
-		int ind=index;
-		// computationally expensive. avoid it, if u can.
-		// System.out.println("getting value at index =" + index);
-		int[] indShape=new int[this.shape.length];
-		for (int i=this.shape.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
-		{
-			indShape[i] = index % this.shape[i];
-			index = index / this.shape[i];
-		}
+		int[] shp=getShape(index);
 		// System.out.println("shape at index (" + ind + ") = " + Arrays.toString(indShape));
 		/*
 		 merge the getFloat loop inside this method.
 		 in that case we can use one loop instead o two loops iterate through the same shape.
 		 // TO-DO merge loops to this method and getride of getFloat(indShape); call.
 		 */
-		return getFloat(indShape);
+		return getFloat(shp);
 		/*
 		 the code down below is just for access index without considering shape and broadcasting.
 		 */
@@ -218,6 +210,21 @@ public class Storage implements AbsStorage
 	 the above function is used for many functions.
 	 like view,reshape,...
 	 */
+	public int[] getShape(int index)
+	{
+		if (index >= length || index < 0)
+			throw new IndexOutOfBoundsException();
+		int ind=index;
+		// computationally expensive. avoid it, if u can.
+		// System.out.println("getting value at index =" + index);
+		int[] indShape=new int[this.shape.length];
+		for (int i=this.shape.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
+		{
+			indShape[i] = index % this.shape[i];
+			index = index / this.shape[i];
+		}
+		return indShape;
+	}
 	public Storage brodcast(int...newShape)
 	{
 		// !!! problem position reversed.
@@ -240,7 +247,7 @@ public class Storage implements AbsStorage
 		if (tarShape.length < orgShape.length)
 			return false;
 		int len=tarShape.length - orgShape.length;
-		// System.out.println("ch3cking... len =" + len);
+		// System.out.println("checking... len =" + len);
 		for (int i=0;i < orgShape.length;i++)
 			if (!(orgShape[i] == tarShape[len + i] || (orgShape[i] == 1 && tarShape[len + i] > 0)))
 				return false;
