@@ -4,8 +4,15 @@ import java.util.*;
 
 import static gss.math.Util.*;
 
-public class Storage implements AbsStorage
+public class Storage
 {
+	/*
+	 broadcast, reshape, and view needs modifiction.
+	 all of them return the current storage by altering to a soecific need.
+	 especually (view), also changes the baseShape.
+	 .:. the methods need to return the copy of the storage. inorder to preserve the original one.
+	 in that case we can retrive keep the base shape untouched.
+	 */
 	public Data base;
 	public int[] shape;
 	public int[] baseShape;
@@ -62,10 +69,11 @@ public class Storage implements AbsStorage
 			int newPos=0;
 			for (int i=0;i < index.length;i++)
 			{
+				if (index[i] >= shape[i])
+					throw new IndexOutOfBoundsException();
+
 				int shapeInd=Math.min(index[i], baseShape[i] - 1);
 				// check if the index at i is not out o bound.
-				if (shapeInd >= shape[i])
-					throw new IndexOutOfBoundsException();
 				newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]); // sum[i+1] -> is a problem.(IndexOutOfBoundException)
 				// System.out.println("== " + newPos);
 			}
@@ -95,9 +103,9 @@ public class Storage implements AbsStorage
 				}
 				if (i < index.length)
 				{
-					int shapeInd = Math.min(index[i], baseShape[i] - 1); // index[i];
-					if (shapeInd >= shape[i])
+					if (index[i] >= shape[i])
 						throw new IndexOutOfBoundsException();
+					int shapeInd = Math.min(index[i], baseShape[i] - 1); // index[i];
 
 					newPos += shapeInd * baseSum[i + 1];
 				}
@@ -110,6 +118,18 @@ public class Storage implements AbsStorage
 			return new Storage(base, newShape, offset + newPos);
 		}
 		// return null;
+	}
+	public Storage set(int[]sh, Storage val)
+	{
+		// this function sets a value to the array from array.
+		// !! two arrays must be equal inorder to fit the vakues perfectly.
+		Storage str=get(sh);
+		if (!isBrodcastable(val.shape, str.shape)) // chech the incoming storage can be broadcasted to the placement storage.
+			throw new IndexOutOfBoundsException("set array faild, due to mismatch shapes.(value can't be broadcasted)");
+		val.broadcast(str.shape);
+		for (int i=0;i < str.length;i++)
+			str.setFlat(i, val.getFlat(i)); // lazy assign.
+		return this;
 	}
 //	public float getFloat3(int...index)
 //	{
@@ -159,7 +179,46 @@ public class Storage implements AbsStorage
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
 		return base.values[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
-	@Override
+	public Storage setExact(int[]index, float val) // this method works.
+	{
+		// this method sets a value (one value) to the array.
+		// if the index is not match the shaoe of the storage. it fails.
+		// the base for setFlat(int ind,float bal);
+		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+			throw new IndexOutOfBoundsException();
+		// if (index.length < shape.length)
+		// {
+		// if the index length is less than the shape length. we fill the rest with (0). eg.
+		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		// todo.
+		// }
+		int newPos=0;
+		// the loop have error when we use index.length < shape.length, so use backward looping.
+		for (int i=0;i < index.length;i++)
+		{
+			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+			// the big issue for 2 days;
+			// check if the index at i is not out of bound.
+			if (shapeInd >= shape[i])
+				throw new IndexOutOfBoundsException();
+			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		}
+		int finalIndex=(offset + newPos);
+		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		// System.out.print("--" + finalIndex + "--" + offset + "--");
+		base.values[finalIndex % base.length] = val; // base.values[(offset + (finalIndex % length)) % base.length];
+		return this;
+	}
+	public Storage set(int[] shape, float val)
+	{
+		Storage str=get(shape);
+		for (int i=0;i < str.length;i++)
+		{
+			str.setFlat(i, val);
+		}
+		return this;
+	}
 	public float getFlat(int index)
 	{
 		/*
@@ -196,6 +255,12 @@ public class Storage implements AbsStorage
 		// return base.values[index % base.length];
 		// throw new IndexOutOfBoundsException();
 	}
+	public Storage setFlat(int index, float val)
+	{
+		int[] sh=getShape(index);
+		setExact(sh, val);
+		return this;
+	}
 	// public float getFlatNotBroadcasted(int index)
 	// {
 	// System.out.println("input index " + index);
@@ -212,6 +277,7 @@ public class Storage implements AbsStorage
 	 */
 	public int[] getShape(int index)
 	{
+		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
 		if (index >= length || index < 0)
 			throw new IndexOutOfBoundsException();
 		int ind=index;
@@ -225,13 +291,13 @@ public class Storage implements AbsStorage
 		}
 		return indShape;
 	}
-	public Storage brodcast(int...newShape)
+	public Storage broadcast(int...newShape)
 	{
 		// !!! problem position reversed.
 		// check if the new shape is brodcastable with the older one.
 		// if not throw an error. if i is brodcastable shape then move old shape to original shape,
 		// then make this shape to thi.shape;
-		if (!isBrodcastable(this.shape, newShape))
+		if (!broadcasted && !isBrodcastable(this.shape, newShape))
 			throw new IndexOutOfBoundsException("not brodcastable shape " + Arrays.toString(newShape) + " with " + Arrays.toString(this.shape));
 		if (this.shape.length == newShape.length)
 			for (int i=0;i < shape.length;i++)
@@ -261,10 +327,12 @@ public class Storage implements AbsStorage
 	}
 	public Storage view(int...newShape)
 	{
-		// broadcastable not allowed.
+		// broadcastable shape not allowed.
 		// videwing this array into other type of shape.
 		// the length must be equal;
-		// if broadcasted ...
+		// if the shape is already broadcasted it doesn't work.
+		if (isBroadcastedShape())
+			throw new RuntimeException("broadcaste shape doesn't allowed viewing into another shape., or copy it before broadcasted.");
 		int len=length(newShape);
 		// System.out.println(len + " == " + length);
 		if (len != length)
@@ -278,7 +346,19 @@ public class Storage implements AbsStorage
 	public Storage reshape(int...newShape)
 	{
 		// try to broadcast if posible, if not copy the array.
-		return null;
+		int len=length(newShape);
+		if (length != len)
+			throw new RuntimeException("different type of shape is not allowed.");
+		if (isBroadcastedShape())
+		{
+			Storage str=copy();
+			str.base.setShape(newShape);
+			str.init(str.base, newShape, str.offset);
+			return str;
+		}
+		base.setShape(newShape);
+		init(base, newShape, offset);
+		return this;
 	}
 	public Storage copy()
 	{
@@ -292,6 +372,6 @@ public class Storage implements AbsStorage
 	@Override
 	public String toString()
 	{
-		return "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape " + Arrays.toString(baseShape) + ", offset :" + offset + ")";
+		return(broadcasted ?"Broadcasted ": "") + "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape " + Arrays.toString(baseShape) + ", offset :" + offset + ")";
 	}
 }
