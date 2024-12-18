@@ -104,5 +104,99 @@ public class Util
 		}
 		return into;
 	}
-
+	/*
+	 usage.
+	 float[] arr={1,2,3};
+	 // forward access.
+	 float v1=getAt(arr,0); //  1,
+	 float v1=getAt(arr,1); //  2,
+	 float v1=getAt(arr,2); //  3,
+	 // backward access.
+	 float v1=getAt(arr,-1); //  3,
+	 float v1=getAt(arr,-2); //  2,
+	 float v1=getAt(arr,-3); //  1,
+	 */
+	public static float getAt(float[] arr, int index)
+	{
+		if (index < 0)
+			return arr[arr.length + index]; // accessing backward array.
+		return arr[index]; // the default array access.
+	}
+	public static int getAt(int[] arr, int index)
+	{
+		if (index < 0)
+			return arr[arr.length + index]; // accessing backward array.
+		return arr[index]; // the default array access.
+	}
+	/*
+	 float[] arr={1,2,3};
+	 float v1=getAt(arr,0); //  3,
+	 float v1=getAt(arr,1); //  2,
+	 float v1=getAt(arr,2); //  1,
+	 */
+	public static float getAtR(float[] arr, int index)
+	{
+		return arr[arr.length - index - 1]; // 
+	}
+	public static int getAtR(int[] arr, int index)
+	{
+		return arr[arr.length - index - 1]; // 
+	}
+	public static void print(Storage str)
+	{
+		if (str.dim == 1)
+		{
+			System.out.print("[");
+			for (int i=0;i < str.shape[0];i++)
+				System.out.print(str.getFloat(i) + ", ");
+			System.out.println("]");
+		}
+		else if (str.dim == 2)
+		{
+			System.out.print("[");
+			for (int j=0;j < str.shape[0];j++)
+			{
+				System.out.print((j == 0 ?"": " ") + "[");
+				for (int k=0;k < str.shape[1];k++)
+					System.out.print((k == 0 ?" ": ", ") + str.getFloat(j, k));
+				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
+			}
+			System.out.println("]");
+		}
+		else
+			for (int i=0;i < str.shape[0];i++)
+			{
+				print(str.get(i));
+				System.out.println();
+			}
+	}
+	public static void fill(Storage str, float val)
+	{
+		for (int i=0;i < str.base.values.length;i++)
+			str.base.values[i] = val;
+	}
+	public static void fillRand(Storage str)
+	{
+		Random r=new Random(123);
+		for (int i=0;i < str.base.values.length;i++)
+			str.base.values[i] = r.nextFloat();
+	}
+	public static boolean equals(int[] s1, int[] s2)
+	{
+		if (s1.length != s2.length)
+			return false;
+		for (int i=0;i < s1.length;i++)
+			if (s1[i] != s2[i])
+				return false;
+		return true;
+	}
+	public static boolean equals(float[] s1, float[] s2)
+	{
+		if (s1.length != s2.length)
+			return false;
+		for (int i=0;i < s1.length;i++)
+			if (s1[i] != s2[i])
+				return false;
+		return true;
+	}
 }

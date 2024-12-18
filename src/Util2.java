@@ -1,7 +1,7 @@
 import gss.math.*;
 import java.util.*;
 
-public class Util
+public class Util2
 {
 	void bench() throws Exception
 	{
