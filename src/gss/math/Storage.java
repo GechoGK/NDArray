@@ -24,14 +24,11 @@ public class Storage
 
 	public Storage(int...shape)
 	{
-		this(new Data(shape), shape, 0);
+		this(new Data(shape), shape, 0, false);
 	}
-	public Storage(Data data, int...shape)
+	public Storage(Data data, int[]shape, int offset, boolean isBroadcasted)
 	{
-		this(data, shape, 0);
-	}
-	public Storage(Data data, int[]shape, int offset)
-	{
+		this.broadcasted = isBroadcasted;
 		init(data, shape, offset);
 	}
 	private void init(Data dt, int[]sh, int off)
@@ -53,7 +50,6 @@ public class Storage
 		this.dim = sh.length;
 		this.offset = off;
 		this.length = length(sh);//  sum.length == 0 ?1: sum[0];
-		broadcasted = false;
 		// System.out.println(Arrays.toString(sum));
 	}
 	public Storage get(int...index)
@@ -78,7 +74,7 @@ public class Storage
 				// System.out.println("== " + newPos);
 			}
 			// System.out.println("final pos to return " + newPos);
-			return new Storage(base, new int[]{1}, offset + newPos);
+			return new Storage(base, new int[]{1}, offset + newPos, broadcasted);
 		}
 		else
 		{
@@ -115,7 +111,7 @@ public class Storage
 			// System.out.println("new length " + newLength);
 			// System.out.println("new Shape " + Arrays.toString(newShape));
 			// System.out.println("returning array.");
-			return new Storage(base, newShape, offset + newPos);
+			return new Storage(base, newShape, offset + newPos, broadcasted);
 		}
 		// return null;
 	}
@@ -291,22 +287,34 @@ public class Storage
 		}
 		return indShape;
 	}
+//	public Storage broadcastOld(int...newShape)
+//	{
+//		// !!! problem position reversed.
+//		// check if the new shape is brodcastable with the older one.
+//		// if not throw an error. if i is brodcastable shape then move old shape to original shape,
+//		// then make new shape to this.shape;
+//		if (!broadcasted && !isBrodcastable(this.shape, newShape))
+//			throw new IndexOutOfBoundsException("not brodcastable shape " + Arrays.toString(newShape) + " with " + Arrays.toString(this.shape));
+//		if (this.shape.length == newShape.length)
+//			for (int i=0;i < shape.length;i++)
+//				this.shape[i] = newShape[i];
+//		else
+//			this.shape = Arrays.copyOf(newShape, newShape.length);
+//		prepare(shape, offset);
+//		broadcasted = true;
+//		return this; // for now it changes itself, but for feature return the copy of Storage with the same data.
+//	}
 	public Storage broadcast(int...newShape)
 	{
 		// !!! problem position reversed.
 		// check if the new shape is brodcastable with the older one.
 		// if not throw an error. if i is brodcastable shape then move old shape to original shape,
-		// then make this shape to thi.shape;
+		// then make new shape to this.shape;
 		if (!broadcasted && !isBrodcastable(this.shape, newShape))
 			throw new IndexOutOfBoundsException("not brodcastable shape " + Arrays.toString(newShape) + " with " + Arrays.toString(this.shape));
-		if (this.shape.length == newShape.length)
-			for (int i=0;i < shape.length;i++)
-				this.shape[i] = newShape[i];
-		else
-			this.shape = Arrays.copyOf(newShape, newShape.length);
-		prepare(shape, offset);
-		broadcasted = true;
-		return this; // for now it changes itself, but for feature return the copy of Storage with the same data.
+		Storage str=new Storage(base, newShape, offset, broadcasted);
+		str.broadcasted = true;
+		return str; // for now it changes itself, but for feature return the copy of Storage with the same data.
 	}
 	public boolean isBrodcastable(int[]orgShape, int[]tarShape)
 	{
@@ -325,13 +333,37 @@ public class Storage
 	{
 		return broadcasted; // check whether the shape is original or not.
 	}
+//	public Storage viewOld(int...newShape)
+//	{
+//		// have problem when storage is subdim
+//		// broadcastable shape not allowed.
+//		// videwing this array into other type of shape.
+//		// the length must be equal;
+//		// if the shape is already broadcasted it doesn't work.
+//		if (isBroadcastedShape()) // length will check if
+//			throw new RuntimeException("broadcaste shape doesn't allowed viewing into another shape., or copy it before broadcasted.");
+//		int len=length(newShape);
+//		// System.out.println(len + " == " + length);
+//		if (len != length)
+//		{
+//			throw new IndexOutOfBoundsException("different shape length");
+//		}
+//		base.setShape(newShape); // problem.
+//		init(base, newShape, offset);
+//		return this;
+//	}
 	public Storage view(int...newShape)
 	{
+		// have problem when storage is subdim
+		// the problem is when base.setShape(int[]) is called.
+		// it overwrite the old shape, and also the length of base(data) wil be cliped.
+
+		// !!!
 		// broadcastable shape not allowed.
 		// videwing this array into other type of shape.
 		// the length must be equal;
 		// if the shape is already broadcasted it doesn't work.
-		if (isBroadcastedShape())
+		if (isBroadcastedShape()) // length will check if
 			throw new RuntimeException("broadcaste shape doesn't allowed viewing into another shape., or copy it before broadcasted.");
 		int len=length(newShape);
 		// System.out.println(len + " == " + length);
@@ -339,24 +371,27 @@ public class Storage
 		{
 			throw new IndexOutOfBoundsException("different shape length");
 		}
-		base.setShape(newShape);
-		init(base, newShape, offset);
-		return this;
+		Data data=base.copy(base.shape);
+		data.changeShape(newShape);
+		Storage str=new Storage(data, newShape, offset, broadcasted);
+		return str;
 	}
 	public Storage reshape(int...newShape)
 	{
 		// try to broadcast if posible, if not copy the array.
+		// reshape chnges the shape, also the underlaying data shape.
 		int len=length(newShape);
 		if (length != len)
 			throw new RuntimeException("different type of shape is not allowed.");
 		if (isBroadcastedShape())
 		{
+			// System.out.println("reshaping broadcasted shape");
 			Storage str=copy();
 			str.base.setShape(newShape);
-			str.init(str.base, newShape, str.offset);
+			str.init(str.base, newShape, str.offset); // maybe a problem offsrt should be 0. because the new array is being created.
 			return str;
 		}
-		base.setShape(newShape);
+		base.changeShape(newShape); 
 		init(base, newShape, offset);
 		return this;
 	}
