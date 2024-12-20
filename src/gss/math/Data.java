@@ -20,16 +20,17 @@ public class Data
 		this.length = Util.sum(shape, 0);
 		this.dim = shape.length;
 	}
-	public void changeShape(int...sh)
+	public void changeShape(int[]newShape, int[]oldShape)
 	{
-		System.out.println("merging new shape =" + Arrays.toString(shape) + ", " + Arrays.toString(sh));
+		System.out.println("merging new shape =" + Arrays.toString(shape) + ", " + Arrays.toString(newShape));
 		// throw new RuntimeException("illengal shape assignment.");
-		int[] newSh=Arrays.copyOf(this.shape, this.shape.length);
-		Util.overlap(sh, newSh);
+		int ln=oldShape.length - newShape.length;
+		int[] newSh=Arrays.copyOf(this.shape, this.shape.length - ln);
+		Util.overlap(newShape, newSh);
 		System.out.println("=== " + Arrays.toString(newSh));
 		int len=Util.length(newSh);
 		if (len != length)
-			throw new RuntimeException("shape can't be changet to " + Arrays.toString(sh) + ", the length is not equal");
+			throw new RuntimeException("shape can't be changed to " + Arrays.toString(newShape) + ", the length is not equal");
 		this.shape = newSh;
 	}
 	public Data copy(int[]newShape)

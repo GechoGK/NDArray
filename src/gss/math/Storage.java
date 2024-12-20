@@ -13,6 +13,35 @@ public class Storage
 	 .:. the methods need to return the copy of the storage. inorder to preserve the original one.
 	 in that case we can retrive keep the base shape untouched.
 	 */
+	/* bug.1
+	 // to solve view Set|Change problem.
+	 */
+	/* // bug.3
+	 problem. broadcast on subdim
+	 Storage str=new Storage(2,2);
+	 fillRand(str);
+	 str  = [[5, 10],
+	 ....... [7, 15]] 
+	 Storage str2 = str.get(1);
+	 str2  = [7, 15] str at index 1
+
+	 Storage str3 = str2.broadcast(20, 2);
+	 str3  = [[7, 15],
+	 ......   [7, 15],
+	 ......     ...
+	 .......  [7, 15]]  (Expected output) the output should be this,
+	 but instead it outputs like this --v
+	 str3  = [[7, 15],
+	 .......  [5. 10],
+	 .......  [5, 10],
+	 .......    ...
+	 .......  [5, 10]]  this is due to data access bug,
+	 which is the line
+	 that maps the broadcasted shape into original one.
+	 // int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+	 // TO-DO fix later.
+	 // solved by passing the base shape as an argument to the constructor.
+	 */
 	public Data base;
 	public int[] shape;
 	public int[] baseShape;
@@ -24,25 +53,27 @@ public class Storage
 
 	public Storage(int...shape)
 	{
-		this(new Data(shape), shape, 0, false);
+		this(new Data(shape), shape, 0, false, null);
 	}
-	public Storage(Data data, int[]shape, int offset, boolean isBroadcasted)
+	public Storage(Data data, int[]shape, int offset, boolean isBroadcasted, int[]bsShape)
 	{
 		this.broadcasted = isBroadcasted;
-		init(data, shape, offset);
+		init(data, shape, offset, bsShape);
 	}
-	private void init(Data dt, int[]sh, int off)
+	private void init(Data dt, int[]sh, int off, int[]bsShape)
 	{
 		this.base = dt;
+		if (bsShape == null)
+			bsShape = base.shape;
 		this.shape = Arrays.copyOf(sh, sh.length);
-		prepare(sh, off);
+		prepare(sh, off, bsShape);
 	}
-	private void prepare(int[]sh, int off)
+	private void prepare(int[]sh, int off, int[]bsShape)
 	{
 		// this.sum = new int[sh.length];
 		this.baseShape = new int[sh.length];
 		Arrays.fill(baseShape, 1);
-		overlap(base.shape, baseShape);
+		overlap(bsShape, baseShape);
 		// System.out.println("====== base = " + Arrays.toString(base.shape) + ",\nbaseb= " + Arrays.toString(baseShape) + ",\ncurr = " + Arrays.toString(shape));
 		// this.sum = sumShapes(sh, sum);
 		this.baseSum = sumShapes(baseShape, baseSum); // sum shapes according to baseShape.
@@ -54,6 +85,8 @@ public class Storage
 	}
 	public Storage get(int...index)
 	{
+		// fix Vie Set|Change problem.
+		// by keep tracking parent shapes.
 		// reverse order.
 		if (index.length > shape.length)
 			throw new IndexOutOfBoundsException();
@@ -74,7 +107,7 @@ public class Storage
 				// System.out.println("== " + newPos);
 			}
 			// System.out.println("final pos to return " + newPos);
-			return new Storage(base, new int[]{1}, offset + newPos, broadcasted);
+			return new Storage(base, new int[]{1}, offset + newPos, broadcasted, baseShape);
 		}
 		else
 		{
@@ -111,7 +144,7 @@ public class Storage
 			// System.out.println("new length " + newLength);
 			// System.out.println("new Shape " + Arrays.toString(newShape));
 			// System.out.println("returning array.");
-			return new Storage(base, newShape, offset + newPos, broadcasted);
+			return new Storage(base, newShape, offset + newPos, broadcasted, baseShape);
 		}
 		// return null;
 	}
@@ -312,7 +345,7 @@ public class Storage
 		// then make new shape to this.shape;
 		if (!broadcasted && !isBrodcastable(this.shape, newShape))
 			throw new IndexOutOfBoundsException("not brodcastable shape " + Arrays.toString(newShape) + " with " + Arrays.toString(this.shape));
-		Storage str=new Storage(base, newShape, offset, broadcasted);
+		Storage str=new Storage(base, newShape, offset, broadcasted, baseShape);
 		str.broadcasted = true;
 		return str; // for now it changes itself, but for feature return the copy of Storage with the same data.
 	}
@@ -331,7 +364,22 @@ public class Storage
 	// methods to implement.
 	public boolean isBroadcastedShape()
 	{
-		return broadcasted; // check whether the shape is original or not.
+
+		// new code to check if it is broadcasted.
+		// experimental, -- uncomment the line below.
+		if (this.shape.length > base.shape.length)
+			return true; // if the storage shape.length is grrate than base.shape.length, it is due to broadcasting. if not ...
+		// eg1. base [2,1] , storage [2,2,2] == it is broadcasted. returns true.
+		// eg2. base [5,1] , storage [5,5]   == the condition (this.shape.length > base.shape.length) doesn't satissfy. si ut needs extra check.
+		// now check element by element if they are equal.
+		// to address subdims use minimum length to check equality Math.min(this.shape.length,base.shape.length); start from the end.
+		for (int i=0;i < Math.min(this.shape.length, base.shape.length);i++)
+			if  (Util.getAtR(this.shape, i) != Util.getAtR(base.shape, i))
+				return true;
+		// eg1. base [5,1]   , storage [5,3] == return true. b/c it found d/t array elements 1 and 3 are not the same.
+		// eg2. base [2,5,1] , storage [5,3] subdim get(0) == return true. also have different items ignoring the first 1 and check others 1 and 3 again different element.
+		return false;
+		// return broadcasted; // check whether the shape is original or not.
 	}
 //	public Storage viewOld(int...newShape)
 //	{
@@ -372,8 +420,26 @@ public class Storage
 			throw new IndexOutOfBoundsException("different shape length");
 		}
 		Data data=base.copy(base.shape);
-		data.changeShape(newShape);
-		Storage str=new Storage(data, newShape, offset, broadcasted);
+		data.changeShape(newShape, this.shape); // problem fix it.
+		/*
+		 --- view Set|Change problem.
+		 choose whether data.setShape() or data.changeShape()
+		 --- setShape
+		 // this is good for dimension reduction. and it works.
+		 // but when the array is subdim which is the storage shape and base shape doesn't match , it have errors.
+		 example.
+		 Storage str=new Storage(3,4);
+		 Storage str2=str.view(12); // 2dim aray changes into 1dim array. ✓
+		 ----------
+		 Storage str=new Storage(2,3,4);
+		 str=str.get(1); // len = 12 off = 12, but when we view occurs the offset will chnage into 0, becauae the base.shaoe also chnges (not modified accordinglly).
+		 Storage str2=str.view(12); // trying to reduce dim. 
+		 // str2.base.shape == [12] because setShape changes all.
+		 // expected = [2,12] // the changeShape can selectivelly do that,
+		 // although the implementation of chsngeShape can't produce this output instead.
+		 // changeShape output = [2,3,12] // which is wrong.
+		 */
+		Storage str=new Storage(data, newShape, offset, broadcasted, baseShape);
 		return str;
 	}
 	public Storage reshape(int...newShape)
@@ -388,11 +454,11 @@ public class Storage
 			// System.out.println("reshaping broadcasted shape");
 			Storage str=copy();
 			str.base.setShape(newShape);
-			str.init(str.base, newShape, str.offset); // maybe a problem offsrt should be 0. because the new array is being created.
+			str.init(str.base, newShape, str.offset, baseShape); // maybe a problem offset should be 0. because the new array is being created. or it is subdim so offset is neded.
 			return str;
 		}
-		base.changeShape(newShape); 
-		init(base, newShape, offset);
+		base.changeShape(newShape, this.shape); 
+		init(base, newShape, offset, baseShape);
 		return this;
 	}
 	public Storage copy()

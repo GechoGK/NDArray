@@ -20,10 +20,67 @@ public class Main
 	void a() throws Exception
 	{
 
+		testBrodSubDim();
+
+	}
+	void testOverlap() throws Exception
+	{
+
+		int[] i1={2,2}; // orig shape
+		int[] i2={2}; // get(0); 2[2] baseShape =[1,2]
+		int[] i3={4,5,2};
+
+		Util.overlap(i2, i3);
+
+		System.out.println(Arrays.toString(i1));
+		System.out.println(Arrays.toString(i2));
+		System.out.println(Arrays.toString(i3));
+
+	}
+	void testBrodSubDim()throws Exception
+	{
+		// isBroadcasted shape. subdim faild.
+		Storage str=new Storage(2, 1);
+		fillRand(str);
+		System.out.println(str);
+		print(str);
+		System.out.println("--------");
+		str = str.get(1);
+		System.out.println(str);
+		print(str);
+		System.out.println("--------");
+		str = str.broadcast(3, 4, 2);
+		System.out.println(str);
+		print(str);
+		System.out.println("------");
+		System.out.println("[");
+		for (int i=0;i < str.length;i++)
+			System.out.print(str.getFlat(i) + ", ");
+		System.out.println("]");
+
+	}
+	void errorView() throws Exception
+	{
+		// ✓
+		Storage str=new Storage(4, 2, 3);
+		fillRand(str);
+		// System.out.println(str);
+		// System.out.println(str.length);
+		// print(str);
+		System.out.println("---------");
+		Storage strd1= str.get(1);
+		print(strd1);
+		Storage str2=strd1.view(strd1.length);
+		System.out.println(str2);
+		System.out.println(str2.length);
+		print(str2);
+
+		// strd1 and str2  should be equal, but they are not.
+
 	}
 	void testReshape() throws Exception
 	{
-		// reshape lazy fixed. it may have problems.
+		// reshape lazy fixed. it may have problems. for now ✓
 		Storage str=new Storage(3, 1, 2);
 
 		fillRand(str);
@@ -32,11 +89,11 @@ public class Main
 		print(str);
 		System.out.println("-----");
 		str = str.broadcast(4, 3, 4, 2);
-		str = str.get(2, 2);
+		str = str.get(2, 1);
 		System.out.println(str);
 		print(str);
 
-		str = str.reshape(3, 1);
+		str = str.reshape(2, 4);
 		System.out.println(str);
 		print(str);
 
