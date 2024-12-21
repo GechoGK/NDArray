@@ -16,6 +16,7 @@ public class Storage
 	/* bug.1
 	 // to solve view Set|Change problem.
 	 */
+	// ------------
 	/* // bug.3
 	 problem. broadcast on subdim
 	 Storage str=new Storage(2,2);
@@ -309,7 +310,7 @@ public class Storage
 		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
 		if (index >= length || index < 0)
 			throw new IndexOutOfBoundsException();
-		int ind=index;
+		// int ind=index;
 		// computationally expensive. avoid it, if u can.
 		// System.out.println("getting value at index =" + index);
 		int[] indShape=new int[this.shape.length];
