@@ -20,91 +20,49 @@ public class Main
 	void a() throws Exception
 	{
 
-	}
-	void testSetExact()
-	{
-		// setFlat() works // trust me :-)
-		// if
-		// set(int[],Storage) works
-		// set(int[],float) works,
-		// then setFlat work, because the above methods works because of setFlat();
-		// .
-		Storage str=new Storage(1, 2);
-		print(str);
-		str.setExact(new int[]{0,0}, 3);
-		print(str);
-		str.setExact(new int[]{0,1}, 5);
-		print(str);
-
-
-	}
-	void testSetStr()
-	{
-		// the Storage view, reshape, broadcast  have umdetermined results.
-		// so. it needs additional test.
-		// atleast for now. ✓
-		Storage str1=new Storage(4, 3, 5, 2); // or (3, 5, 2); also works.
-		Storage str2=new Storage(3, 1, 2); // broadcasted from str1
-		System.out.println("befor set");
-		fillRand(str2);
-		print(str1);
-
-		System.out.println("after set");
-		str1.set(new int[]{}, str2);
-		print(str1);
+		NDArray a1=new NDArray(new float[]{4,8,3,9,20,50,8,5,3,7});
+		NDArray a2=new NDArray(new float[][]{{9},{5},{2},{3}});
+		System.out.println("adding two arrays");
+		print(a1.storage);
+		System.out.println("  ::::: ");
+		print(a2.storage);
+		System.out.println("  ===== ");
+		
+		// addition.
+		System.out.println("\naddition result");
+		NDArray rs = a1.add(a2);
+		print(rs.storage);
+		
+		// sibtraction.
+		System.out.println("\nsubtraction result");
+		rs = a1.sub(a2);
+		print(rs.storage);
+		
+		// division.
+		System.out.println("\ndivision result");
+		rs = a1.div(a2);
+		print(rs.storage);
+		
+		// multiplucation.
+		System.out.println("\nmultiplication result");
+		rs = a1.mul(a2);
+		print(rs.storage);
 
 	}
-	void testSetBroad()
+	void testCommonBroadcastableShape() throws Exception
 	{
-		// ✓
-		// remember set value on broadcasted shape have ba behaviour.
-		// because when broadcasting we see small dims as bigger ones.
-		// so changing one also make the smaller dims to change, that also chnage the overall array value.
-		// for example see below.
-		Storage str=new Storage(3, 1, 2);
-		System.out.println("before set");
-		print(str);
-		System.out.println("-----");
-		str.broadcast(3, 5, 2);
-		str.set(new int[]{1,0}, 3); // this is the base set value. below set values are the same as this.
-		// str.set(new int[]{1,1}, 3);  // same as new int[]{1,0}
-		// str.set(new int[]{1,2}, 3);  // same as new int[]{1,0}
-		// str.set(new int[]{1,3}, 3);  // same as new int[]{1,0}
-		// str.set(new int[]{1,4}, 3);  // same as new int[]{1,0}
-		// because of the broadcasted shape undrline value is (1) setting the shape to other value has no effect it is the same as setting the shape (1) at broadcasted index.
-		// !! recomendation
-		// copy before set value. it will fix.
-		print(str);
-		System.out.println("after set");
+		int[] sh1={6,2,3};
+		sh1 = new int[]{1,4,2,8};
+		sh1 = new int[]{9,6,3,4,5,7,2,120};
+		int[] sh2={5,1,2,1}; // 1 in sh1 changes into 4.
+		int[] newShape=NDArray.getCommonShape(sh1, sh2);
 
-	}
-	void testSetNoBrod()
-	{
-		// ✓
-		Storage str=new Storage(3, 2, 5);
-		str.set(new int[]{1,0}, 5);
+		/*
+		 sh1  =        [1, 2, 3]
+		 sh2  =     [5, 4, 2, 1] taking the broadcastable shape bdtween them.
+		 newShape = [5, 4, 2, 3]
+		 */
 
-		System.out.println(str);
-		print(str);
-
-	}
-	void getFlatTest() throws Exception
-	{
-		// ✓
-		Storage str=new Storage(3, 2, 1);
-
-		fillRand(str);
-		System.out.println(str);
-		print(str);
-
-		str = str.get(2);
-
-		System.out.println(str);
-		print(str);
-
-		System.out.println(str);
-		for (int i=0;i < str.length;i++)
-			System.out.println(i + " = " + str.getFlat(i));
-
+		System.out.println(" ==== " + Arrays.toString(newShape));
 	}
 }
