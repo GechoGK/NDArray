@@ -17,7 +17,14 @@ public class Main
 		// test text.
 
 	}
-	void a() throws Exception
+	void a()
+	{
+		// gradient. adding methods ....
+		NDArray arr=new NDArray(3, 1, 2);
+
+		System.out.println(arr.storage);
+	}
+	void testArrayMathBasic() throws Exception
 	{
 
 		NDArray a1=new NDArray(new float[]{4,8,3,9,20,50,8,5,3,7});
@@ -27,22 +34,22 @@ public class Main
 		System.out.println("  ::::: ");
 		print(a2.storage);
 		System.out.println("  ===== ");
-		
+
 		// addition.
 		System.out.println("\naddition result");
 		NDArray rs = a1.add(a2);
 		print(rs.storage);
-		
+
 		// sibtraction.
 		System.out.println("\nsubtraction result");
 		rs = a1.sub(a2);
 		print(rs.storage);
-		
+
 		// division.
 		System.out.println("\ndivision result");
 		rs = a1.div(a2);
 		print(rs.storage);
-		
+
 		// multiplucation.
 		System.out.println("\nmultiplication result");
 		rs = a1.mul(a2);

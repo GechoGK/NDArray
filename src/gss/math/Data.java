@@ -5,14 +5,25 @@ import java.util.*;
 public class Data
 {
 	public float[] values;
+	public float[] grads;
 	public int[] shape; // this shape can be changed using view method in Storage class.
 	public int length;
 	public int dim;
+	public boolean requiresGrad;
 
-	public Data(int...sh)
+	public Data(int[]shape)
 	{
+		this(shape, false);
+	}
+	public Data(int[]sh,  boolean requireGrad)
+	{
+		this.requiresGrad   = requireGrad;
 		setShape(sh);
 		this.values = new float[length];
+		if (requireGrad)
+			this.grads  = new float[length];
+		else
+			this.grads = null;
 	}
 	public void setShape(int[] sh)
 	{
@@ -35,9 +46,10 @@ public class Data
 	}
 	public Data copy(int[]newShape)
 	{
-		Data d=new Data();
+		Data d=new Data(newShape, requiresGrad);
 		d.values = values;
-		d.setShape(newShape);
+		d.grads = grads;
+		// d.setShape(newShape);
 		return d;
 	}
 }
