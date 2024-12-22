@@ -14,16 +14,28 @@ public class NDArray
 	}
 	public NDArray(int...shape)
 	{
-		this.storage = new Storage(shape);
+		this(shape, false);
 	}
-	public NDArray(float[] data)
+	public NDArray(int[]shape, boolean requireGrad)
 	{
-		this.storage = new Storage(data.length);
+		this.storage = new Storage(shape, requireGrad);
+	}
+	public NDArray(float[]data)
+	{
+		this(data, false);
+	}
+	public NDArray(float[] data, boolean requireGrad)
+	{
+		this.storage = new Storage(new int[]{data.length}, requireGrad);
 		storage.base.values = Arrays.copyOf(data, data.length);
 	}
-	public NDArray(float[][] data)
+	public NDArray(float[][]data)
 	{
-		this.storage = new Storage(data.length, data[0].length);
+		this(data, false);
+	}
+	public NDArray(float[][] data, boolean requireGrad)
+	{
+		this.storage = new Storage(new int[]{data.length, data[0].length}, requireGrad);
 		storage.base.values = Util.flatten(data);
 	}
 	public int[] getShape()
@@ -243,5 +255,10 @@ public class NDArray
 	public NDArray copy()
 	{
 		return new NDArray(storage.copy());
+	}
+	@Override
+	public String toString()
+	{
+		return storage.dim + "D Array(shape =" + Arrays.toString(storage.shape) + ", requiresGradient = " + storage.requiresGradient() + ")";
 	}
 }

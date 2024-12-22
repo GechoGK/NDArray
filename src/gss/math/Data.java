@@ -52,4 +52,16 @@ public class Data
 		// d.setShape(newShape);
 		return d;
 	}
+	public Data enableGradient()
+	{
+		requiresGrad = true;
+		grads = new float[values.length];
+		return this;
+	}
+	public Data disableGradient()
+	{
+		requiresGrad = false;
+		grads = null;
+		return this;
+	}
 }

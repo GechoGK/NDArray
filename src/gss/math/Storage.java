@@ -67,7 +67,7 @@ public class Storage
 	{
 		this(new Data(shape), shape, 0, false, null);
 	}
-	public Storage(int...shape, boolean requireGrad)
+	public Storage(int[]shape, boolean requireGrad)
 	{
 		this(new Data(shape, requireGrad), shape, 0, false, null);
 	}
@@ -421,6 +421,18 @@ public class Storage
 		return true;
 	}
 	// methods to implement.
+	public boolean requiresGradient()
+	{
+		return base.requiresGrad;
+	}
+	public void enbaleGradient()
+	{
+		base.enableGradient();
+	}
+	public void disableGradient()
+	{
+		base.disableGradient();
+	}
 	public boolean isBroadcastedShape()
 	{
 

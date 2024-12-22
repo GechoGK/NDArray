@@ -14,15 +14,13 @@ public class Main
 		// if the original shape items is not 1 then the new shape also must be the same items at partucular index.
 		new Main().a();
 
-		// test text.
-
 	}
 	void a()
 	{
 		// gradient. adding methods ....
-		NDArray arr=new NDArray(3, 1, 2);
+		NDArray arr=new NDArray(new int[]{3, 1, 2}, true);
 
-		System.out.println(arr.storage);
+		System.out.println(arr);
 	}
 	void testArrayMathBasic() throws Exception
 	{
