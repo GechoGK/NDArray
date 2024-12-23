@@ -323,7 +323,7 @@ public class Storage
 		 in that case we can use one loop instead o two loops iterate through the same shape.
 		 // TO-DO merge loops to this method and getride of getFloat(indShape); call.
 		 */
-		return getFloat(shp);
+		return getFloatInt(shp, array);
 		/*
 		 the code down below is just for access index without considering shape and broadcasting.
 		 */

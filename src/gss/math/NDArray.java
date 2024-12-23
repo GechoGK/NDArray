@@ -7,6 +7,8 @@ import static gss.math.Util.*;
 public class NDArray
 {
 	public Storage storage;
+	public List<NDArray> childs; // =new ArrayList<>();
+	public GradFunc gradientFunction;
 
 	public NDArray(Storage str)
 	{
@@ -19,6 +21,8 @@ public class NDArray
 	public NDArray(int[]shape, boolean requireGrad)
 	{
 		this.storage = new Storage(shape, requireGrad);
+		if (requireGrad)
+			childs = new ArrayList<>();
 	}
 	public NDArray(float[]data)
 	{
@@ -28,6 +32,8 @@ public class NDArray
 	{
 		this.storage = new Storage(new int[]{data.length}, requireGrad);
 		storage.base.values = Arrays.copyOf(data, data.length);
+		if (requireGrad)
+			childs = new ArrayList<>();
 	}
 	public NDArray(float[][]data)
 	{
@@ -37,6 +43,8 @@ public class NDArray
 	{
 		this.storage = new Storage(new int[]{data.length, data[0].length}, requireGrad);
 		storage.base.values = Util.flatten(data);
+		if (requireGrad)
+			childs = new ArrayList<>();
 	}
 	public int[] getShape()
 	{
@@ -73,6 +81,15 @@ public class NDArray
 	{
 		return storage.getFlat(index);
 	}
+	// get Gradient.
+	public float getExactGrad(int...index)
+	{
+		return storage.getFloatGrad(index);
+	}
+	public float getFlatGrad(int index)
+	{
+		return storage.getFlatGrad(index);
+	}
 	// set aray value at specific index.
 	public void set(int[]index, NDArray arr)
 	{
@@ -93,11 +110,25 @@ public class NDArray
 	{
 		storage.setExact(index, val);
 	}
+	// set Gradient.
+	public void setGrad(int[] index, float val)
+	{
+		storage.setGrad(index, val);
+	}
+	public void setExactGrad(int[] index, float val)
+	{
+		storage.setExactGrad(index, val);
+	}
+	public void setFlatGrad(int index, float val)
+	{
+		storage.setFlatGrad(index, val);
+	}
 	// broadcast into another shape.
-	public NDArray broadcast(int[] newShape)
+	public NDArray broadcast(int...newShape)
 	{
 		return new NDArray(storage.broadcast(newShape));
 	}
+	// view into another shape.
 	public NDArray view(int...newShape)
 	{
 		return new NDArray(storage.view(newShape));
@@ -106,13 +137,28 @@ public class NDArray
 	{
 		return new NDArray(storage.reshape(newShape));
 	}
+	public void setGradientFunction(GradFunc func, NDArray...chlds)
+	{
+		this.gradientFunction = func;
+		for (NDArray ar:chlds)
+			this.childs.add(ar);
+	}
+	public void backward()
+	{
+		if (gradientFunction == null)
+		{
+			throw new RuntimeException("gradient function not found = " + gradientFunction);
+		}
+		gradientFunction.backward(this, childs.toArray(new NDArray[0]));
+	}
 	// n-dimension array computation functions.
 	public NDArray add(NDArray other)
 	{
 		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
-		NDArray arrOut=new NDArray(shp);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't add two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -127,9 +173,10 @@ public class NDArray
 	public NDArray sub(NDArray other)
 	{
 		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
-		NDArray arrOut=new NDArray(shp);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.subtractionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't subtract two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -144,9 +191,10 @@ public class NDArray
 	public NDArray mul(NDArray other)
 	{
 		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
-		NDArray arrOut=new NDArray(shp);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.multiplicationGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't multiply two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -161,9 +209,10 @@ public class NDArray
 	public NDArray div(NDArray other)
 	{
 		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
-		NDArray arrOut=new NDArray(shp);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.divisionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't devide two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -217,37 +266,72 @@ public class NDArray
 	// static methods.
 	public static NDArray zeros(int...shape)
 	{
-		return value(shape, 0);
+		return value(shape, 0, false);
+	}
+	public static NDArray zeros(int...shape, boolean requiresGrad)
+	{
+		return value(shape, 0, requiresGrad);
 	}
 	public static NDArray zerosAlike(NDArray arr)
 	{
-		return value(arr.getShape(), 0);
+		return value(arr.getShape(), 0, false);
+	}
+	public static NDArray zerosAlike(NDArray arr, boolean requiresGrad)
+	{
+		return value(arr.getShape(), 0, requiresGrad);
 	}
 	public static NDArray ones(int...shape)
 	{
-	 	return value(shape, 1);
+		return value(shape, 1, false);
+	}
+	public static NDArray ones(int...shape, boolean requiresGrad)
+	{
+		return value(shape, 1, requiresGrad);
 	}
 	public static NDArray onesAlike(NDArray arr)
 	{
-		return value(arr.getShape(), 1);
+		return value(arr.getShape(), 1, false);
+	}
+	public static NDArray onesAlike(NDArray arr, boolean requiresGrad)
+	{
+		return value(arr.getShape(), 1, requiresGrad);
 	}
 	public static NDArray value(int[]shape, float val)
 	{
-		NDArray arr=new NDArray(shape);
+		return value(shape, val, false);
+	}
+	public static NDArray value(int[]shape, float val, boolean requiresGrad)
+	{
+		NDArray arr=new NDArray(shape, requiresGrad);
 		Arrays.fill(arr.storage.base.values, val);
 		return arr;
 	}
 	public static NDArray fromArray(int[] shape, float...arr)
 	{
-		return null;
+		throw new RuntimeException("not implemented.");
+		// return null;
 	}
 	// the seed value can be empty.
-	public static NDArray rand(int[]shape, int...seed)
+	public static NDArray rand(int...shape)
 	{
-		NDArray arr=new NDArray(shape);
+		return rand(shape, false, -1);
+	}
+	public static NDArray rand(int[] shape, int seed)
+	{
+		return rand(shape, false, seed);
+	}
+	public static NDArray rand(int[]shape, boolean requiresGrad)
+	{
+		return rand(shape, requiresGrad, -1);
+	}
+	public static NDArray rand(int[]shape, boolean reqiresGrad, int seed)
+	{
+		NDArray arr=new NDArray(shape, reqiresGrad);
 		Random r=null;
-		if (seed.length > 0)
-			r = new Random(seed[0]);
+		if (seed != -1)
+			r = new Random(seed);
+		else
+			r = new Random();
 		for (int i=0;i < arr.storage.length;i++)
 			arr.storage.base.values[i] = r.nextFloat();
 		return arr;
@@ -259,6 +343,14 @@ public class NDArray
 	@Override
 	public String toString()
 	{
-		return storage.dim + "D Array(shape =" + Arrays.toString(storage.shape) + ", requiresGradient = " + storage.requiresGradient() + ")";
+		return storage.dim + "D Array(shape =" + Arrays.toString(storage.shape) + ", requiresGradient = " + storage.requiresGradient() + ", isBroadcasted = " + storage.broadcasted + ")," + gradientFunction + "[childs = " + (childs == null ?"0": childs.size()) + "]";
+	}
+	public boolean isBroadcastedShape()
+	{
+		return storage.isBroadcastedShape();
+	}
+	public boolean requiresGradient()
+	{
+		return storage.requiresGradient();
 	}
 }

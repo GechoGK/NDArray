@@ -17,10 +17,42 @@ public class Main
 	}
 	void a()
 	{
-		// gradient. adding methods ....
-		NDArray arr=new NDArray(new int[]{3, 1, 2}, true);
 
-		System.out.println(arr);
+	}
+	void testBasicMathGrad() throws Exception
+	{
+		// gradient. adding methods ....
+		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
+		NDArray arr2 = NDArray.rand(new int[]{4,2}, true);
+		// uncomment the line below to check for errors.
+		// arr2 = NDArray.rand(new int[]{4,2}, false);
+
+		// add,sub,mul,div gradients added.
+		// all basic operations have the same implementation.
+		NDArray res=arr1.div(arr2);
+
+		System.out.println(arr1);
+		System.out.println(arr2);
+		System.out.println(res);
+		print(arr1.storage);
+		System.out.println("---------");
+		print(arr2.storage);
+		System.out.println("---------");
+		print(res.storage);
+		System.out.println("-----");
+		// System.out.println(Arrays.toString(res.storage.base.grads));
+
+		System.out.println(Arrays.toString(res.storage.base.grads));
+		System.out.println(Arrays.toString(arr1.storage.base.grads));
+		System.out.println(Arrays.toString(arr2.storage.base.grads));
+		System.out.println("after backward method called.");
+		res.setGrad(new int[]{}, 2); // set the result gradient to 2.
+		res.backward();
+
+		System.out.println(Arrays.toString(res.storage.base.grads));
+		System.out.println(Arrays.toString(arr1.storage.base.grads));
+		System.out.println(Arrays.toString(arr2.storage.base.grads));
+
 	}
 	void testArrayMathBasic() throws Exception
 	{
