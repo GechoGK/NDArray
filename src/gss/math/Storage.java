@@ -236,14 +236,14 @@ public class Storage
 	}
 	public Storage setExact(int[]index, float val) // this method works.
 	{
-		return setExactInt(index, val, base.values);
+		return setExactInt(index, val, base.values, false);
 	}
 	public Storage setExactGrad(int[]index, float val)
 	{
-		return setExactInt(index, val, base.grads);
+		return setExactInt(index, val, base.grads, true);
 	}
 	// internal method.
-	private Storage setExactInt(int[] index, float val, float[]array)
+	private Storage setExactInt(int[] index, float val, float[]array, boolean append)
 	{
 		// this method sets a value (one value) to the array.
 		// if the index is not match the shaoe of the storage. it fails.
@@ -271,7 +271,10 @@ public class Storage
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		array[finalIndex % base.length] = val; // base.values[(offset + (finalIndex % length)) % base.length];
+		if (append)
+			array[finalIndex % base.length] += val; // base.values[(offset + (finalIndex % length)) % base.length];
+		else
+			array[finalIndex % base.length] = val;
 		return this;
 	}
 	public Storage set(int[] shape, float val)
@@ -348,6 +351,11 @@ public class Storage
 		int[] sh=getShape(index);
 		setExactGrad(sh, val);
 		return this;
+	}
+	public void zeroGrad()
+	{
+		if (base.requiresGrad)
+			Arrays.fill(base.grads, 0);
 	}
 	// public float getFlatNotBroadcasted(int index)
 	// {

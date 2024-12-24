@@ -123,6 +123,10 @@ public class NDArray
 	{
 		storage.setFlatGrad(index, val);
 	}
+	public void zeroGrad()
+	{
+		storage.zeroGrad();
+	}
 	// broadcast into another shape.
 	public NDArray broadcast(int...newShape)
 	{
@@ -146,9 +150,8 @@ public class NDArray
 	public void backward()
 	{
 		if (gradientFunction == null)
-		{
 			throw new RuntimeException("gradient function not found = " + gradientFunction);
-		}
+
 		gradientFunction.backward(this, childs.toArray(new NDArray[0]));
 	}
 	// n-dimension array computation functions.
@@ -161,7 +164,7 @@ public class NDArray
 		arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't add two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
 		for (int i=0;i < a1.getLength();i++)
 		{
 			float v1=a1.getFlat(i);
@@ -179,7 +182,7 @@ public class NDArray
 		arrOut.setGradientFunction(GradFunc.subtractionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't subtract two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
 		for (int i=0;i < a1.getLength();i++)
 		{
 			float v1=a1.getFlat(i);
@@ -197,7 +200,7 @@ public class NDArray
 		arrOut.setGradientFunction(GradFunc.multiplicationGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't multiply two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
 		for (int i=0;i < a1.getLength();i++)
 		{
 			float v1=a1.getFlat(i);
@@ -215,12 +218,30 @@ public class NDArray
 		arrOut.setGradientFunction(GradFunc.divisionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't devide two different length arrays (" + a1.getLength() + " != " + a2.getLength() + ")");
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
 		for (int i=0;i < a1.getLength();i++)
 		{
 			float v1=a1.getFlat(i);
 			float v2=a2.getFlat(i);
 			arrOut.setFlat(i, v1 / v2);
+		}
+		return arrOut;
+	}
+	public NDArray pow(NDArray exp)
+	{
+		int[] shp=getCommonShape(this.storage.shape, exp.storage.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=exp.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.powGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			float v1=a1.getFlat(i);
+			float v2=a2.getFlat(i);
+			arrOut.setFlat(i, (float)Math.pow(v1 , v2));
 		}
 		return arrOut;
 	}

@@ -15,21 +15,21 @@ public class Main
 		new Main().a();
 
 	}
-	void a()
+	void a() throws Exception
 	{
-
+		
 	}
 	void testBasicMathGrad() throws Exception
 	{
 		// gradient. adding methods ....
 		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
-		NDArray arr2 = NDArray.rand(new int[]{4,2}, true);
+		NDArray arr2 = NDArray.rand(new int[]{2, 2}, true);
 		// uncomment the line below to check for errors.
 		// arr2 = NDArray.rand(new int[]{4,2}, false);
 
 		// add,sub,mul,div gradients added.
 		// all basic operations have the same implementation.
-		NDArray res=arr1.div(arr2);
+		NDArray res=arr1.add(arr2);
 
 		System.out.println(arr1);
 		System.out.println(arr2);
