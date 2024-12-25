@@ -200,14 +200,14 @@ public class Storage
 //	}
 	public float getFloat(int...index) // this method works.
 	{
-		return getFloatInt(index, base.values);
+		return getFloatInt(index, false);
 	}
 	public float getFloatGrad(int...index)
 	{
-		return getFloatInt(index, base.grads);
+		return getFloatInt(index, true);
 	}
 	// internal method.
-	public float getFloatInt(int[] index,  float[] array)
+	public float getFloatInt(int[] index,  boolean grad)
 	{
 		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
 			throw new IndexOutOfBoundsException();
@@ -232,18 +232,23 @@ public class Storage
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
+		int ind=finalIndex % base.length;
+		if (grad)
+			return base.getGrad(ind);
+		else
+			return base.getData(ind);
+		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
 	public Storage setExact(int[]index, float val) // this method works.
 	{
-		return setExactInt(index, val, base.values, false);
+		return setExactInt(index, val, false, false);
 	}
 	public Storage setExactGrad(int[]index, float val)
 	{
-		return setExactInt(index, val, base.grads, true);
+		return setExactInt(index, val, true, true);
 	}
 	// internal method.
-	private Storage setExactInt(int[] index, float val, float[]array, boolean append)
+	private Storage setExactInt(int[] index, float val, boolean grad, boolean append)
 	{
 		// this method sets a value (one value) to the array.
 		// if the index is not match the shaoe of the storage. it fails.
@@ -271,10 +276,20 @@ public class Storage
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		if (append)
-			array[finalIndex % base.length] += val; // base.values[(offset + (finalIndex % length)) % base.length];
+		if (grad)
+		{
+			if (append)
+				base.addGrad(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+			else
+				base.setGrad(finalIndex % base.length , val);
+		}
 		else
-			array[finalIndex % base.length] = val;
+		{
+			if (append)
+				base.addData(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+			else
+				base.setData(finalIndex % base.length , val);
+		}
 		return this;
 	}
 	public Storage set(int[] shape, float val)
@@ -297,14 +312,14 @@ public class Storage
 	}
 	public float getFlat(int index)
 	{
-		return getFlatInt(index, base.values);
+		return getFlatInt(index, false);
 	}
 	public float getFlatGrad(int index)
 	{
-		return getFlatInt(index, base.grads);
+		return getFlatInt(index, true);
 	}
 	// internal method.
-	private float getFlatInt(int index, float[]array)
+	private float getFlatInt(int index, boolean grad)
 	{
 		/*
 		 // this implementation is costy(slow). find a better way if posible.
@@ -326,7 +341,7 @@ public class Storage
 		 in that case we can use one loop instead o two loops iterate through the same shape.
 		 // TO-DO merge loops to this method and getride of getFloat(indShape); call.
 		 */
-		return getFloatInt(shp, array);
+		return getFloatInt(shp, grad);
 		/*
 		 the code down below is just for access index without considering shape and broadcasting.
 		 */
@@ -355,7 +370,10 @@ public class Storage
 	public void zeroGrad()
 	{
 		if (base.requiresGrad)
-			Arrays.fill(base.grads, 0);
+		{
+			base.zeroGrad();
+			// Arrays.fill(base.grads, 0);
+		}
 	}
 	// public float getFlatNotBroadcasted(int index)
 	// {
@@ -549,13 +567,13 @@ public class Storage
 		// it returns the shape in this class, but the data is copied,
 		// if broadcasted shape found it handles data class accordinglly.
 		Storage str=new Storage(this.shape, base.requiresGrad);
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = getFlat(i);
-//		if (str.requiresGradient)
-//		{
-//			for (int i=0;i < str.base.grads.length;i++)
-//				str.base.grads[i] = getGradFlat(i);
-		//		}
+		for (int i=0;i < str.base.getArrayLength();i++)
+			str.base.setData(i, getFlat(i));
+		if (str.requiresGradient())
+		{
+			for (int i=0;i < str.base.getArrayLength();i++)
+				str.base.setGrad(i, getFlatGrad(i));
+		}
 		return str;
 	}
 	@Override

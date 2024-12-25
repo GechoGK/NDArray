@@ -17,7 +17,32 @@ public class Main
 	}
 	void a() throws Exception
 	{
-		
+		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
+		NDArray arr2 = NDArray.rand(new int[]{2, 2}, true);
+		NDArray arr3= NDArray.value(new int[]{1}, 100);
+
+		NDArray rs1=arr1.add(arr2);
+		NDArray rs2=arr3.add(arr2);
+
+		NDArray rs=rs1.add(rs2);
+
+		System.out.println(arr1);
+		System.out.println(arr2);
+		System.out.println(arr3);
+		System.out.println(rs1);
+		System.out.println("------- gradients -------");
+
+		System.out.println("== " + rs.gradientFunction);
+
+		tree(rs, "");
+
+	}
+	void tree(NDArray arr, String t)
+	{
+		System.out.println(t + arr);
+		if (arr.childs != null && arr.childs.size() != 0)
+			for (NDArray ar:arr.childs)
+				tree(ar, t.replace("_", " ").replace("|", " ") + "|_____ ");
 	}
 	void testBasicMathGrad() throws Exception
 	{
@@ -42,17 +67,17 @@ public class Main
 		System.out.println("-----");
 		// System.out.println(Arrays.toString(res.storage.base.grads));
 
-		System.out.println(Arrays.toString(res.storage.base.grads));
-		System.out.println(Arrays.toString(arr1.storage.base.grads));
-		System.out.println(Arrays.toString(arr2.storage.base.grads));
-		System.out.println("after backward method called.");
+//		System.out.println(Arrays.toString(res.storage.base.grads));
+//		System.out.println(Arrays.toString(arr1.storage.base.grads));
+//		System.out.println(Arrays.toString(arr2.storage.base.grads));
+//		System.out.println("after backward method called.");
 		res.setGrad(new int[]{}, 2); // set the result gradient to 2.
 		res.backward();
 
-		System.out.println(Arrays.toString(res.storage.base.grads));
-		System.out.println(Arrays.toString(arr1.storage.base.grads));
-		System.out.println(Arrays.toString(arr2.storage.base.grads));
-
+//		System.out.println(Arrays.toString(res.storage.base.grads));
+//		System.out.println(Arrays.toString(arr1.storage.base.grads));
+//		System.out.println(Arrays.toString(arr2.storage.base.grads));
+		
 	}
 	void testArrayMathBasic() throws Exception
 	{
@@ -70,7 +95,7 @@ public class Main
 		NDArray rs = a1.add(a2);
 		print(rs.storage);
 
-		// sibtraction.
+		// subtraction.
 		System.out.println("\nsubtraction result");
 		rs = a1.sub(a2);
 		print(rs.storage);

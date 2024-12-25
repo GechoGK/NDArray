@@ -285,7 +285,7 @@ public class TestP1
 
 		Storage str=new Storage(3, 2, 1);
 		fillRand(str);
-		System.out.println("== " + Arrays.toString(str.base.values));
+		// System.out.println("== " + Arrays.toString(str.base.values));
 		System.out.println(str);
 		print(str);
 		str.broadcast(2, 3, 2, 5);	
@@ -304,7 +304,7 @@ public class TestP1
 
 		Storage str=new Storage(3, 3, 1);
 		fillRand(str);
-		System.out.println(Arrays.toString(str.base.values));
+		// System.out.println(Arrays.toString(str.base.values));
 		System.out.println(str);
 		print(str);
 		System.out.println("=======");
@@ -315,7 +315,7 @@ public class TestP1
 		str = str.broadcast(3, 3, 3);
 		print(str);
 		System.out.println(str);
-		System.out.println(Arrays.toString(str.base.values));
+		// System.out.println(Arrays.toString(str.base.values));
 		for (int i=0;i < str.length;i++)
 			System.out.println(i + " = " + str.get(str.getShape(i)).getFlat(0));
 	}
@@ -374,10 +374,10 @@ public class TestP1
 		// works good.
 		Storage str=new Storage(3, 1, 2);
 		System.out.println(str);
-		System.out.println("== " + str.base.values.length);
+		// System.out.println("== " + str.base.values.length);
 		// fill data to the array.
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = i + 1;
+//		for (int i=0;i < str.base.values.length;i++)
+//			str.base.values[i] = i + 1;
 
 		str.broadcast(2, 3, 5, 2);
 		System.out.println(str);
@@ -434,8 +434,8 @@ public class TestP1
 	{
 		// works well. some optim needed.
 		Storage str=new Storage(4, 1, 2);
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.values.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println(str);
 		System.out.println("original data ");
 		// print(str);
@@ -466,11 +466,11 @@ public class TestP1
 		 */
 		Storage str=new Storage(3, 1, 2);
 		System.out.println("==== " + str.base.length);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println("++ before brodcast");
 		System.out.println(str);
-		System.out.println("== " + Arrays.toString(str.base.values));
+		// System.out.println("== " + Arrays.toString(str.base.values));
 		System.out.println();
 		for (int i=0;i < str.length;i++)
 			System.out.print(str.getFlat(i) + ", ");
@@ -533,8 +533,8 @@ public class TestP1
 	void StorageGetStr() throws Exception
 	{
 		Storage str=new Storage(2, 2, 3, 4);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println(str);
 		str = str.get(0);
 		System.out.println(str);
@@ -546,8 +546,8 @@ public class TestP1
 	void StorageGetFloat() throws Exception
 	{
 		Storage str=new Storage(2, 3, 4);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		str = str.get(1);
 		System.out.println(str);
 		System.out.println();

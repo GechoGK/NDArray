@@ -172,14 +172,14 @@ public class Util
 	}
 	public static void fill(Storage str, float val)
 	{
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = val;
+		for (int i=0;i < str.base.getArrayLength();i++)
+			str.base.setData(i, val);
 	}
 	public static void fillRand(Storage str)
 	{
 		Random r=new Random(123);
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = r.nextFloat();
+		for (int i=0;i < str.base.getArrayLength();i++)
+			str.base.setData(i, r.nextFloat());
 	}
 	public static boolean equals(int[] s1, int[] s2)
 	{

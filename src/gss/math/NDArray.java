@@ -6,18 +6,24 @@ import static gss.math.Util.*;
 
 public class NDArray
 {
+	/*
+	 Bug ---
+	 copy problem.
+	 when copy method called, it doesn't copy the gradientFunction and childs.
+	 so remember to include.
+	 */
 	public Storage storage;
-	public List<NDArray> childs; // =new ArrayList<>();
+	public List<NDArray> childs = new ArrayList<>();
 	public GradFunc gradientFunction;
 
 	public NDArray(Storage str)
 	{
 		this.storage = str;
 	}
-	public NDArray(int...shape)
-	{
-		this(shape, false);
-	}
+//	public NDArray(int...shape)
+//	{
+//		this(shape, false);
+//	}
 	public NDArray(int[]shape, boolean requireGrad)
 	{
 		this.storage = new Storage(shape, requireGrad);
@@ -31,7 +37,9 @@ public class NDArray
 	public NDArray(float[] data, boolean requireGrad)
 	{
 		this.storage = new Storage(new int[]{data.length}, requireGrad);
-		storage.base.values = Arrays.copyOf(data, data.length);
+		for (int i=0;i < data.length;i++)
+			storage.base.setData(i, data[i]); 
+		//storage.base.values = Arrays.copyOf(data, data.length);
 		if (requireGrad)
 			childs = new ArrayList<>();
 	}
@@ -42,7 +50,10 @@ public class NDArray
 	public NDArray(float[][] data, boolean requireGrad)
 	{
 		this.storage = new Storage(new int[]{data.length, data[0].length}, requireGrad);
-		storage.base.values = Util.flatten(data);
+		float[] dt=Util.flatten(data);
+		for (int i=0;i < data.length;i++)
+			storage.base.setData(i, dt[i]);
+		// storage.base.values = Util.flatten(data);
 		if (requireGrad)
 			childs = new ArrayList<>();
 	}
@@ -69,7 +80,7 @@ public class NDArray
 	// returns the new  NDArray from storage at index @index.
 	public NDArray get(int...index)
 	{
-		return new NDArray(storage.get(index));
+		return fromStorage(storage.get(index));
 	}
 	// return float value from data at index @index.
 	public float getExact(int...index)
@@ -130,16 +141,16 @@ public class NDArray
 	// broadcast into another shape.
 	public NDArray broadcast(int...newShape)
 	{
-		return new NDArray(storage.broadcast(newShape));
+		return fromStorage(storage.broadcast(newShape));
 	}
 	// view into another shape.
 	public NDArray view(int...newShape)
 	{
-		return new NDArray(storage.view(newShape));
+		return fromStorage(storage.view(newShape));
 	}
 	public NDArray reshape(int...newShape)
 	{
-		return new NDArray(storage.reshape(newShape));
+		return fromStorage(storage.reshape(newShape));
 	}
 	public void setGradientFunction(GradFunc func, NDArray...chlds)
 	{
@@ -260,7 +271,7 @@ public class NDArray
 	 ===  result = [4,3,2,6,3,6] ...
 
 	 3.  sh1  =        [1, 2, 3]
-	 ..  sh2  =     [5, 4, 2, 1] taking the broadcastable shape bdtween them.
+	 ..  sh2  =     [5, 4, 2, 1] taking the broadcastable shape between them.
 	 ..  newShape = [5, 4, 2, 3]
 	 // when computing a loop start from the end and down to 0.
 	 */
@@ -324,7 +335,9 @@ public class NDArray
 	public static NDArray value(int[]shape, float val, boolean requiresGrad)
 	{
 		NDArray arr=new NDArray(shape, requiresGrad);
-		Arrays.fill(arr.storage.base.values, val);
+		for (int i=0;i < arr.storage.base.getArrayLength();i++)
+			arr.storage.base.setData(i, val);
+		// Arrays.fill(arr.storage.base.values, val);
 		return arr;
 	}
 	public static NDArray fromArray(int[] shape, float...arr)
@@ -354,12 +367,19 @@ public class NDArray
 		else
 			r = new Random();
 		for (int i=0;i < arr.storage.length;i++)
-			arr.storage.base.values[i] = r.nextFloat();
+			arr.storage.base.setData(i, r.nextFloat());
+		return arr;
+	}
+	public NDArray fromStorage(Storage str)
+	{
+		NDArray arr=new NDArray(str);
+		arr.childs = this.childs;
+		arr.gradientFunction = this.gradientFunction;
 		return arr;
 	}
 	public NDArray copy()
 	{
-		return new NDArray(storage.copy());
+		return fromStorage(storage.copy());
 	}
 	@Override
 	public String toString()

@@ -60,8 +60,10 @@ public abstract class GradFunc
 			NDArray a2=childs[1]; // b
 			for (int i=0;i < host.getLength();i++)
 			{
-				a1.setFlatGrad(i, host.getFlatGrad(i));
-				a2.setFlatGrad(i, host.getFlatGrad(i));
+				if (a1.requiresGradient())
+					a1.setFlatGrad(i, host.getFlatGrad(i));
+				if (a2.requiresGradient())
+					a2.setFlatGrad(i, host.getFlatGrad(i));
 			}
 			// }
 			return null;
@@ -86,8 +88,10 @@ public abstract class GradFunc
 //				throw new RuntimeException("");
 			for (int i=0;i < host.getLength();i++)
 			{
-				a1.setFlatGrad(i, host.getFlatGrad(i));
-				a2.setFlatGrad(i, -host.getFlatGrad(i));
+				if (a1.requiresGradient())
+					a1.setFlatGrad(i, host.getFlatGrad(i));
+				if (a2.requiresGradient())
+					a2.setFlatGrad(i, -host.getFlatGrad(i));
 			}
 			return null;
 		}
@@ -97,9 +101,9 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			NDArray arr1=childs[0]; // first operand..
-			NDArray arr2=childs[1]; // second operand.
-			if (arr1.getLength() != arr2.getLength() && arr2.getLength() != host.getLength())
+			NDArray a1=childs[0]; // first operand..
+			NDArray a2=childs[1]; // second operand.
+			if (a1.getLength() != a2.getLength() && a2.getLength() != host.getLength())
 				throw new RuntimeException("");
 			/* for operand 1.
 			 a * b = c
@@ -114,8 +118,10 @@ public abstract class GradFunc
 			for (int i=0;i < host.getLength();i++)
 			{
 				float grad=host.getFlatGrad(i);
-				arr1.setFlatGrad(i, grad * arr2.getFlat(i));
-				arr2.setFlatGrad(i, grad * arr1.getFlat(i));
+				if (a1.requiresGradient())
+					a1.setFlatGrad(i, grad * a2.getFlat(i));
+				if (a2.requiresGradient())
+					a2.setFlatGrad(i, grad * a1.getFlat(i));
 			}
 			return null;
 		}
@@ -125,10 +131,10 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			NDArray arr1=childs[0]; // == a  first operand.
-			NDArray arr2=childs[1]; // == b  second operand.
+			NDArray a1=childs[0]; // == a  first operand.
+			NDArray a2=childs[1]; // == b  second operand.
 			// host  ==  c
-			if (arr1.getLength() != arr2.getLength() && arr2.getLength() != host.getLength())
+			if (a1.getLength() != a2.getLength() && a2.getLength() != host.getLength())
 				throw new RuntimeException("");
 			/* for operand 1.
 			 a / b = c
@@ -144,9 +150,11 @@ public abstract class GradFunc
 			for (int i=0;i < host.getLength();i++)
 			{
 				float grad = host.getFlatGrad(i); // c
-				float bVal = arr2.getFlat(i);
-				arr1.setFlatGrad(i, grad * 1 / bVal);
-				arr2.setFlatGrad(i, -grad * arr1.getFlat(i) / (bVal * bVal));
+				float bVal = a2.getFlat(i);
+				if (a1.requiresGradient())
+					a1.setFlatGrad(i, grad * 1 / bVal);
+				if (a2.requiresGradient())
+					a2.setFlatGrad(i, -grad * a1.getFlat(i) / (bVal * bVal));
 			}
 			return null;
 		}
@@ -172,8 +180,10 @@ public abstract class GradFunc
 			{
 				float a=a1.getFlat(i); // a.data
 				float b=a2.getFlat(i); // b.data
-				a1.setFlatGrad(i, host.getFlatGrad(i) * b * (float)Math.pow(a, b - 1));
-				a2.setFlatGrad(i, host.getFlatGrad(i) * (float)Math.pow(a, b) * (float)Math.log(a));
+				if (a1.requiresGradient())
+					a1.setFlatGrad(i, host.getFlatGrad(i) * b * (float)Math.pow(a, b - 1));
+				if (a2.requiresGradient())
+					a2.setFlatGrad(i, host.getFlatGrad(i) * (float)Math.pow(a, b) * (float)Math.log(a));
 			}
 			return null;
 		}

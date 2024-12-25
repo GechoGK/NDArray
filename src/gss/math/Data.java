@@ -4,16 +4,16 @@ import java.util.*;
 
 public class Data
 {
-	public float[] values;
-	public float[] grads;
+	private float[] values;
+	private float[] grads;
 	public int[] shape; // this shape can be changed using view method in Storage class.
 	public int length;
 	public int dim;
 	public boolean requiresGrad;
 
-	public Data(int[]shape)
+	public Data(int[]sh)
 	{
-		this(shape, false);
+		this(sh, false);
 	}
 	public Data(int[]sh,  boolean requireGrad)
 	{
@@ -63,5 +63,37 @@ public class Data
 		requiresGrad = false;
 		grads = null;
 		return this;
+	}
+	public void zeroGrad()
+	{
+		Arrays.fill(grads, 0);
+	}
+	public int getArrayLength()
+	{
+		return values.length;
+	}
+	public float getData(int ind)
+	{
+		return values[ind];
+	}
+	public void setData(int ind, float val)
+	{
+		values[ind] = val;
+	}
+	public void addData(int ind, float val)
+	{
+		values[ind] += val;
+	}
+	public float getGrad(int ind)
+	{
+		return grads[ind];
+	}
+	public void setGrad(int ind, float val)
+	{
+		grads[ind] = val;
+	}
+	public void addGrad(int ind, float val)
+	{
+		grads[ind] += val;
 	}
 }
