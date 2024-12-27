@@ -188,7 +188,7 @@ public abstract class GradFunc
 			return null;
 		}
 	};
-	public static GradFunc stepGradient = new GradFunc(){
+	public static GradFunc stepGradient = new GradFunc("step gradient"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{

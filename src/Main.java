@@ -42,15 +42,15 @@ public class Main
 		rs.backward();
 		System.out.println("result grad");
 		printGrad(rs.storage);
-		System.out.println("rs1 & rs2 grad");
+		System.out.println("rs1 & rs2 grad == rs1");
 		printGrad(rs1.storage);
-		System.out.println("-------");
+		System.out.println("------- == rs2");
 		printGrad(rs2.storage);
-		System.out.println("--- arr's gradient");
+		System.out.println("--- arr's gradient  == arr1");
 		printGrad(arr1.storage);
-		System.out.println("----");
+		System.out.println("---- == arr2");
 		printGrad(arr2.storage);
-		System.out.println("----");
+		System.out.println("---- == arr3");
 		printGrad(arr3.storage);
 
 	}

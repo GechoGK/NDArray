@@ -157,11 +157,15 @@ public class NDArray
 	// view into another shape.
 	public NDArray view(int...newShape)
 	{
-		return fromStorage(storage.view(newShape));
+		NDArray arr = fromStorage(storage.view(newShape));
+		arr.setGradientFunction(GradFunc.stepGradient, this);
+		return arr;
 	}
 	public NDArray reshape(int...newShape)
 	{
-		return fromStorage(storage.reshape(newShape));
+		NDArray arr = fromStorage(storage.reshape(newShape));
+		arr.setGradientFunction(GradFunc.stepGradient, this);
+		return arr;
 	}
 	public void setGradientFunction(GradFunc func, NDArray...chlds)
 	{
@@ -174,8 +178,8 @@ public class NDArray
 	{
 		if (gradientFunction == null)
 			return;
-		System.out.println("backward " + this.storage);
 		// throw new RuntimeException("gradient function not found = " + gradientFunction);
+		// System.out.println("backward " + gradientFunction);
 		gradientFunction.backward(this, childs.toArray(new NDArray[0]));
 		for (NDArray arr:childs)
 			arr.backward();

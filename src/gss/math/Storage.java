@@ -54,6 +54,18 @@ public class Storage
 	 setGrad(...);      ✓  
 
 	 */
+	/*
+	 bug ---
+	 >>> reshape doesn't work
+	 see
+	 new TestP1().testReshape();
+	 >>> view doesn't work
+	 see
+	 new TestP1().testView();
+	 // problem solved.
+	 the problem is where the constructor initialized with baseShape,
+	 for view and reshape pass null, at argument baseShape. ✓
+	 */
 	public Data base;
 	public int[] shape;
 	public int[] baseShape;
@@ -536,7 +548,7 @@ public class Storage
 	{
 		// have problem when storage is subdim
 		// the problem is when base.setShape(int[]) is called.
-		// it overwrite the old shape, and also the length of base(data) wil be cliped.
+		// it overwrite the old shape, and also the length of base(data) is cliped.
 
 		// !!!
 		// broadcastable shape not allowed.
@@ -564,19 +576,20 @@ public class Storage
 		 Storage str2=str.view(12); // 2dim aray changes into 1dim array. ✓
 		 ----------
 		 Storage str=new Storage(2,3,4);
-		 str=str.get(1); // len = 12 off = 12, but when we view occurs the offset will chnage into 0, becauae the base.shaoe also chnges (not modified accordinglly).
+		 str=str.get(1); // len = 12 off = 12, but when we view occurs the offset will chnage into 0, because the base.shape also chnges (not modified accordinglly).
 		 Storage str2=str.view(12); // trying to reduce dim. 
 		 // str2.base.shape == [12] because setShape changes all.
 		 // expected = [2,12] // the changeShape can selectivelly do that,
 		 // although the implementation of chsngeShape can't produce this output instead.
 		 // changeShape output = [2,3,12] // which is wrong.
+		 ----^---- problem fixed.
 		 */
-		Storage str=new Storage(data, newShape, offset, broadcasted, baseShape);
+		Storage str=new Storage(data, newShape, offset, broadcasted, null);
 		return str;
 	}
 	public Storage reshape(int...newShape)
 	{
-		// !!! the returnin calue must be a new copy of storage.
+		// !!! the returning value must be a new copy of storage.
 		// TO-DO  fix return this. instead create a new Storage(...);
 
 		// try to broadcast if posible, if not copy the array.
@@ -589,13 +602,14 @@ public class Storage
 			// System.out.println("reshaping broadcasted shape");
 			Storage str=copy();
 			str.base.setShape(newShape);
-			str.init(str.base, newShape, str.offset, baseShape); // maybe a problem offset should be 0. because the new array is being created. or it is subdim so offset is neded.
+			str.init(str.base, newShape, str.offset, null); // maybe a problem offset should be 0. because the new array is being created. or it is subdim so offset is neded.
 			return str;
 		}
-
-		base.changeShape(newShape, this.shape); 
-		init(base, newShape, offset, baseShape);
-		return this;
+//		// Storage str=copy();
+//		base.changeShape(newShape, this.shape); 
+//		init(base, newShape, offset, null);
+//		return this;
+		return view(newShape);
 	}
 	public Storage copy()
 	{
@@ -608,6 +622,7 @@ public class Storage
 		{
 			for (int i=0;i < str.base.getArrayLength();i++)
 				str.base.setGrad(i, getFlatGrad(i));
+			// include gradientTracker (Value) class copy.
 		}
 		return str;
 	}

@@ -172,6 +172,11 @@ public class Util
 	}
 	public static void printGrad(Storage str)
 	{
+		if (!str.requiresGradient())
+		{
+			System.out.println("null gradient");
+			return;
+		}
 		if (str.dim == 1)
 		{
 			System.out.print("[");
@@ -205,7 +210,7 @@ public class Util
 	}
 	public static void fillRand(Storage str)
 	{
-		Random r=new Random(123);
+		Random r=new Random(128);
 		for (int i=0;i < str.base.getArrayLength();i++)
 			str.base.setData(i, r.nextFloat());
 	}
