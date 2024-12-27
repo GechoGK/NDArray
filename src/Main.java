@@ -17,6 +17,12 @@ public class Main
 	}
 	void a() throws Exception
 	{
+
+		gradTet();
+
+	}
+	void gradTet() throws Exception
+	{
 		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
 		NDArray arr2 = NDArray.rand(new int[]{2, 2}, true);
 		NDArray arr3= NDArray.value(new int[]{1}, 100);
@@ -32,9 +38,20 @@ public class Main
 		System.out.println(rs1);
 		System.out.println("------- gradients -------");
 
-		System.out.println("== " + rs.gradientFunction);
-
-		tree(rs, "");
+		rs.setGrad(new int[]{}, 2);
+		rs.backward();
+		System.out.println("result grad");
+		printGrad(rs.storage);
+		System.out.println("rs1 & rs2 grad");
+		printGrad(rs1.storage);
+		System.out.println("-------");
+		printGrad(rs2.storage);
+		System.out.println("--- arr's gradient");
+		printGrad(arr1.storage);
+		System.out.println("----");
+		printGrad(arr2.storage);
+		System.out.println("----");
+		printGrad(arr3.storage);
 
 	}
 	void tree(NDArray arr, String t)
@@ -77,7 +94,7 @@ public class Main
 //		System.out.println(Arrays.toString(res.storage.base.grads));
 //		System.out.println(Arrays.toString(arr1.storage.base.grads));
 //		System.out.println(Arrays.toString(arr2.storage.base.grads));
-		
+
 	}
 	void testArrayMathBasic() throws Exception
 	{

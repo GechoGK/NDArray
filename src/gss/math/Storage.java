@@ -239,6 +239,35 @@ public class Storage
 			return base.getData(ind);
 		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
+	public Value getValue(int...index)
+	{
+		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+			throw new IndexOutOfBoundsException();
+		// if (index.length < shape.length)
+		// {
+		// if the index length is less than the shape length. we fill the rest with (0). eg.
+		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		// todo.
+		// }
+		int newPos=0;
+		// the loop have error when we use index.length < shape.length, so use backward looping.
+		for (int i=0;i < index.length;i++)
+		{
+			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+			// the big issue for 2 days;
+			// check if the index at i is not out of bound.
+			if (shapeInd >= shape[i])
+				throw new IndexOutOfBoundsException();
+			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		}
+		int finalIndex=(offset + newPos);
+		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		// System.out.print("--" + finalIndex + "--" + offset + "--");
+		int ind=finalIndex % base.length;
+		return base.getValue(ind);
+		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
+	}
 	public Storage setExact(int[]index, float val) // this method works.
 	{
 		return setExactInt(index, val, false, false);
@@ -317,6 +346,12 @@ public class Storage
 	public float getFlatGrad(int index)
 	{
 		return getFlatInt(index, true);
+	}
+	// use this method to calulate automatic gradient.
+	public Value getFlatValue(int index)
+	{
+		int[] sh=getShape(index);
+		return getValue(sh);
 	}
 	// internal method.
 	private float getFlatInt(int index, boolean grad)

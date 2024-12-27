@@ -92,6 +92,15 @@ public class NDArray
 	{
 		return storage.getFlat(index);
 	}
+	// get Value.
+	public Value getValue(int...index)
+	{
+		return storage.getValue(index);
+	}
+	public Value getFlatValue(int ind)
+	{
+		return storage.getFlatValue(ind);
+	}
 	// get Gradient.
 	public float getExactGrad(int...index)
 	{
@@ -141,7 +150,9 @@ public class NDArray
 	// broadcast into another shape.
 	public NDArray broadcast(int...newShape)
 	{
-		return fromStorage(storage.broadcast(newShape));
+		NDArray str = fromStorage(storage.broadcast(newShape));
+		str.setGradientFunction(GradFunc.stepGradient, this);
+		return str;
 	}
 	// view into another shape.
 	public NDArray view(int...newShape)
@@ -155,15 +166,19 @@ public class NDArray
 	public void setGradientFunction(GradFunc func, NDArray...chlds)
 	{
 		this.gradientFunction = func;
+		this.childs.clear();
 		for (NDArray ar:chlds)
 			this.childs.add(ar);
 	}
 	public void backward()
 	{
 		if (gradientFunction == null)
-			throw new RuntimeException("gradient function not found = " + gradientFunction);
-
+			return;
+		System.out.println("backward " + this.storage);
+		// throw new RuntimeException("gradient function not found = " + gradientFunction);
 		gradientFunction.backward(this, childs.toArray(new NDArray[0]));
+		for (NDArray arr:childs)
+			arr.backward();
 	}
 	// n-dimension array computation functions.
 	public NDArray add(NDArray other)
@@ -296,6 +311,7 @@ public class NDArray
 		return newShape1;
 	}
 	// static methods.
+	// zero new array
 	public static NDArray zeros(int...shape)
 	{
 		return value(shape, 0, false);
@@ -312,6 +328,7 @@ public class NDArray
 	{
 		return value(arr.getShape(), 0, requiresGrad);
 	}
+	// one new array.
 	public static NDArray ones(int...shape)
 	{
 		return value(shape, 1, false);
@@ -328,6 +345,7 @@ public class NDArray
 	{
 		return value(arr.getShape(), 1, requiresGrad);
 	}
+	// array with custom value.
 	public static NDArray value(int[]shape, float val)
 	{
 		return value(shape, val, false);
@@ -345,7 +363,7 @@ public class NDArray
 		throw new RuntimeException("not implemented.");
 		// return null;
 	}
-	// the seed value can be empty.
+	// the seed value can be -1.
 	public static NDArray rand(int...shape)
 	{
 		return rand(shape, false, -1);
@@ -370,10 +388,11 @@ public class NDArray
 			arr.storage.base.setData(i, r.nextFloat());
 		return arr;
 	}
+	// new array from alrrady prepared storage.
 	public NDArray fromStorage(Storage str)
 	{
 		NDArray arr=new NDArray(str);
-		arr.childs = this.childs;
+		arr.childs.addAll(this.childs);
 		arr.gradientFunction = this.gradientFunction;
 		return arr;
 	}

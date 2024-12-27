@@ -170,6 +170,34 @@ public class Util
 				System.out.println();
 			}
 	}
+	public static void printGrad(Storage str)
+	{
+		if (str.dim == 1)
+		{
+			System.out.print("[");
+			for (int i=0;i < str.shape[0];i++)
+				System.out.print(str.getFloatGrad(i) + ", ");
+			System.out.println("]");
+		}
+		else if (str.dim == 2)
+		{
+			System.out.print("[");
+			for (int j=0;j < str.shape[0];j++)
+			{
+				System.out.print((j == 0 ?"": " ") + "[");
+				for (int k=0;k < str.shape[1];k++)
+					System.out.print((k == 0 ?" ": ", ") + str.getFloatGrad(j, k));
+				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
+			}
+			System.out.println("]");
+		}
+		else
+			for (int i=0;i < str.shape[0];i++)
+			{
+				printGrad(str.get(i));
+				System.out.println();
+			}
+	}
 	public static void fill(Storage str, float val)
 	{
 		for (int i=0;i < str.base.getArrayLength();i++)

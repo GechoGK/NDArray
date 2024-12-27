@@ -5,7 +5,8 @@ import java.util.*;
 public class Data
 {
 	private float[] values;
-	private float[] grads;
+	private float[] grads; // not null if requireGradient is true.
+	private Value[] gradTracks; // not null if requireGradientis true.
 	public int[] shape; // this shape can be changed using view method in Storage class.
 	public int length;
 	public int dim;
@@ -21,9 +22,17 @@ public class Data
 		setShape(sh);
 		this.values = new float[length];
 		if (requireGrad)
-			this.grads  = new float[length];
+		{
+			this.grads  = new float[values.length];
+			this.gradTracks = new Value[grads.length];
+			for (int i=0;i < gradTracks.length;i++)
+				gradTracks[i] = new Value(this, i);
+		}
 		else
+		{
 			this.grads = null;
+			this.gradTracks = null;
+		}
 	}
 	public void setShape(int[] sh)
 	{
@@ -49,6 +58,7 @@ public class Data
 		Data d=new Data(newShape, requiresGrad);
 		d.values = values;
 		d.grads = grads;
+		d.gradTracks = gradTracks;
 		// d.setShape(newShape);
 		return d;
 	}
@@ -56,12 +66,16 @@ public class Data
 	{
 		requiresGrad = true;
 		grads = new float[values.length];
+		gradTracks = new Value[grads.length];
+		for (int i=0;i < gradTracks.length;i++)
+			gradTracks[i] = new Value(this, i);
 		return this;
 	}
 	public Data disableGradient()
 	{
 		requiresGrad = false;
 		grads = null;
+		gradTracks = null;
 		return this;
 	}
 	public void zeroGrad()
@@ -87,13 +101,20 @@ public class Data
 	public float getGrad(int ind)
 	{
 		return grads[ind];
+		// return values[ind].grad;
 	}
 	public void setGrad(int ind, float val)
 	{
 		grads[ind] = val;
+		// values[ind].grad = val;
 	}
 	public void addGrad(int ind, float val)
 	{
 		grads[ind] += val;
+		// values[ind].grad += val;
+	}
+	public Value getValue(int ind)
+	{
+		return gradTracks[ind];
 	}
 }
