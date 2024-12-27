@@ -58,11 +58,18 @@ public class TestP1
 		System.out.println("---------");
 		Storage strd1= str.get(1);
 		print(strd1);
+		System.out.print("== ");
+		for (int i=0;i < strd1.length;i++)
+			System.out.print(strd1.getFlat(i) + ", ");
+		System.out.println();
 		Storage str2=strd1.view(strd1.length);
 		System.out.println(str2);
 		System.out.println(str2.length);
 		print(str2);
-
+		System.out.print("== ");
+		for (int i=0;i < str2.length;i++)
+			System.out.print(str2.getFlat(i) + ", ");
+		System.out.println();
 		// strd1 and str2  should be equal, but they are not.
 
 	}
@@ -76,8 +83,11 @@ public class TestP1
 		System.out.println(str);
 		print(str);
 		System.out.println("-----");
-		str = str.broadcast(4, 3, 4, 2);
-		str = str.get(2, 1);
+		str = str.broadcast(2, 3, 4, 2);
+		System.out.println(str);
+		print(str);
+		System.out.println("----");
+		str = str.get(1, 2);
 		System.out.println(str);
 		print(str);
 
@@ -87,7 +97,7 @@ public class TestP1
 
 
 	}
-	void testView() throws Exception
+	void testOverlap2() throws Exception
 	{
 		int[] sh={1,2,3,4,5};
 		int[] sh2={1,1};
@@ -96,15 +106,21 @@ public class TestP1
 
 		System.out.println(Arrays.toString(sh));
 		System.out.println(Arrays.toString(sh2));
+	}
+	void testView() throws Exception
+	{
+		Storage str2=new Storage(3, 1, 2);
 
-		Storage str=new Storage(3, 1, 2);
-		str = str.get(2);
+		Storage str = str2.get(2);
 		fillRand(str);
 		System.out.println(str);
 		print(str);
 		str = str.view(2, 1);
 		System.out.println(str);
 		print(str);
+		System.out.println("----");
+		System.out.println(str2);
+		print(str2);
 	}
 	void testCopyBroadcast() throws Exception
 	{
@@ -285,7 +301,7 @@ public class TestP1
 
 		Storage str=new Storage(3, 2, 1);
 		fillRand(str);
-		System.out.println("== " + Arrays.toString(str.base.values));
+		// System.out.println("== " + Arrays.toString(str.base.values));
 		System.out.println(str);
 		print(str);
 		str.broadcast(2, 3, 2, 5);	
@@ -304,7 +320,7 @@ public class TestP1
 
 		Storage str=new Storage(3, 3, 1);
 		fillRand(str);
-		System.out.println(Arrays.toString(str.base.values));
+		// System.out.println(Arrays.toString(str.base.values));
 		System.out.println(str);
 		print(str);
 		System.out.println("=======");
@@ -315,7 +331,7 @@ public class TestP1
 		str = str.broadcast(3, 3, 3);
 		print(str);
 		System.out.println(str);
-		System.out.println(Arrays.toString(str.base.values));
+		// System.out.println(Arrays.toString(str.base.values));
 		for (int i=0;i < str.length;i++)
 			System.out.println(i + " = " + str.get(str.getShape(i)).getFlat(0));
 	}
@@ -374,10 +390,10 @@ public class TestP1
 		// works good.
 		Storage str=new Storage(3, 1, 2);
 		System.out.println(str);
-		System.out.println("== " + str.base.values.length);
+		// System.out.println("== " + str.base.values.length);
 		// fill data to the array.
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = i + 1;
+//		for (int i=0;i < str.base.values.length;i++)
+//			str.base.values[i] = i + 1;
 
 		str.broadcast(2, 3, 5, 2);
 		System.out.println(str);
@@ -434,8 +450,8 @@ public class TestP1
 	{
 		// works well. some optim needed.
 		Storage str=new Storage(4, 1, 2);
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.values.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println(str);
 		System.out.println("original data ");
 		// print(str);
@@ -466,11 +482,11 @@ public class TestP1
 		 */
 		Storage str=new Storage(3, 1, 2);
 		System.out.println("==== " + str.base.length);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println("++ before brodcast");
 		System.out.println(str);
-		System.out.println("== " + Arrays.toString(str.base.values));
+		// System.out.println("== " + Arrays.toString(str.base.values));
 		System.out.println();
 		for (int i=0;i < str.length;i++)
 			System.out.print(str.getFlat(i) + ", ");
@@ -533,8 +549,8 @@ public class TestP1
 	void StorageGetStr() throws Exception
 	{
 		Storage str=new Storage(2, 2, 3, 4);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		System.out.println(str);
 		str = str.get(0);
 		System.out.println(str);
@@ -546,8 +562,8 @@ public class TestP1
 	void StorageGetFloat() throws Exception
 	{
 		Storage str=new Storage(2, 3, 4);
-		for (int i=0;i < str.base.length;i++)
-			str.base.values[i] = i + 1;
+		// for (int i=0;i < str.base.length;i++)
+		// 	str.base.values[i] = i + 1;
 		str = str.get(1);
 		System.out.println(str);
 		System.out.println();

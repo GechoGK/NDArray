@@ -8,7 +8,7 @@ public class Storage
 {
 	/*
 	 broadcast, reshape, and view needs modifiction.
-	 all of them return the current storage by altering to a soecific need.
+	 all of them return the current storage by altering to a specific need.
 	 especually (view), also changes the baseShape.
 	 .:. the methods need to return the copy of the storage. inorder to preserve the original one.
 	 in that case we can retrive keep the base shape untouched.
@@ -43,6 +43,29 @@ public class Storage
 	 // TO-DO fix later.
 	 // solved by passing the base shape as an argument to the constructor.
 	 */
+	// adding gradient track.
+	/*
+	 modify -- copy. to adjust the graidient data aswell.
+	 // new methods needed. for gradient.
+	 getFloatGrad(...); ✓
+	 getFlatGrad(...);  ✓
+	 setExactGrad(...); ✓
+	 setFlatGrad(...);  ✓
+	 setGrad(...);      ✓  
+
+	 */
+	/*
+	 bug ---
+	 >>> reshape doesn't work
+	 see
+	 new TestP1().testReshape();
+	 >>> view doesn't work
+	 see
+	 new TestP1().testView();
+	 // problem solved.
+	 the problem is where the constructor initialized with baseShape,
+	 for view and reshape pass null, at argument baseShape. ✓
+	 */
 	public Data base;
 	public int[] shape;
 	public int[] baseShape;
@@ -56,9 +79,14 @@ public class Storage
 	{
 		this(new Data(shape), shape, 0, false, null);
 	}
-	public Storage(Data data, int[]shape, int offset, boolean isBroadcasted, int[]bsShape)
+	public Storage(int[]shape, boolean requireGrad)
+	{
+		this(new Data(shape, requireGrad), shape, 0, false, null);
+	}
+	private Storage(Data data, int[]shape, int offset, boolean isBroadcasted, int[]bsShape)
 	{
 		this.broadcasted = isBroadcasted;
+		// this.requiresGradient = requiresGrad;
 		init(data, shape, offset, bsShape);
 	}
 	private void init(Data dt, int[]sh, int off, int[]bsShape)
@@ -184,6 +212,15 @@ public class Storage
 //	}
 	public float getFloat(int...index) // this method works.
 	{
+		return getFloatInt(index, false);
+	}
+	public float getFloatGrad(int...index)
+	{
+		return getFloatInt(index, true);
+	}
+	// internal method.
+	public float getFloatInt(int[] index,  boolean grad)
+	{
 		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
 			throw new IndexOutOfBoundsException();
 		// if (index.length < shape.length)
@@ -207,9 +244,52 @@ public class Storage
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		return base.values[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
+		int ind=finalIndex % base.length;
+		if (grad)
+			return base.getGrad(ind);
+		else
+			return base.getData(ind);
+		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
+	}
+	public Value getValue(int...index)
+	{
+		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+			throw new IndexOutOfBoundsException();
+		// if (index.length < shape.length)
+		// {
+		// if the index length is less than the shape length. we fill the rest with (0). eg.
+		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		// todo.
+		// }
+		int newPos=0;
+		// the loop have error when we use index.length < shape.length, so use backward looping.
+		for (int i=0;i < index.length;i++)
+		{
+			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+			// the big issue for 2 days;
+			// check if the index at i is not out of bound.
+			if (shapeInd >= shape[i])
+				throw new IndexOutOfBoundsException();
+			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		}
+		int finalIndex=(offset + newPos);
+		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		// System.out.print("--" + finalIndex + "--" + offset + "--");
+		int ind=finalIndex % base.length;
+		return base.getValue(ind);
+		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
 	public Storage setExact(int[]index, float val) // this method works.
+	{
+		return setExactInt(index, val, false, false);
+	}
+	public Storage setExactGrad(int[]index, float val)
+	{
+		return setExactInt(index, val, true, true);
+	}
+	// internal method.
+	private Storage setExactInt(int[] index, float val, boolean grad, boolean append)
 	{
 		// this method sets a value (one value) to the array.
 		// if the index is not match the shaoe of the storage. it fails.
@@ -237,7 +317,20 @@ public class Storage
 		int finalIndex=(offset + newPos);
 		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
 		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		base.values[finalIndex % base.length] = val; // base.values[(offset + (finalIndex % length)) % base.length];
+		if (grad)
+		{
+			if (append)
+				base.addGrad(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+			else
+				base.setGrad(finalIndex % base.length , val);
+		}
+		else
+		{
+			if (append)
+				base.addData(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+			else
+				base.setData(finalIndex % base.length , val);
+		}
 		return this;
 	}
 	public Storage set(int[] shape, float val)
@@ -249,10 +342,34 @@ public class Storage
 		}
 		return this;
 	}
+	public Storage setGrad(int[] shape, float val)
+	{
+		Storage str=get(shape);
+		for (int i=0;i < str.length;i++)
+		{
+			str.setFlatGrad(i, val);
+		}
+		return this;
+	}
 	public float getFlat(int index)
 	{
+		return getFlatInt(index, false);
+	}
+	public float getFlatGrad(int index)
+	{
+		return getFlatInt(index, true);
+	}
+	// use this method to calulate automatic gradient.
+	public Value getFlatValue(int index)
+	{
+		int[] sh=getShape(index);
+		return getValue(sh);
+	}
+	// internal method.
+	private float getFlatInt(int index, boolean grad)
+	{
 		/*
-		 // this implementation is costy(slow) find a better way.
+		 // this implementation is costy(slow). find a better way if posible.
 		 -- one thing we can do is we can check whether the shape is brodcasted or not.
 		 if it is broadcasted then
 		 ----- we stick with this implementation.
@@ -271,7 +388,7 @@ public class Storage
 		 in that case we can use one loop instead o two loops iterate through the same shape.
 		 // TO-DO merge loops to this method and getride of getFloat(indShape); call.
 		 */
-		return getFloat(shp);
+		return getFloatInt(shp, grad);
 		/*
 		 the code down below is just for access index without considering shape and broadcasting.
 		 */
@@ -290,6 +407,20 @@ public class Storage
 		int[] sh=getShape(index);
 		setExact(sh, val);
 		return this;
+	}
+	public Storage setFlatGrad(int index, float val)
+	{
+		int[] sh=getShape(index);
+		setExactGrad(sh, val);
+		return this;
+	}
+	public void zeroGrad()
+	{
+		if (base.requiresGrad)
+		{
+			base.zeroGrad();
+			// Arrays.fill(base.grads, 0);
+		}
 	}
 	// public float getFlatNotBroadcasted(int index)
 	// {
@@ -337,7 +468,7 @@ public class Storage
 //		prepare(shape, offset);
 //		broadcasted = true;
 //		return this; // for now it changes itself, but for feature return the copy of Storage with the same data.
-//	}
+	//	}
 	public Storage broadcast(int...newShape)
 	{
 		// !!! problem position reversed.
@@ -363,6 +494,18 @@ public class Storage
 		return true;
 	}
 	// methods to implement.
+	public boolean requiresGradient()
+	{
+		return base.requiresGrad;
+	}
+	public void enbaleGradient()
+	{
+		base.enableGradient();
+	}
+	public void disableGradient()
+	{
+		base.disableGradient();
+	}
 	public boolean isBroadcastedShape()
 	{
 
@@ -400,12 +543,12 @@ public class Storage
 //		base.setShape(newShape); // problem.
 //		init(base, newShape, offset);
 //		return this;
-//	}
+	//	}
 	public Storage view(int...newShape)
 	{
 		// have problem when storage is subdim
 		// the problem is when base.setShape(int[]) is called.
-		// it overwrite the old shape, and also the length of base(data) wil be cliped.
+		// it overwrite the old shape, and also the length of base(data) is cliped.
 
 		// !!!
 		// broadcastable shape not allowed.
@@ -433,18 +576,22 @@ public class Storage
 		 Storage str2=str.view(12); // 2dim aray changes into 1dim array. ✓
 		 ----------
 		 Storage str=new Storage(2,3,4);
-		 str=str.get(1); // len = 12 off = 12, but when we view occurs the offset will chnage into 0, becauae the base.shaoe also chnges (not modified accordinglly).
+		 str=str.get(1); // len = 12 off = 12, but when we view occurs the offset will chnage into 0, because the base.shape also chnges (not modified accordinglly).
 		 Storage str2=str.view(12); // trying to reduce dim. 
 		 // str2.base.shape == [12] because setShape changes all.
 		 // expected = [2,12] // the changeShape can selectivelly do that,
 		 // although the implementation of chsngeShape can't produce this output instead.
 		 // changeShape output = [2,3,12] // which is wrong.
+		 ----^---- problem fixed.
 		 */
-		Storage str=new Storage(data, newShape, offset, broadcasted, baseShape);
+		Storage str=new Storage(data, newShape, offset, broadcasted, null);
 		return str;
 	}
 	public Storage reshape(int...newShape)
 	{
+		// !!! the returning value must be a new copy of storage.
+		// TO-DO  fix return this. instead create a new Storage(...);
+
 		// try to broadcast if posible, if not copy the array.
 		// reshape chnges the shape, also the underlaying data shape.
 		int len=length(newShape);
@@ -455,25 +602,33 @@ public class Storage
 			// System.out.println("reshaping broadcasted shape");
 			Storage str=copy();
 			str.base.setShape(newShape);
-			str.init(str.base, newShape, str.offset, baseShape); // maybe a problem offset should be 0. because the new array is being created. or it is subdim so offset is neded.
+			str.init(str.base, newShape, str.offset, null); // maybe a problem offset should be 0. because the new array is being created. or it is subdim so offset is neded.
 			return str;
 		}
-		base.changeShape(newShape, this.shape); 
-		init(base, newShape, offset, baseShape);
-		return this;
+//		// Storage str=copy();
+//		base.changeShape(newShape, this.shape); 
+//		init(base, newShape, offset, null);
+//		return this;
+		return view(newShape);
 	}
 	public Storage copy()
 	{
 		// it returns the shape in this class, but the data is copied,
 		// if broadcasted shape found it handles data class accordinglly.
-		Storage str=new Storage(this.shape);
-		for (int i=0;i < str.base.values.length;i++)
-			str.base.values[i] = getFlat(i);
+		Storage str=new Storage(this.shape, base.requiresGrad);
+		for (int i=0;i < str.base.getArrayLength();i++)
+			str.base.setData(i, getFlat(i));
+		if (str.requiresGradient())
+		{
+			for (int i=0;i < str.base.getArrayLength();i++)
+				str.base.setGrad(i, getFlatGrad(i));
+			// include gradientTracker (Value) class copy.
+		}
 		return str;
 	}
 	@Override
 	public String toString()
 	{
-		return(broadcasted ?"Broadcasted ": "") + "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape " + Arrays.toString(baseShape) + ", offset :" + offset + ")";
+		return(broadcasted ?"Broadcasted ": "") + "storage(dim :" + dim + ", length :" + length + ", shape :" + Arrays.toString(shape) + ", baseShape " + Arrays.toString(baseShape) + ", offset :" + offset + ") reuqireGrad = " + base.requiresGrad + ".";
 	}
 }
