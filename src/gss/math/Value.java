@@ -4,17 +4,10 @@ import java.util.*;
 
 public class Value
 {
-	public Data data;
-	public int index;
 	public float val,grad;
 	public ValueGradFunc func;
 	public List<Value> args=new ArrayList<>();
 
-	public Value(Data d, int ind)
-	{
-		this.data = d;
-		this.index = ind;
-	}
 	public Value(float dt)
 	{
 		this.val = dt;
@@ -33,9 +26,24 @@ public class Value
 		}
 		return this;
 	}
+	public Value set(Value v)
+	{
+		this.func = v.func;
+		this.args = v.args;
+		this.val = v.val;
+		return this;
+	}
+	public float getData()
+	{
+		return val;
+	}
+	public float getGrad()
+	{
+		return grad;
+	}
 	public Value add(Value other)
 	{
-		Value v=new Value(val + other.val);
+		Value v=new Value(getData() + other.getData());
 		v.setOP(additionGrad, this, other);
 		return v;
 	}
@@ -45,13 +53,13 @@ public class Value
 		{
 			Value a1=args[0];
 			Value a2=args[1];
-			a1.setGrad(self.grad);
-			a2.setGrad(self.grad);
+			a1.setGrad(self.getGrad());
+			a2.setGrad(self.getGrad());
 		}
 	};
 	public Value sub(Value other)
 	{
-		Value v=new Value(val - other.val);
+		Value v=new Value(getData() - other.getData());
 		v.setOP(subtractGrad, this, other);
 		return v;
 	}
@@ -61,13 +69,13 @@ public class Value
 		{
 			Value a1=args[0];
 			Value a2=args[1];
-			a1.setGrad(self.grad);
-			a2.setGrad(-self.grad);
+			a1.setGrad(self.getGrad());
+			a2.setGrad(-self.getGrad());
 		}
 	};
 	public Value mul(Value other)
 	{
-		Value v=new Value(val * other.val);
+		Value v=new Value(getData() * other.getData());
 		v.setOP(multiplyGrad, this, other);
 		return v;
 	}
@@ -77,13 +85,13 @@ public class Value
 		{
 			Value a1=args[0];
 			Value a2=args[1];
-			a1.setGrad(self.grad * a2.val);
-			a2.setGrad(self.grad * a1.val);
+			a1.setGrad(self.getGrad() * a2.getData());
+			a2.setGrad(self.getGrad() * a1.getData());
 		}
 	};
 	public Value div(Value other)
 	{
-		Value v=new Value(val / other.val);
+		Value v=new Value(getData() / other.getData());
 		v.setOP(divisionGrad, this, other);
 		return v;
 	}
@@ -93,13 +101,13 @@ public class Value
 		{
 			Value a1=args[0];
 			Value a2=args[1];
-			a1.setGrad(self.grad * 1 / a2.val);
-			a2.setGrad(-self.grad * a1.val / (a2.val * a2.val));
+			a1.setGrad(self.getGrad() * 1 / a2.getData());
+			a2.setGrad(-self.getGrad() * a1.getData() / (a2.getData() * a2.getData()));
 		}
 	};
 	public Value pow(Value other)
 	{
-		Value v=new Value((float)Math.pow(val , other.val));
+		Value v=new Value((float)Math.pow(getData() , other.getData()));
 		v.setOP(powerGrad, this, other);
 		return v;
 	}
@@ -109,8 +117,8 @@ public class Value
 		{
 			Value a1=args[0];
 			Value a2=args[1];
-			a1.setGrad(self.grad * a2.val * (float)Math.pow(a1.val, a2.val - 1));
-			a2.setGrad(self.grad * (float)Math.pow(a1.val, a2.val) * (float)Math.log(a1.val));
+			a1.setGrad(self.getGrad() * a2.getData() * (float)Math.pow(a1.getData(), a2.getData() - 1));
+			a2.setGrad(self.getGrad() * (float)Math.pow(a1.getData(), a2.getData()) * (float)Math.log(a1.getData()));
 		}
 	};
 	public static abstract class ValueGradFunc

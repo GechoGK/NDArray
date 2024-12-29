@@ -25,8 +25,8 @@ public class Data
 		{
 			this.grads  = new float[values.length];
 			this.gradTracks = new Value[grads.length];
-			for (int i=0;i < gradTracks.length;i++)
-				gradTracks[i] = new Value(this, i);
+			// for (int i=0;i < gradTracks.length;i++)
+			// 	gradTracks[i] = new Value(this, i);
 		}
 		else
 		{
@@ -68,8 +68,8 @@ public class Data
 		requiresGrad = true;
 		grads = new float[values.length];
 		gradTracks = new Value[grads.length];
-		for (int i=0;i < gradTracks.length;i++)
-			gradTracks[i] = new Value(this, i);
+		// for (int i=0;i < gradTracks.length;i++)
+		// 	gradTracks[i] = new Value(this, i);
 		return this;
 	}
 	public Data disableGradient()
@@ -107,6 +107,8 @@ public class Data
 	public void setGrad(int ind, float val)
 	{
 		grads[ind] = val;
+		// use this to accumulate..
+		//grads[ind] += val;
 		// values[ind].grad = val;
 	}
 	public void addGrad(int ind, float val)
@@ -116,6 +118,11 @@ public class Data
 	}
 	public Value getValue(int ind)
 	{
-		return gradTracks[ind];
+		Value v=gradTracks[ind];
+		if (v == null)	
+		{
+			v = new DValue(this, ind);	
+		}
+		return v;
 	}
 }
