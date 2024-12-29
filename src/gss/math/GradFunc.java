@@ -17,7 +17,7 @@ public abstract class GradFunc
 	 this causes error when setGrad called with requireGradient = false arrays.
 
 	 --- Fix
-	 --- check every child uf they require gradient or not.
+	 --- check every child if they require gradient or not.
 	 for(NDArray arr:childs)
 	 {
 	 .   if(!arr[0].requiresGradient())
@@ -189,6 +189,13 @@ public abstract class GradFunc
 		}
 	};
 	public static GradFunc stepGradient = new GradFunc("step gradient"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			return null;
+		}
+	};
+	public static GradFunc itemGradient = new GradFunc("item gradient"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{

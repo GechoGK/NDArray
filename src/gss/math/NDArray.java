@@ -28,7 +28,10 @@ public class NDArray
 	{
 		this.storage = new Storage(shape, requireGrad);
 		if (requireGrad)
+		{
 			childs = new ArrayList<>();
+			gradientFunction = GradFunc.itemGradient;
+		}
 	}
 	public NDArray(float[]data)
 	{
@@ -41,7 +44,10 @@ public class NDArray
 			storage.base.setData(i, data[i]); 
 		//storage.base.values = Arrays.copyOf(data, data.length);
 		if (requireGrad)
+		{
 			childs = new ArrayList<>();
+			gradientFunction = GradFunc.itemGradient;
+		}
 	}
 	public NDArray(float[][]data)
 	{
@@ -55,7 +61,10 @@ public class NDArray
 			storage.base.setData(i, dt[i]);
 		// storage.base.values = Util.flatten(data);
 		if (requireGrad)
+		{
 			childs = new ArrayList<>();
+			gradientFunction = GradFunc.itemGradient;
+		}
 	}
 	public int[] getShape()
 	{
