@@ -142,6 +142,10 @@ public class Util
 	{
 		return arr[arr.length - index - 1]; // 
 	}
+	public static void print(NDArray ar)
+	{
+		print(ar.storage);
+	}
 	public static void print(Storage str)
 	{
 		if (str.dim == 1)
@@ -169,6 +173,10 @@ public class Util
 				print(str.get(i));
 				System.out.println();
 			}
+	}
+	public static void printGrad(NDArray ar)
+	{
+		printGrad(ar.storage);
 	}
 	public static void printGrad(Storage str)
 	{
@@ -225,10 +233,25 @@ public class Util
 	}
 	public static boolean equals(float[] s1, float[] s2)
 	{
+		if (s1 == null || s2 == null)
+			return false;
 		if (s1.length != s2.length)
 			return false;
 		for (int i=0;i < s1.length;i++)
 			if (s1[i] != s2[i])
+				return false;
+		return true;
+	}
+	public static boolean equals(NDArray a1, NDArray a2, boolean...checkGrad)
+	{
+		if (a1 == null || a2 == null)
+			return false;
+		if (!equals(a1.getShape(), a2.getShape()))
+			return false;
+		if (!equals(a1.storage.base.getArray(), a2.storage.base.getArray()))
+			return false;
+		if (checkGrad.length != 0 && checkGrad[0])
+			if (!equals(a1.storage.base.getGrads(), a2.storage.base.getGrads()))
 				return false;
 		return true;
 	}

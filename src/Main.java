@@ -18,7 +18,58 @@ public class Main
 	void a() throws Exception
 	{
 
-		gradTet();
+		calcWithValueForwardAndBackward();
+
+	}
+	void calcWithValueForwardAndBackward() throws Exception
+	{
+		// works.
+		NDArray a1=NDArray.rand(new int[]{2, 5}, true); 
+		NDArray a2=NDArray.rand(new int[]{5}, true);
+
+		NDArray out=a1.mul(a2);
+
+		out.setGrad(new int[]{}, 1);
+		out.backward();
+
+		printGrad(a1);
+		System.out.println("-------------");
+		printGrad(a2);
+		System.out.println("-------------");
+		printGrad(out);
+
+		NDArray b1=NDArray.rand(new int[]{2,5}, true);
+		NDArray b2=NDArray.rand(new int[]{5}, true);
+
+		NDArray out2=b1.mul2(b2);
+
+		out2.setGrad(new int[]{}, 1);
+		out2.backward();
+		// backTree(out2.storage.base.getValues());
+
+		System.out.println("====== value equals =====");
+
+		System.out.println(Util.equals(a1, b1));
+		System.out.println(Util.equals(a2, b2));
+
+		System.out.println(Util.equals(out, out2));
+
+		System.out.println("------ grad equals ------");
+
+		System.out.println(Util.equals(a1, b1, true));
+		System.out.println(Util.equals(a2, b2, true));
+
+		System.out.println(Util.equals(out, out2, true));
+
+
+		System.out.println("==================");
+		
+		printGrad(b1);
+		System.out.println("-------------");
+		printGrad(b2);
+		System.out.println("-------------");
+		printGrad(out2);
+
 
 	}
 	void gradTet() throws Exception
@@ -54,12 +105,50 @@ public class Main
 		printGrad(arr3.storage);
 
 	}
+	void backTree(Value[] vls)
+	{
+		System.out.println("backing tree");
+		if (vls == null || vls.length == 0)
+		{
+			System.out.println("empty values");
+			return;
+		}
+		HashSet<Value> tmpLst=new HashSet<>();
+		HashSet<Value> lst=new HashSet<>();
+		lst.addAll(Arrays.asList(vls));
+		while (lst.size() != 0)
+		{
+			System.out.println(lst.size() + " items to backward");
+			for (Value v:lst)
+			{
+				v.backward();
+				tmpLst.addAll(v.args);
+			}
+			lst.clear();
+			lst.addAll(tmpLst);
+			tmpLst.clear();
+		}
+	}
 	void tree(NDArray arr, String t)
 	{
 		System.out.println(t + arr);
+		if (arr.gradientFunction == GradFunc.itemGradient)
+		{
+			System.out.println(t + "listing child gradient");
+			Value[] vls=arr.storage.base.getValues();
+			for (Value v:vls)
+				treeV(v, t);
+		}
 		if (arr.childs != null && arr.childs.size() != 0)
 			for (NDArray ar:arr.childs)
 				tree(ar, t.replace("_", " ").replace("|", " ") + "|_____ ");
+	}
+	void treeV(Value vl, String t)
+	{
+		System.out.println(t + vl);
+		if (vl.args != null && vl.args.size() != 0)
+			for (Value  vv:vl.args)
+				treeV(vv, t.replace("_", " ").replace("|", " ") + "|_____ ");
 	}
 	void testBasicMathGrad() throws Exception
 	{

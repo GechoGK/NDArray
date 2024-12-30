@@ -24,7 +24,7 @@ public class Data
 		if (requireGrad)
 		{
 			this.grads  = new float[values.length];
-			this.gradTracks = new Value[grads.length];
+			// this.gradTracks = new Value[grads.length];
 			// for (int i=0;i < gradTracks.length;i++)
 			// 	gradTracks[i] = new Value(this, i);
 		}
@@ -67,7 +67,7 @@ public class Data
 	{
 		requiresGrad = true;
 		grads = new float[values.length];
-		gradTracks = new Value[grads.length];
+		// gradTracks = new Value[grads.length];
 		// for (int i=0;i < gradTracks.length;i++)
 		// 	gradTracks[i] = new Value(this, i);
 		return this;
@@ -118,11 +118,41 @@ public class Data
 	}
 	public Value getValue(int ind)
 	{
+		if (gradTracks == null)
+			gradTracks = new Value[values.length];
 		Value v=gradTracks[ind];
 		if (v == null)	
 		{
-			v = new DValue(this, ind);	
+			v = new DValue(this, ind);
+			gradTracks[ind] = v;
 		}
 		return v;
+	}
+	public Value setValue(int ind, Value v)
+	{
+		// System.out.println("setting flat " + ind + " = " + v);
+		if (gradTracks == null)
+		 	gradTracks = new Value[values.length];
+		DValue dv=(DValue)gradTracks[ind];
+		if (dv == null)
+		{
+			dv = new DValue(this, ind);
+			gradTracks[ind] = dv;
+		}
+		dv.set(v);
+		// System.out.println(dv);
+		return dv;
+	}
+	public float[]getArray()
+	{
+		return values;
+	}
+	public float[] getGrads()
+	{
+		return grads;
+	}
+	public Value[] getValues()
+	{
+		return gradTracks;
 	}
 }

@@ -12,6 +12,11 @@ public class Value
 	{
 		this.val = dt;
 	}
+	public void backward()
+	{
+		if (func != null)
+			func.backward(this, args.toArray(new Value[0]));
+	}
 	public void setGrad(float v)
 	{
 		this.grad += v;
@@ -43,8 +48,11 @@ public class Value
 	}
 	public Value add(Value other)
 	{
-		Value v=new Value(getData() + other.getData());
+		// System.out.println(getData());
+		// System.out.println(other.getData());
+		Value v=new Value(this.getData() + other.getData());
 		v.setOP(additionGrad, this, other);
+		// System.out.println("adding " + v);
 		return v;
 	}
 	public static ValueGradFunc additionGrad =new ValueGradFunc(){
@@ -123,6 +131,23 @@ public class Value
 	};
 	public static abstract class ValueGradFunc
 	{
+		// /* uncomment the when funushed debugging.
+		private String name;
+		public ValueGradFunc()
+		{this.name = "unknown";}
+		public ValueGradFunc(String nm)
+		{this.name = nm;}
+		@Override
+		public String toString()
+		{
+			return "value grad " + name;
+		}
+		// */
 		public abstract void backward(Value self, Value...args);
+	}
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + " :: " + func;
 	}
 }

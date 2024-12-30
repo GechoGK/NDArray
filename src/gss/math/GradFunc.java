@@ -188,17 +188,36 @@ public abstract class GradFunc
 			return null;
 		}
 	};
-	public static GradFunc stepGradient = new GradFunc("step gradient"){
+	public static GradFunc stepGradient = new GradFunc("step"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
 			return null;
 		}
 	};
-	public static GradFunc itemGradient = new GradFunc("item gradient"){
+	public static GradFunc itemGradient = new GradFunc("item"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
+			// iterate over each stores Value classes and then call backward on them.
+			Value[] vls=host.storage.base.getValues();
+			if (vls == null || vls.length == 0)
+			 	return null;
+			// System.out.println("== .." + host);
+			HashSet<Value> tmpLst=new HashSet<>();
+			HashSet<Value> lst=new HashSet<>();
+			lst.addAll(Arrays.asList(vls));
+			while (lst.size() != 0)
+			{
+				for (Value v:lst)
+				{
+					v.backward();
+					tmpLst.addAll(v.args);
+				}
+				lst.clear();
+				lst.addAll(tmpLst);
+				tmpLst.clear();
+			}
 			return null;
 		}
 	};

@@ -16,8 +16,8 @@ public class DValue extends Value
 	@Override
 	public Value set(Value v)
 	{
-		Value vv=super.set(v);
-		data.setData(index, vv.getData());
+		super.set(v);
+		data.setData(index, v.getData());
 		return this;
 	}
 
@@ -29,13 +29,17 @@ public class DValue extends Value
 	@Override
 	public void setGrad(float v)
 	{
-		data.setGrad(index, v);
+		data.addGrad(index, v);
 	}
 	@Override
 	public float getData()
 	{
-		data.getData(index);
-		return super.getData();
+		return data.getData(index);
 	}
 
+	@Override
+	public String toString()
+	{
+		return super.toString()+" >> "+data;
+	}
 }

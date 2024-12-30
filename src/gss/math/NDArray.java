@@ -12,6 +12,16 @@ public class NDArray
 	 when copy method called, it doesn't copy the gradientFunction and childs.
 	 so remember to include.
 	 */
+	// ------
+	/*
+	 set and get Values are not tested.
+	 */
+	// ------
+	/*
+	 make sure to replace exceptions with a specific Exception type.
+	 that decribes the error.
+	 // now we are using only RuntimException("");
+	 */
 	public Storage storage;
 	public List<NDArray> childs = new ArrayList<>();
 	public GradFunc gradientFunction;
@@ -119,6 +129,7 @@ public class NDArray
 	{
 		return storage.getFlatGrad(index);
 	}
+
 	// set aray value at specific index.
 	public void set(int[]index, NDArray arr)
 	{
@@ -128,6 +139,10 @@ public class NDArray
 	public void set(int[] index, float val)
 	{
 		storage.set(index, val);
+	}
+	public void setValue(int[] ind, Value v)
+	{
+		storage.setValueInt(ind, v);
 	}
 	// flatten the array then set value at index @index.
 	public void setFlat(int index, float val)
@@ -142,6 +157,8 @@ public class NDArray
 	// set Gradient.
 	public void setGrad(int[] index, float val)
 	{
+		if (!requiresGradient())
+			throw new RuntimeException("setting gradient value on requireGradient = false;\nmake sure to set requireGradient = true");
 		storage.setGrad(index, val);
 	}
 	public void setExactGrad(int[] index, float val)
@@ -151,6 +168,10 @@ public class NDArray
 	public void setFlatGrad(int index, float val)
 	{
 		storage.setFlatGrad(index, val);
+	}
+	public void setFlatValue(int index, Value v)
+	{
+		storage.setFlatValue(index, v);
 	}
 	public void zeroGrad()
 	{
@@ -212,6 +233,28 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	// test addition.
+	// this method is for only testing purpose dont use it.
+	// to check vakue gradient we used this method.
+	public NDArray add2(NDArray other)
+	{
+		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			Value v1=a1.getFlatValue(i);
+			Value v2=a2.getFlatValue(i);
+			// System.out.println(v1 + " ,,,, " + v2);
+			arrOut.setFlatValue(i, v1.add(v2));
+		}
+		return arrOut;
+	}
 	public NDArray sub(NDArray other)
 	{
 		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
@@ -245,6 +288,27 @@ public class NDArray
 			float v1=a1.getFlat(i);
 			float v2=a2.getFlat(i);
 			arrOut.setFlat(i, v1 * v2);
+		}
+		return arrOut;
+	}
+	// test multiplication
+	// this method is for only testing purpose dont use it.
+	// to check vakue gradient we used this method.
+	public NDArray mul2(NDArray other)
+	{
+		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			Value v1=a1.getFlatValue(i);
+			Value v2=a2.getFlatValue(i);
+			arrOut.setFlatValue(i, v1.mul(v2));
 		}
 		return arrOut;
 	}
@@ -379,7 +443,7 @@ public class NDArray
 	// the seed value can be -1.
 	public static NDArray rand(int...shape)
 	{
-		return rand(shape, false, -1);
+		return rand(shape, false, 128); // change 128 to -1
 	}
 	public static NDArray rand(int[] shape, int seed)
 	{
@@ -387,7 +451,7 @@ public class NDArray
 	}
 	public static NDArray rand(int[]shape, boolean requiresGrad)
 	{
-		return rand(shape, requiresGrad, -1);
+		return rand(shape, requiresGrad, 128); // change 128 to -1
 	}
 	public static NDArray rand(int[]shape, boolean reqiresGrad, int seed)
 	{
