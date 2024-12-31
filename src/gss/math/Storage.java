@@ -221,30 +221,33 @@ public class Storage
 	// internal method.
 	public float getFloatInt(int[] index,  boolean grad)
 	{
-		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-			throw new IndexOutOfBoundsException();
-		// if (index.length < shape.length)
-		// {
-		// if the index length is less than the shape length. we fill the rest with (0). eg.
-		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
-		// todo.
-		// }
-		int newPos=0;
-		// the loop have error when we use index.length < shape.length, so use backward looping.
-		for (int i=0;i < index.length;i++)
-		{
-			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
-			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
-			// the big issue for 2 days;
-			// check if the index at i is not out of bound.
-			if (shapeInd >= shape[i])
-				throw new IndexOutOfBoundsException();
-			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
-		}
-		int finalIndex=(offset + newPos);
-		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
-		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		int ind=finalIndex % base.length;
+		/*
+		 if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+		 throw new IndexOutOfBoundsException();
+		 // if (index.length < shape.length)
+		 // {
+		 // if the index length is less than the shape length. we fill the rest with (0). eg.
+		 // eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		 // todo.
+		 // }
+		 int newPos=0;
+		 // the loop have error when we use index.length < shape.length, so use backward looping.
+		 for (int i=0;i < index.length;i++)
+		 {
+		 int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+		 // baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+		 // the big issue for 2 days;
+		 // check if the index at i is not out of bound.
+		 if (shapeInd >= shape[i])
+		 throw new IndexOutOfBoundsException();
+		 newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		 }
+		 int finalIndex=(offset + newPos);
+		 // System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		 // System.out.print("--" + finalIndex + "--" + offset + "--");
+		 int ind=finalIndex % base.length;
+		 */
+		int ind=getIndexFromShape(index);
 		if (grad)
 			return base.getGrad(ind);
 		else
@@ -253,60 +256,65 @@ public class Storage
 	}
 	public Value setValueInt(int[] index, Value v)
 	{
-
-		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-			throw new IndexOutOfBoundsException();
-		// if (index.length < shape.length)
-		// {
-		// if the index length is less than the shape length. we fill the rest with (0). eg.
-		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
-		// todo.
-		// }
-		int newPos=0;
-		// the loop have error when we use index.length < shape.length, so use backward looping.
-		for (int i=0;i < index.length;i++)
-		{
-			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
-			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
-			// the big issue for 2 days;
-			// check if the index at i is not out of bound.
-			if (shapeInd >= shape[i])
-				throw new IndexOutOfBoundsException();
-			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
-		}
-		int finalIndex=(offset + newPos);
-		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
-		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		int ind=finalIndex % base.length;
+		/*
+		 if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+		 throw new IndexOutOfBoundsException();
+		 // if (index.length < shape.length)
+		 // {
+		 // if the index length is less than the shape length. we fill the rest with (0). eg.
+		 // eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		 // todo.
+		 // }
+		 int newPos=0;
+		 // the loop have error when we use index.length < shape.length, so use backward looping.
+		 for (int i=0;i < index.length;i++)
+		 {
+		 int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+		 // baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+		 // the big issue for 2 days;
+		 // check if the index at i is not out of bound.
+		 if (shapeInd >= shape[i])
+		 throw new IndexOutOfBoundsException();
+		 newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		 }
+		 int finalIndex=(offset + newPos);
+		 // System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		 // System.out.print("--" + finalIndex + "--" + offset + "--");
+		 int ind=finalIndex % base.length;
+		 */
+		int ind=getIndexFromShape(index);
 		base.setValue(ind, v);
 		return v;
 	}
 	public Value getValue(int...index)
 	{
-		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-			throw new IndexOutOfBoundsException();
-		// if (index.length < shape.length)
-		// {
-		// if the index length is less than the shape length. we fill the rest with (0). eg.
-		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
-		// todo.
-		// }
-		int newPos=0;
-		// the loop have error when we use index.length < shape.length, so use backward looping.
-		for (int i=0;i < index.length;i++)
-		{
-			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
-			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
-			// the big issue for 2 days;
-			// check if the index at i is not out of bound.
-			if (shapeInd >= shape[i])
-				throw new IndexOutOfBoundsException();
-			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
-		}
-		int finalIndex=(offset + newPos);
-		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
-		// System.out.print("--" + finalIndex + "--" + offset + "--");
-		int ind=finalIndex % base.length;
+		/*
+		 if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+		 throw new IndexOutOfBoundsException();
+		 // if (index.length < shape.length)
+		 // {
+		 // if the index length is less than the shape length. we fill the rest with (0). eg.
+		 // eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		 // todo.
+		 // }
+		 int newPos=0;
+		 // the loop have error when we use index.length < shape.length, so use backward looping.
+		 for (int i=0;i < index.length;i++)
+		 {
+		 int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+		 // baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+		 // the big issue for 2 days;
+		 // check if the index at i is not out of bound.
+		 if (shapeInd >= shape[i])
+		 throw new IndexOutOfBoundsException();
+		 newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		 }
+		 int finalIndex=(offset + newPos);
+		 // System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		 // System.out.print("--" + finalIndex + "--" + offset + "--");
+		 int ind=finalIndex % base.length;
+		 */
+		int ind=getIndexFromShape(index);
 		return base.getValue(ind);
 		// return array[finalIndex % base.length]; // base.values[(offset + (finalIndex % length)) % base.length];
 	}
@@ -321,45 +329,49 @@ public class Storage
 	// internal method.
 	private Storage setExactInt(int[] index, float val, boolean grad, boolean append)
 	{
-		// this method sets a value (one value) to the array.
-		// if the index is not match the shaoe of the storage. it fails.
-		// the base for setFlat(int ind,float bal);
-		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-			throw new IndexOutOfBoundsException();
-		// if (index.length < shape.length)
-		// {
-		// if the index length is less than the shape length. we fill the rest with (0). eg.
-		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
-		// todo.
-		// }
-		int newPos=0;
-		// the loop have error when we use index.length < shape.length, so use backward looping.
-		for (int i=0;i < index.length;i++)
-		{
-			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
-			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
-			// the big issue for 2 days;
-			// check if the index at i is not out of bound.
-			if (shapeInd >= shape[i])
-				throw new IndexOutOfBoundsException();
-			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
-		}
-		int finalIndex=(offset + newPos);
-		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
-		// System.out.print("--" + finalIndex + "--" + offset + "--");
+		/*
+		 // this method sets a value (one value) to the array.
+		 // if the index is not match the shaoe of the storage. it fails.
+		 // the base for setFlat(int ind,float bal);
+		 if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+		 throw new IndexOutOfBoundsException();
+		 // if (index.length < shape.length)
+		 // {
+		 // if the index length is less than the shape length. we fill the rest with (0). eg.
+		 // eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		 // todo.
+		 // }
+		 int newPos=0;
+		 // the loop have error when we use index.length < shape.length, so use backward looping.
+		 for (int i=0;i < index.length;i++)
+		 {
+		 int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+		 // baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+		 // the big issue for 2 days;
+		 // check if the index at i is not out of bound.
+		 if (shapeInd >= shape[i])
+		 throw new IndexOutOfBoundsException();
+		 newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		 }
+		 int finalIndex=(offset + newPos);
+		 // System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		 // System.out.print("--" + finalIndex + "--" + offset + "--");
+		 int ind=finalIndex % base.length;
+		 */
+		int ind=getIndexFromShape(index);
 		if (grad)
 		{
 			if (append)
-				base.addGrad(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+				base.addGrad(ind, val); // base.values[(offset + (finalIndex % length)) % base.length];
 			else
-				base.setGrad(finalIndex % base.length , val);
+				base.setGrad(ind , val);
 		}
 		else
 		{
 			if (append)
-				base.addData(finalIndex % base.length, val); // base.values[(offset + (finalIndex % length)) % base.length];
+				base.addData(ind, val); // base.values[(offset + (finalIndex % length)) % base.length];
 			else
-				base.setData(finalIndex % base.length , val);
+				base.setData(ind , val);
 		}
 		return this;
 	}
@@ -544,7 +556,6 @@ public class Storage
 	}
 	public boolean isBroadcastedShape()
 	{
-
 		// new code to check if it is broadcasted.
 		// experimental, -- uncomment the line below.
 		if (this.shape.length > base.shape.length)
@@ -661,6 +672,35 @@ public class Storage
 			// include gradientTracker (Value) class copy.
 		}
 		return str;
+	}
+	public int getIndexFromShape(int[]index)
+	{
+		if (index.length != shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
+			throw new IndexOutOfBoundsException();
+		// if (index.length < shape.length)
+		// {
+		// if the index length is less than the shape length. we fill the rest with (0). eg.
+		// eg index =[5] -> we change into [0,0,5]  assume if the shape was [2,3,6]; this also adds overhead.
+		// todo.
+		// }
+		
+		int newPos=0;
+		// the loop have error when we use index.length < shape.length, so use backward looping.
+		for (int i=0;i < index.length;i++)
+		{
+			int shapeInd =  Math.min(index[i], baseShape[i] - 1);
+			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
+			// the big issue for 2 days;
+			// check if the index at i is not out of bound.
+			if (shapeInd >= shape[i])
+				throw new IndexOutOfBoundsException();
+			newPos += shapeInd * (i == index.length - 1 ?1: baseSum[i + 1]);
+		}
+		int finalIndex=(offset + newPos);
+		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
+		// System.out.print("--" + finalIndex + "--" + offset + "--");
+		int ind=finalIndex % base.length;
+		return ind;
 	}
 	@Override
 	public String toString()

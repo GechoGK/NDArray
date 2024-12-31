@@ -7,10 +7,10 @@ public class Main
 {
 	public static void main(String[] args) throws Exception
 	{
-		// to be broadcast
+		// to be broadcastable
 		// if the org shape is (2,3,2)
 		// and if the new shape (1,3,2) this is not broadcastable
-		// because th items in shepe can be 1 , but only in original shope.
+		// because the items in shepe can be 1 , but only in original shope.
 		// if the original shape items is not 1 then the new shape also must be the same items at partucular index.
 		new Main().a();
 
@@ -18,7 +18,15 @@ public class Main
 	void a() throws Exception
 	{
 
-		calcWithValueForwardAndBackward();
+		NDArray ar=NDArray.rand(2, 3, 4);
+
+		System.out.println(ar);
+		print(ar);
+		System.out.println("-------");
+		ar = ar.view(6, 4);
+		// ar = ar.broadcast(4, 3, 2, 2);
+		System.out.println(ar);
+		print(ar);
 
 	}
 	void calcWithValueForwardAndBackward() throws Exception
@@ -63,7 +71,7 @@ public class Main
 
 
 		System.out.println("==================");
-		
+
 		printGrad(b1);
 		System.out.println("-------------");
 		printGrad(b2);

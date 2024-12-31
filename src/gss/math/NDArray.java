@@ -348,6 +348,26 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	public NDArray dot(NDArray other)
+	{
+		/// fix. dot product us made using 2d array.
+		int[] shp=getCommonShape(this.storage.shape, other.storage.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp, a1.requiresGradient() || a2.requiresGradient());
+		// we dont't know the gradient so we use itemGradient to automatically calculate for us.
+		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			Value v1=a1.getFlatValue(i);
+			Value v2=a2.getFlatValue(i);
+			arrOut.setFlatValue(i, v1.mul(v2));
+		}
+		return arrOut;
+	}
 	// special functions.
 	/*
 	 // this function returns the broadcasted shape of the two array.
