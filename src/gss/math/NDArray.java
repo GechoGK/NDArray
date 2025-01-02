@@ -22,6 +22,10 @@ public class NDArray
 	 that decribes the error.
 	 // now we are using only RuntimException("");
 	 */
+	 /*
+	 hstack and vstack how it works ?
+	 it is used for dot product merging two arrays with their collumn.
+	 */
 	public Storage storage;
 	public List<NDArray> childs = new ArrayList<>();
 	public GradFunc gradientFunction;
