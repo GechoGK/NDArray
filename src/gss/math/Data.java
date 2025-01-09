@@ -12,7 +12,7 @@ public class Data
 	public int dim;
 	public boolean requiresGrad;
 
-	public Data(int[]sh)
+	public Data(int...sh)
 	{
 		this(sh, false);
 	}

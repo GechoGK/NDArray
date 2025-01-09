@@ -5,7 +5,7 @@ import static gss.math.Util.*;
 
 public class Main
 {
-	public static void main(String[] args) throws Exception
+	public static void main2(String[] args) throws Exception
 	{
 		// to be broadcastable
 		// if the org shape is (2,3,2)
@@ -18,16 +18,7 @@ public class Main
 	void a() throws Exception
 	{
 
-		NDArray ar=NDArray.rand(2, 3, 4);
-
-		System.out.println(ar);
-		print(ar);
-		System.out.println("-------");
-		ar = ar.view(6, 4);
-		// ar = ar.broadcast(4, 3, 2, 2);
-		System.out.println(ar);
-		print(ar);
-
+		
 	}
 	void calcWithValueForwardAndBackward() throws Exception
 	{

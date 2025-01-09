@@ -30,7 +30,7 @@ public class Util
 	}
 	public static int length(int...sh)
 	{
-		return length(0, sh);
+		return length(-2, sh);
 	}
 	public static int length(int ignore, int...sh)
 	{
@@ -56,11 +56,12 @@ public class Util
 	{
 		if (sum == null || sum.length != shape.length)
 			sum = new int[shape.length];
+		sum[sum.length - 1] = 1;
 		int sm=1;
-		for (int i=shape.length - 1;i >= 0;i--)
+		for (int i=shape.length - 1;i >= 1;i--)
 		{
 			sm *= shape[i];
-			sum[i] = sm;
+			sum[i - 1] = sm;
 		}
 		return sum;
 	}
