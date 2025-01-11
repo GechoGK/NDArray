@@ -24,41 +24,26 @@ public class Test
 
 		Storage s=new Storage(3, 2, 4);
 		fillR(s.base);
-		System.out.println(Arrays.toString(s.base.getArray()));
-		
-		print(s);
-		for (int i=0;i < s.base.length;i++)
-		{
-			int[] sh=s.getShape(i);
-			System.out.println(Arrays.toString(sh) + ", " + s.getScalar(sh));
-		}
-		s.transpose();
-		print(s);
-		s = s.getStorage(1);
-		System.out.println(Arrays.toString(s.shape));
-		System.out.println(Arrays.toString(s.bShape));
-		System.out.println(Arrays.toString(s.sum));
-		System.out.println(Arrays.toString(s.acc));
-		System.out.println(s.position);
-		print(s);
-		s.transpose();
-		System.out.println(Arrays.toString(s.shape));
-		System.out.println(Arrays.toString(s.bShape));
-		System.out.println(Arrays.toString(s.sum));
-		System.out.println(Arrays.toString(s.acc));
-		System.out.println(s.position);
-		print(s);
-		// System.out.println("== "+Arrays.toString(s.getShape(0)));
-		for (int i=0;i < s.base.length;i++)
-		{
-			int[] sh=s.getShape(i);
-			System.out.println(Arrays.toString(sh) + ", " + s.getScalar(sh));
-		}
+		// System.out.println(Arrays.toString(s.base.getArray()));
+
+		test(Arrays.equals(s.shape, new int[]{3,2,4}), "shape equals");
+		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
+		test(Arrays.equals(s.acc, new int[]{0,1,2}), "access index");
+
+		System.out.println("======= after transpose =======");
+
+		s = s.transpose(2, 1, 0);
+		test(Arrays.equals(s.shape, new int[]{4,2,3}), "shape equals");
+		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
+		test(Arrays.equals(s.acc, new int[]{2,1,0}), "access index");
+
+		// print(s);
+
 
 	}
 	static void test4()
 	{
-		System.out.println("=== transpose test ===");
+		System.out.println("===Test 4. transpose test ===");
 		Storage s=new Storage(3, 2);
 		float[] dt=fillR(s.base);
 		// System.out.println(Arrays.toString(dt));
@@ -70,17 +55,7 @@ public class Test
 		test(Arrays.equals(s.shape, new int[]{3,2}), "shape equals");
 		test(Arrays.equals(s.sum, new int[]{2,1}), "sum equals");
 		test(Arrays.equals(s.acc, new int[]{0,1}), "Index access equals");
-		// System.out.println(Arrays.toString(s.bShape));
-		// System.out.println(Arrays.toString(s.shape));
-		// System.out.println(Arrays.toString(s.sum));
-		// System.out.println(Arrays.toString(s.acc));
-//		for (int i=0;i < s.base.length;i++)
-//		{
-//			int[] sh=s.getShape(i);
-//			float f= s.getScalar(sh);
-//			System.out.println(Arrays.toString(sh) + " = " + f);
-//		}
-//		print(s);
+
 		System.out.println("... get shape for original(not transpose) ...");
 		int[][] shp={
 			{0,0},
@@ -95,9 +70,12 @@ public class Test
 			test(Arrays.equals(s.getShape(i), shp[i]), "getShape " + i);
 		}
 		// print(s);
-		s.transpose();
+		s = s.transpose();
 		System.out.println("... after transpose ...");
 		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals"); // no change.
+		// System.out.println(Arrays.toString(s.shape));
+		// System.out.println(Arrays.toString(s.sum));
+		// System.out.println(Arrays.toString(s.acc));
 		test(Arrays.equals(s.shape, new int[]{2,3}), "shape equals");
 		test(Arrays.equals(s.sum, new int[]{2,1}), "sum equals"); // no change.
 		test(Arrays.equals(s.acc, new int[]{1,0}), "Index access equals");
@@ -126,7 +104,7 @@ public class Test
 	}
 	static void test3()
 	{
-		System.out.println("=== Storage getScalar and getShape test ===");
+		System.out.println("===Test 3. Storage getScalar and getShape test ===");
 		Storage s=new Storage(3, 2);
 		fillR(s.base);
 
@@ -139,7 +117,7 @@ public class Test
 	}
 	static void test2()
 	{
-		System.out.println("=== Storage shape to index test ===");
+		System.out.println("===Test 2. Storage shape to index test ===");
 		int sh[]={2,3};
 		Storage str=new Storage(sh); // shape.
 		test(Arrays.equals(sh, str.shape), "equals shape");
@@ -152,7 +130,7 @@ public class Test
 	}
 	static void test1()
 	{
-		System.out.println("=== Test data ===");
+		System.out.println("===Test 1. Test data ===");
 		int[] sh={2,3};
 		Data d=new Data(sh);
 		test(d.length == sh[0] * sh[1], "data length");

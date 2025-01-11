@@ -13,6 +13,10 @@ public class Storage
 	public int position;
 	public int dim;
 
+	/*
+	 // transpose works.
+	 */
+
 	public Storage(int...sh)
 	{
 		this.base = new Data(sh);
@@ -20,6 +24,7 @@ public class Storage
 		this.shape = Arrays.copyOf(sh, sh.length);
 		this.sum = Util.sumShapes(sh, null);
 		this.acc = new int[shape.length];
+		this.bShape = new int[0];
 		for (int i=0;i < acc.length;i++)
 			acc[i] = i;
 		this.dim = sh.length;
@@ -30,6 +35,7 @@ public class Storage
 		this.shape = Arrays.copyOf(sh, sh.length);
 		this.sum = Util.sumShapes(sh, null);
 		this.acc = new int[shape.length];
+		this.bShape = new int[0];
 		for (int i=0;i < acc.length;i++)
 			acc[i] = i;
 		this.dim = sh.length;
@@ -124,9 +130,7 @@ public class Storage
 		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
 		if (index >= base.length || index < 0)
 			throw new IndexOutOfBoundsException();
-		// int ind=index;
-		// computationally expensive. avoid it, if u can.
-		// System.out.println("getting value at index =" + index);
+
 		int[] indShape=new int[this.shape.length - position];
 		for (int i=this.shape.length - 1;i >= position;i--) // count down starts from shape.length -1 down to 0.
 		{
@@ -135,41 +139,39 @@ public class Storage
 		}
 		return indShape;
 	}
-	public void transpose()
+	public Storage transpose()
 	{
 		// fix range of axis
 		// the axes must be less than the shape length - position.
 		int[] accn=Arrays.copyOf(acc, acc.length);
 		int[] sh=Arrays.copyOf(shape, shape.length);
-		for (int i=0;i < acc.length - position;i++)
+		int p=0;
+		for (int i=position;i < acc.length;i++)
 		{
-			acc[i + position] = accn[accn.length - 1 - i];
-			shape[i + position] = sh[acc[i + position]];
+			accn[i] = acc[accn.length - 1 - p];
+			sh[i] = shape[shape.length - 1 - p];
+			p++;
 		}
-
-//		for (int i=position;i < acc.length;i++)
-//		{
-//			this.acc[i] = accn[(accn.length - 1 - i) + position];
-//			this.shape[i] = sh[acc[i] + position];
-//			System.out.println("..." + i + " , " + acc[i] + ", " + sh[i]);
-//		}
-		// this.acc = accn;
-		// this.shape = sh;
-		// this.sum = Util.sumShapes(sh, sum);
+		return new Storage(base, sh, sum, accn, bShape, position);
 	}
-	public void transpose(int...axes)
+	public Storage transpose(int...axes)
 	{
 		if (axes.length != shape.length - position)
 			throw new RuntimeException("invalid axes");
-		int[] sh=new int[shape.length];
-		for (int i=position;i < axes.length;i++)
+		int[] ac=Arrays.copyOf(acc, acc.length);
+		int[] sh=Arrays.copyOf(shape, shape.length);
+		int p=0;
+		for (int i:axes)
 		{
-			// accn[i] = acc[acc.length - 1 - i];
-			sh[i] = shape[axes[i]];
+			if (i >= axes.length)
+				throw new IndexOutOfBoundsException("index must not greater than the dimension o the array");
+			ac[p + position] = acc[i + position];
+			sh[p + position] = shape[i + position];
+			p++;
 		}
-		this.acc = axes;
-		this.shape = sh;
-		// this.sum = Util.sumShapes(sh, sum);
+		// this.acc = ac;
+		// this.shape = sh;
+		return new Storage(base, sh, sum, ac, bShape, position);
 	}
 	public float[] toArray()
 	{
