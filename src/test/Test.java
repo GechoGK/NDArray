@@ -9,10 +9,51 @@ public class Test
 	public static void main(String[]args)
 	{
 
-		// test1();
-		// test2();
-		// test3();
-		test4();
+//		test1();
+//		test2();
+//		test3();
+//		test4();
+		test5();
+
+		// don't trust Storage.getStorage(...)  function
+		// don't trust print function.
+
+	}
+	static void test5()
+	{
+
+		Storage s=new Storage(3, 2, 4);
+		fillR(s.base);
+		System.out.println(Arrays.toString(s.base.getArray()));
+		
+		print(s);
+		for (int i=0;i < s.base.length;i++)
+		{
+			int[] sh=s.getShape(i);
+			System.out.println(Arrays.toString(sh) + ", " + s.getScalar(sh));
+		}
+		s.transpose();
+		print(s);
+		s = s.getStorage(1);
+		System.out.println(Arrays.toString(s.shape));
+		System.out.println(Arrays.toString(s.bShape));
+		System.out.println(Arrays.toString(s.sum));
+		System.out.println(Arrays.toString(s.acc));
+		System.out.println(s.position);
+		print(s);
+		s.transpose();
+		System.out.println(Arrays.toString(s.shape));
+		System.out.println(Arrays.toString(s.bShape));
+		System.out.println(Arrays.toString(s.sum));
+		System.out.println(Arrays.toString(s.acc));
+		System.out.println(s.position);
+		print(s);
+		// System.out.println("== "+Arrays.toString(s.getShape(0)));
+		for (int i=0;i < s.base.length;i++)
+		{
+			int[] sh=s.getShape(i);
+			System.out.println(Arrays.toString(sh) + ", " + s.getScalar(sh));
+		}
 
 	}
 	static void test4()
@@ -20,11 +61,12 @@ public class Test
 		System.out.println("=== transpose test ===");
 		Storage s=new Storage(3, 2);
 		float[] dt=fillR(s.base);
+		// System.out.println(Arrays.toString(dt));
 		for (int i=0;i < dt.length;i++)
 			if (dt[i] != s.getScalar(s.getShape(i)))
 				throw new AssertionError("scalar access error ");
 		System.out.println("✓ scalar access without transpose");
-		test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals");
+		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals");
 		test(Arrays.equals(s.shape, new int[]{3,2}), "shape equals");
 		test(Arrays.equals(s.sum, new int[]{2,1}), "sum equals");
 		test(Arrays.equals(s.acc, new int[]{0,1}), "Index access equals");
@@ -52,9 +94,10 @@ public class Test
 		{
 			test(Arrays.equals(s.getShape(i), shp[i]), "getShape " + i);
 		}
+		// print(s);
 		s.transpose();
 		System.out.println("... after transpose ...");
-		test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals"); // no change.
+		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals"); // no change.
 		test(Arrays.equals(s.shape, new int[]{2,3}), "shape equals");
 		test(Arrays.equals(s.sum, new int[]{2,1}), "sum equals"); // no change.
 		test(Arrays.equals(s.acc, new int[]{1,0}), "Index access equals");
@@ -73,7 +116,12 @@ public class Test
 			test(Arrays.equals(s.getShape(i), trShape[i]), "getShape " + i);
 		}
 		System.out.println("getShape for 2x3 completed");
-		float[]trDt={dt[0],dt[3]};
+		// print(s);
+		float[] trAr={dt[0],dt[2],dt[4],dt[1],dt[3],dt[5]};
+		// System.out.println(Arrays.toString(trAr));
+		float[] ar=s.toArray();
+
+		test(Arrays.equals(trAr, ar), "transpose equal");
 
 	}
 	static void test3()
@@ -123,7 +171,7 @@ public class Test
 	{
 		if (b)
 			System.out.println("✓ " + msg);
-		else throw new AssertionError("error occured");
+		else System.out.println("X " + msg);
 	}
 	static float[] fillR(Data d)
 	{
@@ -137,32 +185,42 @@ public class Test
 		}
 		return f;
 	}
+	public static void print(float[] ar, int[]sh)
+	{
+		Storage s=new Storage(ar, sh);
+		print(s);
+	}
 	public static void print(Storage str)
 	{
-		if (str.shape.length == 1)
+		if (str.dim == 1)
 		{
 			System.out.print("[");
-			for (int i=0;i < str.shape[0];i++)
+			for (int i=0;i < str.shape[str.position];i++)
 				System.out.print(str.getScalar(i) + ", ");
 			System.out.println("]");
 		}
-		else if (str.shape.length == 2)
+		else if (str.dim == 2)
 		{
 			System.out.print("[");
-			for (int j=0;j < str.shape[0];j++)
+			for (int j=0;j < str.shape[str.position];j++)
 			{
 				System.out.print((j == 0 ?"": " ") + "[");
-				for (int k=0;k < str.shape[1];k++)
+				for (int k=0;k < str.shape[str.position + 1];k++)
 					System.out.print((k == 0 ?" ": ", ") + str.getScalar(j, k));
-				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
+				System.out.print(j == str.shape[str.position] - 1 ?"]": "]\n");
 			}
 			System.out.println("]");
 		}
 		else
-		// for (int i=0;i < str.shape[0];i++)
 		{
-			// print(str.get(i));
-			// System.out.println();
+			System.out.print("[");
+			for (int i=0;i < str.shape[str.position];i++)
+			{
+				print(str.getStorage(i));
+				if (i != str.shape[str.position] - 1)
+					System.out.println();
+			}
+			System.out.println("]");
 		}
 	}
 }

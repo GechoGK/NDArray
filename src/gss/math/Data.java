@@ -12,6 +12,12 @@ public class Data
 	public int dim;
 	public boolean requiresGrad;
 
+	public Data(float[] val, int...sh)
+	{
+		this(sh);
+		for (int i=0;i < val.length;i++)
+			values[i] = val[i];
+	}
 	public Data(int...sh)
 	{
 		this(sh, false);
