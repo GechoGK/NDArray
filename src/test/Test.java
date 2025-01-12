@@ -9,19 +9,31 @@ public class Test
 	public static void main(String[]args)
 	{
 
-//		test1();
-//		test2();
-//		test3();
-//		test4();
-		test5();
+		// test();
+		test6();
 
-		// don't trust Storage.getStorage(...)  function
-		// don't trust print function.
+	}
+	static void test()
+	{
+		test1();
+		test2();
+		test3();
+		test4();
+		test5();
+		test6();
+
+	}
+	static void test6()
+	{
+		System.out.println("=== Test 6.view test ===");
+
+		Storage s=new Storage(3, 2);
+		print(s);
 
 	}
 	static void test5()
 	{
-
+		System.out.println("=== Test 5. Transpose and subdim transpose test ===");
 		Storage s=new Storage(3, 2, 4);
 		fillR(s.base);
 		// System.out.println(Arrays.toString(s.base.getArray()));
@@ -30,15 +42,87 @@ public class Test
 		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
 		test(Arrays.equals(s.acc, new int[]{0,1,2}), "access index");
 
+		// print(s);
+		float[][][] itm=
+		{
+			{
+				{0.74243414f, 0.39531714f, 0.53885365f, 0.06623876f},
+				{ 0.63934743f, 0.22939426f, 0.41859204f, 0.75884575f}
+			},
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f},
+				{ 0.33518922f, 0.6556215f, 0.7417879f, 0.8624616f}
+			},
+
+			{
+				{0.17359579f, 0.37589586f, 0.47462994f, 0.35382342f},
+				{ 0.6307474f, 0.3814925f, 0.14542317f, 0.07341051f}
+			}
+		};
+
+		test(equals(itm, s), "item equals");
+
+
+
 		System.out.println("======= after transpose =======");
 
 		s = s.transpose(2, 1, 0);
 		test(Arrays.equals(s.shape, new int[]{4,2,3}), "shape equals");
 		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
 		test(Arrays.equals(s.acc, new int[]{2,1,0}), "access index");
+		itm = new float[][][]
+		{
+			{
+				{ 0.74243414f, 0.21058547f, 0.17359579f},
+				{0.63934743f, 0.33518922f, 0.6307474f}
+			},
 
+			{
+				{ 0.39531714f, 0.84329474f, 0.37589586f},
+				{0.22939426f, 0.6556215f, 0.3814925f}
+			},
+
+			{
+				{ 0.53885365f, 0.20217377f, 0.47462994f},
+				{ 0.41859204f, 0.7417879f, 0.14542317f}
+			},
+
+			{
+				{ 0.06623876f, 0.05789256f, 0.35382342f},
+				{ 0.75884575f, 0.8624616f, 0.07341051f}
+			}
+		};
+		test(equals(itm, s), "item equals");
 		// print(s);
 
+		System.out.println("===== subdim =====");
+
+		s = s.getStorage(1);
+
+		test(Arrays.equals(s.shape, new int[]{4,2,3}), "shape equals"); // no change.
+		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals"); // no chnage.
+		test(Arrays.equals(s.acc, new int[]{2,1,0}), "access index"); // no change.
+		test(Arrays.equals(s.getShape(), new int[]{2,3}), "shape subdim equals");
+
+		float[][] itm2=itm[1];
+
+		test(equals(itm2, s), "item equals");
+		System.out.println("===== subdim transpose");
+
+		s = s.transpose();
+
+		test(Arrays.equals(s.shape, new int[]{4,3,2}), "shape equals"); // no change.
+		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals"); // no chnage.
+		test(Arrays.equals(s.acc, new int[]{2,0,1}), "access index"); // no change.
+		test(Arrays.equals(s.getShape(), new int[]{3,2}), "shape subdim equals");
+
+		itm2 = new float[][]{
+			{0.39531714f,0.22939426f},
+			{0.84329474f, 0.6556215f},
+			{0.37589586f,0.3814925f}
+		};
+		test(equals(itm2, s), "subdim transpose item equals");
+		System.out.println("✓✓ Transpose test completed. ✓✓");
 
 	}
 	static void test4()
@@ -200,5 +284,51 @@ public class Test
 			}
 			System.out.println("]");
 		}
+	}
+	public static boolean equals(float[] f, Storage s)
+	{
+		if (s.dim != 1)
+		{
+			// System.out.println("dim not equals");
+			return false;
+		}
+		int[] sh=s.getShape();
+		if (f.length != sh[0])
+			return false;
+		for (int i=0;i < f.length;i++)
+			if (f[i] != s.getScalar(i))
+				return false;
+		return true;
+	}
+	public static boolean equals(float[][] f, Storage s)
+	{
+		if (s.dim != 2)
+		{
+			// System.out.println("dim not equals");
+			return false;
+		}
+		int[] sh=s.getShape();
+		if (f.length != sh[0] || f[0].length != sh[1])
+		{
+			// System.out.println("shape not equals");
+			return false;
+		}
+		for (int i=0;i < sh[0];i++)
+			for (int j=0;j < sh[1];j++)
+				if (f[i][j] != s.getScalar(i, j))
+					return false;
+		return true;
+	}
+	public static boolean equals(float[][][] f, Storage s)
+	{
+		if (s.dim != 3)
+		{
+			// System.out.println("dim not equals");
+			return false;
+		}
+		for (int i=0;i < s.shape[0];i++)
+			if (!equals(f[i], s.getStorage(i)))
+				return false;
+		return true;
 	}
 }

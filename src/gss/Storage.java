@@ -6,15 +6,17 @@ import java.util.*;
 public class Storage
 {
 	public Data base;
-	public int[] bShape;
-	public int[] shape;
+	public int[] bShape; // it holds shape of the array within 0,position.  // i don't think it is usefull.
+	public int[] shape; // no change when subdim.
 	public int[] sum;
 	public int[] acc;
 	public int position;
-	public int dim;
+	public int dim; // problem when subdim.
+	public int length; // problem when subdim.
 
 	/*
 	 // transpose works.
+	 -- getStorage(...)  check for indexOutofBound.
 	 */
 
 	public Storage(int...sh)
@@ -28,6 +30,7 @@ public class Storage
 		for (int i=0;i < acc.length;i++)
 			acc[i] = i;
 		this.dim = sh.length;
+		this.length = Util.length(shape);
 	}
 	public Storage(float[] dt, int[]sh)
 	{
@@ -39,6 +42,7 @@ public class Storage
 		for (int i=0;i < acc.length;i++)
 			acc[i] = i;
 		this.dim = sh.length;
+		this.length = Util.length(shape);
 	}
 	private Storage(Data d, int[]oShape, int[]sm, int[]ac, int[]sh, int pos)
 	{
@@ -49,6 +53,7 @@ public class Storage
 		this.bShape = sh;
 		this.position = pos;
 		this.dim = shape.length - bShape.length;
+		this.length = Util.length(shape); // error with subdim array,
 		// this.sum = Util.sumShapes(sh, null);
 		// this.offset = offset;
 		// transpose doesn't work for subdim arrays.
@@ -58,6 +63,7 @@ public class Storage
 	}
 	public Storage getStorage(int...index)
 	{
+		// check if index is within range.
 		// int[] inf=getPosAndLength(index);
 		// inf[0] = position;
 		// inf[1...]= new shape;
@@ -141,7 +147,8 @@ public class Storage
 	}
 	public Storage transpose()
 	{
-		// fix range of axis
+		// check for deplicates item.
+		// check for items are within range.
 		// the axes must be less than the shape length - position.
 		int[] accn=Arrays.copyOf(acc, acc.length);
 		int[] sh=Arrays.copyOf(shape, shape.length);
@@ -156,6 +163,9 @@ public class Storage
 	}
 	public Storage transpose(int...axes)
 	{
+		// check for deplicates item.
+		// check for items are within range.
+		// the axes must be less than the shape length - position.
 		if (axes.length != shape.length - position)
 			throw new RuntimeException("invalid axes");
 		int[] ac=Arrays.copyOf(acc, acc.length);
@@ -179,6 +189,13 @@ public class Storage
 		for (int i=0;i < base.length;i++)
 			ar[i] = getScalar(getShape(i));
 		return ar;
+	}
+	public int[] getShape()
+	{
+		int[] s=new int[shape.length - position];
+		for (int i=0;i < s.length;i++)
+			s[i] = shape[i + position];
+		return s;
 	}
 }
 
