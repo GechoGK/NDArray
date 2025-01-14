@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Test
 {
-	public static void main(String[]args)
+	public static void main2(String[]args)
 	{
 
 		// test();
@@ -28,6 +28,18 @@ public class Test
 		System.out.println("=== Test 6.view test ===");
 
 		Storage s=new Storage(3, 2);
+		fillR(s.base);
+		System.out.println("original");
+		print(s);
+
+		System.out.println("\nTransposed");
+		s = s.transpose();
+		print(s);
+
+		s.view(new int[]{2,3}, 1, 0);
+
+
+		System.out.println("--------------");
 		print(s);
 
 	}

@@ -2,6 +2,7 @@ package gss;
 
 import gss.math.*;
 import java.util.*;
+import java.util.stream.*;
 
 public class Storage
 {
@@ -18,6 +19,14 @@ public class Storage
 	 // transpose works.
 	 -- getStorage(...)  check for indexOutofBound.
 	 */
+	// transpose ✓
+	// get ✓
+	// broadcast   // only "getScalar, setScalar" works.
+	// view
+	// reshape
+	// stack
+	// vstack
+	// hstack
 
 	public Storage(int...sh)
 	{
@@ -47,6 +56,11 @@ public class Storage
 	private Storage(Data d, int[]oShape, int[]sm, int[]ac, int[]sh, int pos)
 	{
 		this.base = d;
+		init(oShape, sm, ac, sh, pos);
+
+	}
+	public void init(int[]oShape, int[]sm, int[]ac, int[]sh, int pos)
+	{
 		this.shape = oShape;
 		this.sum = sm;
 		this.acc = ac;
@@ -76,47 +90,11 @@ public class Storage
 		// System.out.println(".." + ind);
 		return base.getData(ind);
 	}
-//	public int[] getPosAndLength(int...index)
-//	{
-//		{
-//
-//		}
-//		if (index.length == shape.length)
-//		{
-//			return new int[]{shapeToIndex(index),0};
-//		}
-//		else
-//		{
-//			int newPos=0;
-//			int length=shape.length - index.length;
-//			int[] newShape=new int[length + 1];
-//			int strPos=index.length;
-//			for (int i=0;i < Math.max(length, index.length);i++)
-//			{
-//				if (i < length)
-//				{
-//					int sm=strPos + i;
-//					newShape[i + 1] = shape[sm];
-//				}
-//				if (i < index.length)
-//				{
-//					// if (index[i] >= shape[i])
-//					// 	throw new IndexOutOfBoundsException();
-//					int shapeInd = index[i];
-//					newPos += shapeInd * sum[acc[i]];
-//				}
-//				// System.out.println("== " + (sm));
-//			}
-//			newShape[0] = newPos; // + offset;
-//			return newShape;
-//		}
-//	}
 	public int shapeToIndex(int...index)
 	{
 		if (index.length != shape.length - position) // change this " != " to " > " and implement the if block. or use backward loop.
 			throw new IndexOutOfBoundsException();
 		int newPos=0;
-		// the loop have error when we use index.length < shape.length, so use backward looping.
 		for (int i=0;i < shape.length;i++)
 		{
 			int shapeInd = i >= position ? index[i - position]: bShape[i]; // Math.min(index[i], shape[i] - 1);
@@ -147,7 +125,7 @@ public class Storage
 	}
 	public Storage transpose()
 	{
-		// check for deplicates item.
+		// check for deplicated item.
 		// check for items are within range.
 		// the axes must be less than the shape length - position.
 		int[] accn=Arrays.copyOf(acc, acc.length);
@@ -182,6 +160,15 @@ public class Storage
 		// this.acc = ac;
 		// this.shape = sh;
 		return new Storage(base, sh, sum, ac, bShape, position);
+	}
+	public void view(int[]newSh, int...ac)
+	{
+		if (newSh.length == 0)
+			throw new RuntimeException("invalid shape " + Arrays.toString(newSh));
+		if (Util.length(shape) != Util.length(newSh))
+			throw new RuntimeException("invalid shape: the total lemfth of the shape must be equal. :"   + Arrays.toString(newSh));
+		int[]sm=Util.sumShapes(newSh, null);
+		init(newSh, sm, ac, bShape, position);
 	}
 	public float[] toArray()
 	{
