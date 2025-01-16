@@ -27,20 +27,20 @@ public class Test
 	{
 		System.out.println("=== Test 6.view test ===");
 
-		Storage s=new Storage(3, 2);
+		Storage s=new Storage(3, 2, 4);
 		fillR(s.base);
 		System.out.println("original");
 		print(s);
 
 		System.out.println("\nTransposed");
-		s = s.transpose();
+		s = s.transpose(2, 1, 0);
+		// ...      ...(0,
 		print(s);
 
-		s.view(new int[]{2,3}, 1, 0);
+		s.view(new int[]{8,3}, 1,0,2);
 
-
-		System.out.println("--------------");
 		print(s);
+
 
 	}
 	static void test5()

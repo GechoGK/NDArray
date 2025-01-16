@@ -166,7 +166,7 @@ public class Storage
 		if (newSh.length == 0)
 			throw new RuntimeException("invalid shape " + Arrays.toString(newSh));
 		if (Util.length(shape) != Util.length(newSh))
-			throw new RuntimeException("invalid shape: the total lemfth of the shape must be equal. :"   + Arrays.toString(newSh));
+			throw new RuntimeException("invalid shape: the total length of the shape must be equal. :"   + Arrays.toString(newSh));
 		int[]sm=Util.sumShapes(newSh, null);
 		init(newSh, sm, ac, bShape, position);
 	}

@@ -256,4 +256,11 @@ public class Util
 				return false;
 		return true;
 	}
+	public static int[] range(int len)
+	{
+		int[] acc=new int[len];
+		for (int i=0;i < acc.length;i++)
+			acc[i] = i;
+		return acc;
+	}
 }
