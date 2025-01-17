@@ -11,7 +11,7 @@ public class Shape
 	 */
 	public Data data;
 	public int[] shape;
-	public int[] sum;
+	public int[] stride;
 	public int length;
 	public int offset=0;
 	public int dim=0;
@@ -37,9 +37,9 @@ public class Shape
 		this.shape = sh;
 		this.dim = shape.length;
 		if (sm == null)
-			this.sum = Util.sumShapes(sh, null);
+			this.stride = Util.sumShapes(sh, null);
 		else
-			this.sum = sm;
+			this.stride = sm;
 		this.length = Util.length(sh);
 		this.offset = off;
 	}
@@ -47,9 +47,9 @@ public class Shape
 	{
 		int off=shapeToIndex(sh);
 		int[] nShape=Arrays.copyOfRange(shape, sh.length, shape.length);
-		int[] sm=Arrays.copyOfRange(sum, sh.length, shape.length);
+		int[] sm=Arrays.copyOfRange(stride, sh.length, shape.length);
 		Shape s=new Shape(data, nShape, sm, off);
-		s.sum = sm;
+		// s.stride = sm;
 		return s;
 	}
 	public float getScalar(int...index)
@@ -68,7 +68,7 @@ public class Shape
 			int shapeInd = index[i];// Math.min(index[i], shape[i] - 1); // uncomment to enable broadcasting.
 			if (shapeInd >= shape[i])
 				throw new IndexOutOfBoundsException();
-			newPos += shapeInd *  sum[i];
+			newPos += shapeInd *  stride[i];
 		}
 		int finalIndex=newPos + offset;
 		return finalIndex;
@@ -93,10 +93,6 @@ public class Shape
 			ax[i] = ax.length - i - 1;
 		return transpose(ax);
 	}
-	public Shape view(int...newShape)
-	{
-		return new Shape(data, newShape, offset);
-	}
 	public Shape transpose(int...axes)
 	{
 		if (axes.length != shape.length)
@@ -109,12 +105,16 @@ public class Shape
 			if (i >= axes.length)
 				throw new IndexOutOfBoundsException("index must not greater than the dimension o the array");
 			sh[p] = shape[i];
-			sm[p] = sum[i];
+			sm[p] = stride[i];
 			p++;
 		}
 		return new TShape(data, sh, sm, offset);
 	}
-	public float[] toArray()
+	public Shape view(int...newShape)
+	{
+		return new Shape(data, newShape, offset);
+	}
+	public float[] toArray() // lazy collect.
 	{
 		float[] ar=new float[length];
 		for (int i=0;i < length;i++)

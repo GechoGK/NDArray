@@ -13,7 +13,7 @@ public class TShape extends Shape
 	{
 		this.data = d;
 		this.shape = sh;
-		this.sum = sm;
+		this.stride = sm;
 		this.length = Util.length(sh);
 		this.offset = offset;
 		this.dim = shape.length;
@@ -23,7 +23,7 @@ public class TShape extends Shape
 	{
 		int off=shapeToIndex(sh);
 		int[] nShape=Arrays.copyOfRange(shape, sh.length, shape.length);
-		int[] nSum=Arrays.copyOfRange(sum, sh.length, shape.length);
+		int[] nSum=Arrays.copyOfRange(stride, sh.length, shape.length);
 		TShape s=new TShape(data, nShape, nSum, off);
 		// s.offset = offset + off;
 		return s;
@@ -49,5 +49,10 @@ public class TShape extends Shape
 //		return finalIndex;
 //		// return super.shapeToIndex(index);
 //	}
-
+	@Override
+	public Shape view(int[] newShape)
+	{
+		TVShape ts=new TVShape(data, newShape, offset, shape, stride);
+		return ts;
+	}
 }

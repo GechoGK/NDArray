@@ -19,21 +19,121 @@ public class Test
 		test4();
 		test5();
 		test6();
+		test7();
 		a();
 
 	}
 	void a()
 	{
-
+		System.out.println("=== Test 8. transposedView shape and sub transposedView test with subdim.===");
+		System.out.println("work in progress");
 	}
-	void test6()
+	void test7()
 	{
-		System.out.println("=== Test 5. view and sub view test ===");
+		System.out.println("=== Test 7. transposedView shape and sub transposedView test ===");
 		Shape s=new Shape(3, 2, 4);
 		fillR(s.data);
 
 		test(Arrays.equals(s.shape, new int[]{3,2,4}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
+		test(Arrays.equals(s.stride, new int[]{8,4,1}), "stride equals");
+
+		// print(s);
+		float[][][] itm=
+		{
+			{
+				{0.74243414f, 0.39531714f, 0.53885365f, 0.06623876f},
+				{ 0.63934743f, 0.22939426f, 0.41859204f, 0.75884575f}
+			},
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f},
+				{ 0.33518922f, 0.6556215f, 0.7417879f, 0.8624616f}
+			},
+
+			{
+				{0.17359579f, 0.37589586f, 0.47462994f, 0.35382342f},
+				{ 0.6307474f, 0.3814925f, 0.14542317f, 0.07341051f}
+			}
+		};
+
+		test(equals(itm, s), "item equals");
+
+		// print(s);
+
+		System.out.println("======= after transpose =======");
+		s = s.transpose();
+
+		// print(s);
+
+		test(Arrays.equals(s.shape, new int[]{4,2,3}), "shape equals");
+		test(Arrays.equals(s.stride, new int[]{1,4,8}), "stride equals");
+
+		itm = new float[][][]
+		{
+			{
+				{ 0.74243414f, 0.21058547f, 0.17359579f},
+				{0.63934743f, 0.33518922f, 0.6307474f}
+			},
+
+			{
+				{ 0.39531714f, 0.84329474f, 0.37589586f},
+				{0.22939426f, 0.6556215f, 0.3814925f}
+			},
+
+			{
+				{ 0.53885365f, 0.20217377f, 0.47462994f},
+				{ 0.41859204f, 0.7417879f, 0.14542317f}
+			},
+
+			{
+				{ 0.06623876f, 0.05789256f, 0.35382342f},
+				{ 0.75884575f, 0.8624616f, 0.07341051f}
+			}
+		};
+		test(equals(itm, s), "item equals");
+
+		System.out.println("======= after transposed And view =======");
+
+		TVShape tv = (TVShape)s.view(4, 6);
+
+		test(Arrays.equals(tv.shape, new int[]{4,6}), "shape equals");
+		test(Arrays.equals(tv.stride, new int[]{6,1}), "stride equals");
+		test(Arrays.equals(tv.baseShape, new int[]{4,2,3}), "base shape equals");
+		test(Arrays.equals(tv.baseStride, new int[]{1,4,8}), "base stride equals");
+
+		float[][] itm2=
+		{
+			{
+				0.74243414f, 0.21058547f, 0.17359579f,
+				0.63934743f, 0.33518922f, 0.6307474f
+			},
+			{
+				0.39531714f, 0.84329474f, 0.37589586f,
+				0.22939426f, 0.6556215f, 0.3814925f
+			},
+			{
+				0.53885365f, 0.20217377f, 0.47462994f,
+				0.41859204f, 0.7417879f, 0.14542317f
+			},
+			{
+				0.06623876f, 0.05789256f, 0.35382342f,
+				0.75884575f, 0.8624616f, 0.07341051f
+			}
+		};
+
+		// print(tv);
+
+		test(equals(itm2, tv), "item equals");
+
+
+	}
+	void test6()
+	{
+		System.out.println("=== Test 6. view and sub view test ===");
+		Shape s=new Shape(3, 2, 4);
+		fillR(s.data);
+
+		test(Arrays.equals(s.shape, new int[]{3,2,4}), "shape equals");
+		test(Arrays.equals(s.stride, new int[]{8,4,1}), "stride equals");
 
 		// print(s);
 		float[][][] itm=
@@ -62,7 +162,7 @@ public class Test
 		Shape o = s.view(6, 4);
 
 		test(Arrays.equals(o.shape, new int[]{6,4}), "shape equals");
-		test(Arrays.equals(o.sum, new int[]{4,1}), "sum equals");
+		test(Arrays.equals(o.stride, new int[]{4,1}), "stride equals");
 
 		// print(s);
 		float[][] itm2=
@@ -81,7 +181,7 @@ public class Test
 		o = s.view(3, 8);
 
 		test(Arrays.equals(o.shape, new int[]{3,8}), "shape equals");
-		test(Arrays.equals(o.sum, new int[]{8,1}), "sum equals");
+		test(Arrays.equals(o.stride, new int[]{8,1}), "stride equals");
 
 		// print(s);
 		itm2 = new float[][] // 2d float array.
@@ -99,7 +199,7 @@ public class Test
 		o = s.view(24);
 
 		test(Arrays.equals(o.shape, new int[]{24}), "shape equals");
-		test(Arrays.equals(o.sum, new int[]{1}), "sum equals");
+		test(Arrays.equals(o.stride, new int[]{1}), "stride equals");
 
 		// print(s);
 		float[]itm3 = // 1d float array.
@@ -120,7 +220,7 @@ public class Test
 		o = s.view(8);
 
 		test(Arrays.equals(o.shape, new int[]{8}), "shape equals");
-		test(Arrays.equals(o.sum, new int[]{1}), "sum equals");
+		test(Arrays.equals(o.stride, new int[]{1}), "stride equals");
 
 		// print(s);
 		itm3 = new float[]
@@ -141,7 +241,7 @@ public class Test
 		// System.out.println(Arrays.toString(s.base.getArray()));
 
 		test(Arrays.equals(s.shape, new int[]{3,2,4}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{8,4,1}), "sum equals");
+		test(Arrays.equals(s.stride, new int[]{8,4,1}), "stride equals");
 		// test(Arrays.equals(s.acc, new int[]{0,1,2}), "access index");
 
 		// print(s);
@@ -168,7 +268,7 @@ public class Test
 
 		s = s.transpose(2, 1, 0);
 		test(Arrays.equals(s.shape, new int[]{4,2,3}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{1,4,8}), "sum equals");
+		test(Arrays.equals(s.stride, new int[]{1,4,8}), "stride equals");
 		// test(Arrays.equals(s.acc, new int[]{2,1,0}), "access index");
 		itm = new float[][][]
 		{
@@ -200,7 +300,7 @@ public class Test
 		s = s.get(1);
 
 		test(Arrays.equals(s.shape, new int[]{2,3}), "shape equals"); // no change.
-		test(Arrays.equals(s.sum, new int[]{4,8}), "sum equals"); // no chnage.
+		test(Arrays.equals(s.stride, new int[]{4,8}), "stride equals"); // no chnage.
 		// test(Arrays.equals(s.acc, new int[]{2,1,0}), "access index"); // no change.
 		// test(Arrays.equals(s.shape, new int[]{2,3}), "shape subdim equals");
 
@@ -212,7 +312,7 @@ public class Test
 		s = s.transpose();
 
 		test(Arrays.equals(s.shape, new int[]{3,2}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{8,4}), "sum equals");
+		test(Arrays.equals(s.stride, new int[]{8,4}), "stride equals");
 		// test(Arrays.equals(s.acc, new int[]{2,0,1}), "access index");
 		// test(Arrays.equals(s.shape, new int[]{3,2}), "shape subdim equals");
 
@@ -237,7 +337,7 @@ public class Test
 		System.out.println("✓ scalar access without transpose");
 		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals");
 		test(Arrays.equals(s.shape, new int[]{3,2}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{2,1}), "sum equals");
+		test(Arrays.equals(s.stride, new int[]{2,1}), "stride equals");
 		// test(Arrays.equals(s.acc, new int[]{0,1}), "Index access equals");
 
 		System.out.println("... get shape for original(not transpose) ...");
@@ -258,10 +358,10 @@ public class Test
 		System.out.println("... after transpose ...");
 		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals"); // no change.
 		// System.out.println(Arrays.toString(s.shape));
-		// System.out.println(Arrays.toString(s.sum));
+		// System.out.println(Arrays.toString(s.stride));
 		// System.out.println(Arrays.toString(s.acc));
 		test(Arrays.equals(s.shape, new int[]{2,3}), "shape equals");
-		test(Arrays.equals(s.sum, new int[]{1,2}), "sum equals"); // no change.
+		test(Arrays.equals(s.stride, new int[]{1,2}), "stride equals"); // no change.
 		// test(Arrays.equals(s.acc, new int[]{1,0}), "Index access equals");
 
 		System.out.println("... get shape for transpose ...");
@@ -324,12 +424,12 @@ public class Test
 	}
 	void test2()
 	{
-		System.out.println("=== Default Shape test ===");
+		System.out.println("=== Test 2. Default Shape test ===");
 
 		int sh[]={2,3};
 		Shape s=new Shape(2, 3);
 		test(Arrays.equals(sh, s.shape), "equals shape");
-		test(Arrays.equals(new int[]{3,1}, s.sum), "equal sum");
+		test(Arrays.equals(new int[]{3,1}, s.stride), "equal stride");
 		test(s.shapeToIndex(0, 0) == 0, "access index 1");
 		test(s.shapeToIndex(0, 2) == 2, "access index 2");
 		test(s.shapeToIndex(1, 0) == 3, "access index 3");
@@ -338,7 +438,7 @@ public class Test
 	}
 	void test1()
 	{
-		System.out.println("=== creating data class ===");
+		System.out.println("=== Test 1. creating data class ===");
 		Data d=new Data(2, 3);
 		// System.out.println(d.length);
 		// System.out.println(Arrays.toString(d.data));
