@@ -20,13 +20,86 @@ public class Test
 		test5();
 		test6();
 		test7();
+		test8();
 		a();
 
 	}
 	void a()
 	{
+		System.out.println("=== Test 9. get type inference. ===");
+
+	}
+	void test8()
+	{
 		System.out.println("=== Test 8. transposedView shape and sub transposedView test with subdim.===");
-		System.out.println("work in progress");
+
+		Shape s=new Shape(3, 2, 4);
+		fillR(s.data);
+
+		test(Arrays.equals(s.shape, new int[]{3,2,4}), "shape equals");
+		test(Arrays.equals(s.stride, new int[]{8,4,1}), "stride equals");
+
+		// print(s);
+		float[][][] itm=
+		{
+			{
+				{0.74243414f, 0.39531714f, 0.53885365f, 0.06623876f},
+				{ 0.63934743f, 0.22939426f, 0.41859204f, 0.75884575f}
+			},
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f},
+				{ 0.33518922f, 0.6556215f, 0.7417879f, 0.8624616f}
+			},
+
+			{
+				{0.17359579f, 0.37589586f, 0.47462994f, 0.35382342f},
+				{ 0.6307474f, 0.3814925f, 0.14542317f, 0.07341051f}
+			}
+		};
+
+		test(equals(itm, s), "item equals");
+
+		System.out.println("======= after subdim transpose =======");
+		// System.out.println(Arrays.toString(s.shape));
+		// print(s);
+		s = s.get(1);
+		// print(s);
+		// System.out.println(Arrays.toString(s.shape));
+		s = s.transpose();
+		// print(s);
+
+		// System.out.println(Arrays.toString(s.shape));
+
+		test(Arrays.equals(s.shape, new int[]{4,2}), "shape equals");
+		test(Arrays.equals(s.stride, new int[]{1,4}), "stride equals");
+
+		float[][]itm2= new float[][]
+		{
+			{0.21058547f,0.33518922f},
+			{0.84329474f,0.6556215f},
+			{0.20217377f, 0.7417879f},
+			{0.05789256f,0.8624616f}
+		};
+		test(equals(itm2, s), "item equals");
+
+		System.out.println("======= after subdim transpose and view =======");
+		s = s.view(8);
+
+		test(Arrays.equals(s.shape, new int[]{8}), "shape equals");
+		test(Arrays.equals(s.stride, new int[]{1}), "stride equals");
+
+		float[]itm3=
+		{
+			0.21058547f,0.33518922f,
+			0.84329474f,0.6556215f,
+			0.20217377f, 0.7417879f,
+			0.05789256f,0.8624616f
+		};
+		test(equals(itm3, s), "item equals");
+
+		// print(s);
+		System.out.println("--- subdim transpose view completed! ---");
+
 	}
 	void test7()
 	{

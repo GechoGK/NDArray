@@ -1,6 +1,7 @@
 package gss2.math;
 
 import gss.math.*;
+import java.util.*;
 
 public class TVShape extends Shape
 {
@@ -19,7 +20,16 @@ public class TVShape extends Shape
 		this.baseShape = bShape;
 		this.baseStride = bStride;
 	}
-
+	@Override
+	public Shape get(int[] sh)
+	{
+		int off=shapeToIndex(sh);
+		int[] nShape=Arrays.copyOfRange(shape, sh.length, shape.length);
+		// int[] nSum=Arrays.copyOfRange(stride, sh.length, shape.length);
+		TVShape s=new TVShape(data, nShape, off, baseShape, baseStride);
+		// s.offset = offset + off;
+		return s;
+	}
 	@Override
 	public int shapeToIndex(int[] index)
 	{
