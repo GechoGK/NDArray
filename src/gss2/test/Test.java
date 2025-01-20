@@ -13,20 +13,61 @@ public class Test
 	}
 	void test()
 	{
-		test1();
-		test2();
-		test3();
-		test4();
-		test5();
-		test6();
-		test7();
-		test8();
+
+//		test1();
+//		test2();
+//		test3();
+//		test4();
+//		test5();
+//		test6();
+//		test7();
+//		test8();
+//		test9();
 		a();
 
 	}
 	void a()
 	{
+		System.out.println("=== Test 10. broadcast. ===");
+		Shape s=new Shape(3, 1, 1);
+		fillR(s.data);
+		print(s);
+		System.out.println("--------");
+		s = s.broadcast(3, 2, 4);
+		s = s.broadcast(3, 2, 3);
+		// s.fill(10);
+		print(s);
+		System.out.println(Arrays.toString(s.shape));
+		for (int i=0;i < s.length;i++)
+		{
+			int[]sh=s.getShape(i);
+			System.out.println(Arrays.toString(sh) + " = " + s.getScalar(sh));
+		}
+
+		System.out.println("------");
+		s = s.copy();
+		print(s);
+
+	}
+	void test9()
+	{
 		System.out.println("=== Test 9. get type inference. ===");
+		Shape s=new Shape(3, 2, 4);
+		fillR(s.data);
+
+		test(s.getClass().equals(Shape.class), "first class test");
+		Shape ss=s.get(0);
+		test(ss.getClass().equals(Shape.class), "get class test");
+
+		ss = s.view(6, 4);
+		test(ss.getClass().equals(Shape.class), "view class test");
+
+
+		ss = s.transpose();
+		test(ss.getClass().equals(TShape.class), "transpose class test");
+
+		ss = ss.view(8, 3);
+		test(ss.getClass().equals(TVShape.class), "view transposed class test");
 
 	}
 	void test8()

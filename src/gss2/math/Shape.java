@@ -9,6 +9,14 @@ public class Shape
 	 this shape is used to get and set item to and from data.
 
 	 */
+	/*
+	 // error not checked for all shape variants.
+	 // get check for error.
+	 // view check for length.
+	 // transpose check for length
+	 // broadcast check for broadcast rules.
+	 // 
+	 */
 	public Data data;
 	public int[] shape;
 	public int[] stride;
@@ -27,19 +35,19 @@ public class Shape
 	{
 		init(d, sh, null, off);
 	}
-	public Shape(Data d, int[]sh, int[] sm, int off)
+	public Shape(Data d, int[]sh, int[] strd, int off)
 	{
-		init(d, sh, sm, off);
+		init(d, sh, strd, off);
 	}
-	private void init(Data d, int[]sh, int[] sm, int off)
+	private void init(Data d, int[]sh, int[] strd, int off)
 	{
 		this.data = d;
 		this.shape = sh;
 		this.dim = shape.length;
-		if (sm == null)
+		if (stride == null)
 			this.stride = Util.sumShapes(sh, null);
 		else
-			this.stride = sm;
+			this.stride = strd;
 		this.length = Util.length(sh);
 		this.offset = off;
 	}
@@ -47,10 +55,24 @@ public class Shape
 	{
 		int off=shapeToIndex(sh);
 		int[] nShape=Arrays.copyOfRange(shape, sh.length, shape.length);
-		int[] sm=Arrays.copyOfRange(stride, sh.length, shape.length);
-		Shape s=new Shape(data, nShape, sm, off);
-		// s.stride = sm;
+		int[] strd=Arrays.copyOfRange(stride, sh.length, shape.length);
+		Shape s=new Shape(data, nShape, strd, off);
+		// s.stride = strd;
 		return s;
+	}
+	public void set(int[]index, float val)
+	{
+		if (index.length > shape.length)
+			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+		get(index).fill(val);
+	}
+	public void fill(float v)
+	{
+		for (int i=0;i < length;i++)
+		{
+			int ind=shapeToIndex(getShape(i));
+			data.data[ind] = v;
+		}
 	}
 	public float getScalar(int...index)
 	{
@@ -76,13 +98,14 @@ public class Shape
 	public int[] getShape(int index)
 	{
 		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
-		if (index >= data.length || index < 0)
+		if (index >= length || index < 0)
 			throw new IndexOutOfBoundsException();
-		int[] indShape=new int[this.shape.length];
-		for (int i=this.shape.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
+		int[] sh=this.shape;
+		int[] indShape=new int[sh.length];
+		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
 		{
-			indShape[i] = index % this.shape[i];
-			index = index / this.shape[i];
+			indShape[i] = index % sh[i];
+			index = index / sh[i];
 		}
 		return indShape;
 	}
@@ -98,21 +121,42 @@ public class Shape
 		if (axes.length != shape.length)
 			throw new RuntimeException("invalid axes");
 		int[] sh=new int[shape.length]; // Arrays.copyOf(shape, shape.length);
-		int[] sm=new int[shape.length];
+		int[] strd=new int[shape.length];
 		int p=0;
 		for (int i:axes)
 		{
 			if (i >= axes.length)
 				throw new IndexOutOfBoundsException("index must not greater than the dimension o the array");
 			sh[p] = shape[i];
-			sm[p] = stride[i];
+			strd[p] = stride[i];
 			p++;
 		}
-		return new TShape(data, sh, sm, offset);
+		return new TShape(data, sh, strd, offset);
 	}
 	public Shape view(int...newShape)
 	{
 		return new Shape(data, newShape, offset);
+	}
+	public Shape broadcast(int...newShape)
+	{
+		// check for broadcastable shape
+		if (!isBrodcastable(this.shape, newShape))
+			throw new RuntimeException("the shape " + Arrays.toString(newShape) + " can't be broadcast to " + Arrays.toString(this.shape));
+		// broadcastable shapes are used only to get scalar value. for now.
+		BShape sh = new BShape(this, shape, newShape);
+		return sh;
+	}
+	public boolean isBrodcastable(int[]orgShape, int[]newShape)
+	{
+		if (newShape.length < orgShape.length)
+			return false;
+		int len=newShape.length - orgShape.length;
+		// System.out.println("checking... len =" + len);
+		for (int i=0;i < orgShape.length;i++)
+			if (!(orgShape[i] == newShape[len + i] || (orgShape[i] == 1 && newShape[len + i] > 0)))
+				return false;
+		// System.out.println("brodcastable shape " + Arrays.toString(tarShape) + " with " + Arrays.toString(orgShape));
+		return true;
 	}
 	public float[] toArray() // lazy collect.
 	{
@@ -120,5 +164,12 @@ public class Shape
 		for (int i=0;i < length;i++)
 			ar[i] = getScalar(getShape(i));
 		return ar;
+	}
+	public Shape copy()
+	{
+		Shape sh=new Shape(this.shape);
+		for (int i=0;i < sh.length;i++)
+			sh.data.data[i] = getScalar(getShape(i));
+		return sh;
 	}
 }

@@ -28,27 +28,6 @@ public class TShape extends Shape
 		// s.offset = offset + off;
 		return s;
 	}
-//	@Override
-//	public int shapeToIndex(int[] index)
-//	{
-//		if (index.length > shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-//			throw new IndexOutOfBoundsException();
-//		int newPos=0;
-//		for (int i=0;i < index.length;i++)
-//		{
-//			int shapeInd = index[i]; // Math.min(index[i], shape[i] - 1);
-//			// baseShape[i] -1 ; because . the baseShape minimum value is 1, but 1 means it's acess index is 0, so to make it zero we need to -1;
-//			// check if the index at i is not out of bound.
-//			// if (shapeInd >= shape[i])
-//			//	throw new IndexOutOfBoundsException();
-//			newPos += shapeInd *  sum[i];
-//		}
-//		int finalIndex=newPos + offset;
-//		// System.out.println("off = " + offset + ", newP = " + newPos + ", final pos = " + finalIndex + ", len= " + length);
-//		// System.out.print("--" + finalIndex + "--" + offset + "--");
-//		return finalIndex;
-//		// return super.shapeToIndex(index);
-//	}
 	@Override
 	public Shape view(int[] newShape)
 	{

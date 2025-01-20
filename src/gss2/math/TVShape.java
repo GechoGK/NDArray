@@ -35,7 +35,7 @@ public class TVShape extends Shape
 	{
 		// convert local shape to local index.
 		// the old shapeToIndex can do it.
-		int ind= super.shapeToIndex(index);
+		int ind = super.shapeToIndex(index);
 		// convert localIndex to globalShape, using stored baseShape. arrays.
 		int[]nShape=getShape(ind, baseShape);
 		// then find the global index if the globalShape using stored baseStride.
@@ -66,5 +66,11 @@ public class TVShape extends Shape
 			index = index / baseShape[i];
 		}
 		return indShape;
+	}
+	@Override
+	public Shape view(int[] newShape)
+	{
+		TVShape ts=new TVShape(data, newShape, offset, baseShape, baseStride);
+		return ts;
 	}
 }
