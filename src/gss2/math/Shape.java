@@ -66,6 +66,17 @@ public class Shape
 			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
 		get(index).fill(val);
 	}
+	public void setExact(int[]index, float v)
+	{
+		// if (index.length != shape.length)
+		// 	throw new RuntimeException("ivalid index size :" + Arrays.toString(index) + " >> the index length should be equal to the shape length of the array.");
+		int ps=shapeToIndex(index);
+		data.data[ps] = v;
+	}
+	public void setFlat(int p, float v)
+	{
+		setExact(getShape(p), v);
+	}
 	public void fill(float v)
 	{
 		for (int i=0;i < length;i++)
@@ -74,11 +85,15 @@ public class Shape
 			data.data[ind] = v;
 		}
 	}
-	public float getScalar(int...index)
+	public float getFloat(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
 		return data.data[ind];
+	}
+	public float getFlat(int p)
+	{
+		return getFloat(getShape(p));
 	}
 	public int shapeToIndex(int...index)
 	{
@@ -162,14 +177,70 @@ public class Shape
 	{
 		float[] ar=new float[length];
 		for (int i=0;i < length;i++)
-			ar[i] = getScalar(getShape(i));
+			ar[i] = getFloat(getShape(i));
 		return ar;
 	}
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
 		for (int i=0;i < sh.length;i++)
-			sh.data.data[i] = getScalar(getShape(i));
+			sh.data.data[i] = getFloat(getShape(i));
 		return sh;
+	}
+	public String getDataAsString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append(getFromShape(shape, 0));
+		return sb.toString();
+	}
+	public String getFromShape(int[]sh, int off)
+	{
+		if (sh.length == 1)
+		{
+			StringBuilder sb=new StringBuilder();
+			sb.append("[");
+			for (int i=off;i < off + sh[0];i++)
+			{
+				if (i != off)
+					sb.append(",");
+				sb.append(" ");
+				sb.append(data.data[i]);
+				if (i == off + sh[0] - 1)
+					sb.append(" ");
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		else if (sh.length == 2)
+		{
+			StringBuilder sb=new StringBuilder();
+			sb.append("[");
+			for (int i=0;i < sh[0];i++)
+			{
+				if (i != off)
+				{
+					sb.append("\n");
+					sb.append(" ");
+				}
+				sb.append(getFromShape(new int[]{sh[1]}, off + sh[1] * i));
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		else
+		{
+			StringBuilder sb=new StringBuilder();
+			sb.append("[");
+			int[]nsh=Arrays.copyOfRange(sh, 1, sh.length);
+			int[] str=Util.sumShapes(sh, null);
+			for (int i=0;i < sh[0];i++)
+			{
+				sb.append(getFromShape(nsh, off + str[0] * i));
+				sb.append("\n");
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		// return null;
 	}
 }

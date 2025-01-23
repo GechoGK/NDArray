@@ -1,7 +1,10 @@
 package gss2.test;
 
+import gss.math.*;
 import gss2.math.*;
 import java.util.*;
+
+import gss2.math.Data;
 
 public class Test
 {
@@ -23,30 +26,144 @@ public class Test
 //		test7();
 //		test8();
 //		test9();
+//		test10();
+//		test11();
+//		test12();
 		a();
 
 	}
 	void a()
 	{
+		// test NDArray.
+		
+	}
+	void test12()
+	{
+		System.out.println("=== 12. Shape get test. ===");
+		Shape s=new Shape(3, 2, 4);
+		fillR(s.data);
+
+		float[][][] itm=
+		{
+			{
+				{0.74243414f, 0.39531714f, 0.53885365f, 0.06623876f},
+				{ 0.63934743f, 0.22939426f, 0.41859204f, 0.75884575f}
+			},
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f},
+				{ 0.33518922f, 0.6556215f, 0.7417879f, 0.8624616f}
+			},
+
+			{
+				{0.17359579f, 0.37589586f, 0.47462994f, 0.35382342f},
+				{ 0.6307474f, 0.3814925f, 0.14542317f, 0.07341051f}
+			}
+		};
+
+		test(s.getFloat(2) == 0.17359579f, "getFloat 1");
+		test(s.getFloat(0, 1) == 0.63934743f, "getFloat 2");
+		test(s.getFloat(1, 0, 2) == 0.20217377f, "getFloat 3");
+
+		test(s.getFlat(1) == 0.39531714f, "getFlat 1");
+		test(s.getFlat(15) == 0.8624616f, "getFlat 2");
+		test(s.getFlat(22) == 0.14542317f, "getFlat 3");
+
+
+	}
+	void test11()
+	{
+		System.out.println("=== 11. Shape set test. ===");
+		Shape s=new Shape(3, 2, 4);
+		fillR(s.data);
+		// print(s);
+		// System.out.println("---------");
+		s.set(new int[]{0}, 100);
+		s.setExact(new int[]{1,1}, 50);
+		s.setFlat(22, 90);
+		// print(s);
+		float[][][] itm=
+		{
+			{
+				{100,100,100,100},
+				{100,100,100,100}  // set(new int[]{0}, 100);
+			},
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f},
+				{ 50, 0.6556215f, 0.7417879f, 0.8624616f} // s.setExact(new int[]{1,1}, 50)
+			},
+
+			{
+				{0.17359579f, 0.37589586f, 0.47462994f, 0.35382342f},
+				{ 0.6307474f, 0.3814925f, 90, 0.07341051f} // setFlat(22,90)
+			}
+		};
+		test(equals(itm, s), "set methods");
+	}
+	void testBroadcast()
+	{
 		System.out.println("=== Test 10. broadcast. ===");
 		Shape s=new Shape(3, 1, 1);
 		fillR(s.data);
-		print(s);
+
+		float[][][] itm=
+		{
+			{
+				{ 0.74243414f}
+			},
+
+			{
+				{ 0.39531714f}
+			},
+
+			{
+				{ 0.53885365f}
+			}
+		};
+		test(equals(itm, s), "original item equals");
+
+		// print(s);
 		System.out.println("--------");
-		s = s.broadcast(3, 2, 4);
-		s = s.broadcast(3, 2, 3);
+		s = s.broadcast(3, 2, 2);
+		// System.out.println(s.getFloat(2, 1, 1));
+		itm = new float[][][]
+		{
+			{
+				{ 0.74243414f,0.74243414f },
+				{ 0.74243414f,0.74243414f }
+			},
+
+			{
+				{ 0.39531714f,0.39531714f },
+				{ 0.39531714f,0.39531714f }
+			},
+
+			{
+				{ 0.53885365f, 0.53885365f},
+				{ 0.53885365f, 0.53885365f}
+			}
+		};
+		// print(s);
+		test(equals(itm, s.copy()), "broadcasted item equals");
+		// s = s.broadcast(3, 2, 3);
 		// s.fill(10);
-		print(s);
-		System.out.println(Arrays.toString(s.shape));
+		// print(s);
+		// System.out.println(Arrays.toString(s.shape));
+		float[]fl=Util.flatten(itm);
 		for (int i=0;i < s.length;i++)
 		{
 			int[]sh=s.getShape(i);
-			System.out.println(Arrays.toString(sh) + " = " + s.getScalar(sh));
-		}
+			float t=fl[i];
+			float v= s.getFloat(sh);
+			float fv=s.getFlat(i);
+			// System.out.println(t + ", " + v + ", " + fv);
 
+			if (t != v || v != fv)
+				throw new RuntimeException("test not passed, item not equals with getFlat");
+		}
+		System.out.println("✓ broadcasted item equals");
 		System.out.println("------");
-		s = s.copy();
-		print(s);
+		// s = s.copy();
+		// print(s);
 
 	}
 	void test9()
@@ -446,7 +563,7 @@ public class Test
 		float[] dt=fillR(s.data);
 		// System.out.println(Arrays.toString(dt));
 		for (int i=0;i < dt.length;i++)
-			if (dt[i] != s.getScalar(s.getShape(i)))
+			if (dt[i] != s.getFloat(s.getShape(i)))
 				throw new AssertionError("scalar access error ");
 		System.out.println("✓ scalar access without transpose");
 		// test(Arrays.equals(s.bShape, new int[]{3,2}), "base Shape equals");
@@ -532,7 +649,7 @@ public class Test
 		for (int i=0;i < s.length;i++)
 		{
 			int[] sh=s.getShape(i);
-			test(s.getScalar(sh) == s.data.data[i], "get " + i);
+			test(s.getFloat(sh) == s.data.data[i], "get " + i);
 		}
 		System.out.println("--- getScalar test done! ---");
 	}
@@ -586,7 +703,7 @@ public class Test
 		{
 			System.out.print("[");
 			for (int i=0;i < str.shape[0];i++)
-				System.out.print(str.getScalar(i) + ", ");
+				System.out.print(str.getFloat(i) + ", ");
 			System.out.println("]");
 		}
 		else if (str.shape.length == 2)
@@ -596,7 +713,7 @@ public class Test
 			{
 				System.out.print((j == 0 ?"": " ") + "[");
 				for (int k=0;k < str.shape[1];k++)
-					System.out.print((k == 0 ?" ": ", ") + str.getScalar(j, k));
+					System.out.print((k == 0 ?" ": ", ") + str.getFloat(j, k));
 				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
 			}
 			System.out.println("]");
@@ -624,7 +741,7 @@ public class Test
 		if (f.length != sh[0])
 			return false;
 		for (int i=0;i < f.length;i++)
-			if (f[i] != s.getScalar(i))
+			if (f[i] != s.getFloat(i))
 				return false;
 		return true;
 	}
@@ -641,10 +758,10 @@ public class Test
 			// System.out.println("shape not equals");
 			return false;
 		}
-		for (int i=0;i < sh[0];i++)
-			for (int j=0;j < sh[1];j++)
-				if (f[i][j] != s.getScalar(i, j))
-					return false;
+		float[] a=Util.flatten(f);
+		for (int i=0;i < s.length;i++)
+			if (a[i] != s.getFlat(i))
+				return false;
 		return true;
 	}
 	public static boolean equals(float[][][] f, Shape s)
@@ -654,8 +771,15 @@ public class Test
 			// System.out.println("dim not equals");
 			return false;
 		}
-		for (int i=0;i < s.shape[0];i++)
-			if (!equals(f[i], s.get(i)))
+		int[] sh=s.shape;
+		if (f.length != sh[0] || f[0].length != sh[1] || f[1].length != sh[2])
+		{
+			// System.out.println("shape not equals");
+			return false;
+		}
+		float[] a=Util.flatten(f);
+		for (int i=0;i < s.length;i++)
+			if (a[i] != s.getFlat(i))
 				return false;
 		return true;
 	}

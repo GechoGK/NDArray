@@ -7,6 +7,10 @@ public class BShape extends Shape
 {
 	/*
 	 broadcast works with a little bit of hack.
+	 // in broadcasting only accessing items from the array and copy is allowed.
+	 // other operations performed on the base shape.
+
+	 !!! to print broadcasted shape you need to copy it first, then print it.
 	 */
 	private int[] baseShape;
 	private Shape base;
@@ -36,12 +40,26 @@ public class BShape extends Shape
 	}
 
 //	@Override
+//	public float getFloat(int[] index)
+//	{
+//		return super.getFloat(index);
+//	}
+
+//	@Override
+//	public void setExact(int[] index, float v)
+//	{
+//		base.setExact(index , v);
+//	}
+
+//	@Override
 //	public float getScalar(int[] index)
 //	{
 //		int ind=shapeToIndex(index);
 //		// System.out.println(".." + ind);
 //		return base.data.data[ind];
 //	}
+
+
 	@Override
 	public int shapeToIndex(int[] index)
 	{
