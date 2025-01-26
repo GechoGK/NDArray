@@ -34,8 +34,22 @@ public class Test
 	}
 	void a()
 	{
-		// test NDArray.
-		
+		System.out.println("=== 13. Shape toArray test. ===");
+		Shape s=new Shape(3, 1, 4);
+		fillR(s.data);
+
+		Shape s2=s.transpose();
+		s2 = s2.broadcast(3,2, 4, 2, 3);
+		// System.out.println(s2.getFloat(0, 1));
+
+		print(s);
+		float[] ar=s.toArray();
+		System.out.println("=== " + Arrays.toString(ar));
+		System.out.println("---------");
+		// System.out.println(s2.getDataAsString());
+		print(s2);
+		ar = s2.toArray();
+		System.out.println("=== " + Arrays.toString(ar));
 	}
 	void test12()
 	{
@@ -699,6 +713,7 @@ public class Test
 	}
 	public static void print(Shape str)
 	{
+		// System.out.println("== "+str.shape.length);
 		if (str.shape.length == 1)
 		{
 			System.out.print("[");

@@ -73,4 +73,17 @@ public class TVShape extends Shape
 		TVShape ts=new TVShape(data, newShape, offset, baseShape, baseStride);
 		return ts;
 	}
+	@Override
+	public float[] toArray(float[] out, int start, int len)
+	{
+		if (out == null)
+			out = new float[len];
+		if (out.length < len)
+			throw new RuntimeException("the length of the inpht array doesn't match the length specified: " + len + " > " + out.length);
+		
+		for (int l=0;l < len;l++)
+			out[l] = getFlat(l);
+
+		return out;
+	}
 }

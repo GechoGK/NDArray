@@ -146,10 +146,12 @@ public class Shape
 			strd[p] = stride[i];
 			p++;
 		}
-		return new TShape(data, sh, strd, offset);
+		return new TShape(data, shape, sh, strd, offset);
 	}
 	public Shape view(int...newShape)
 	{
+		// if newShape length != length
+		//		can't view this array into new shape.
 		return new Shape(data, newShape, offset);
 	}
 	public Shape broadcast(int...newShape)
@@ -173,12 +175,38 @@ public class Shape
 		// System.out.println("brodcastable shape " + Arrays.toString(tarShape) + " with " + Arrays.toString(orgShape));
 		return true;
 	}
-	public float[] toArray() // lazy collect.
+	// to array methods.
+	// for other shapes, implement only this one: te others workoutby themself.
+	public float[] toArray(float[]out, int start, int len) // lazy collect.
 	{
-		float[] ar=new float[length];
-		for (int i=0;i < length;i++)
-			ar[i] = getFloat(getShape(i));
-		return ar;
+		if (out == null)
+			out = new float[len];
+		if (out.length < len)
+			throw new RuntimeException("the length of the input array doesn't match the length specified: " + len + " > " + out.length);
+		int str=offset + start;
+		for (int i=0;i < len;i++)
+			out[i] = data.data[str + i];
+		return out;
+	}
+	public float[]toArray()
+	{
+		return toArray(null, 0, length);
+	}
+	public float[] toArray(float[]out)
+	{
+		return toArray(out, 0, length);
+	}
+	public float[] toArray(float[]out, int start)
+	{
+		return toArray(out, start, out.length);
+	}
+	public float[]toArray(int start, int end)
+	{
+		return toArray(null, start, end);
+	}
+	public float[]toArray(int start)
+	{
+		return toArray(null, start, length);
 	}
 	public Shape copy()
 	{
