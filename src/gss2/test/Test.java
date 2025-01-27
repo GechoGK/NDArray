@@ -39,7 +39,7 @@ public class Test
 		fillR(s.data);
 
 		Shape s2=s.transpose();
-		s2 = s2.broadcast(3,2, 4, 2, 3);
+		s2 = s2.broadcast(3, 2, 4, 2, 3);
 		// System.out.println(s2.getFloat(0, 1));
 
 		print(s);

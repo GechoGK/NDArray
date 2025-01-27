@@ -13,7 +13,7 @@ public class BShape extends Shape
 	 !!! to print broadcasted shape you need to copy it first, then print it.
 	 */
 
-	// fix shapeToIndex have problem, the ckipping problem.
+	// fix shapeToIndex have problem, the clipping problem.
 
 	private int[] baseShape;
 	private int[]newBaseShape;
@@ -51,38 +51,49 @@ public class BShape extends Shape
 		 it extracts the new base shape by subtracting the "sh" into baseShape and if it differ from original shape,
 		 then it broadcast the new shape and returns it.
 		 */
-		System.out.println(Arrays.toString(shape));
+		// System.out.println(Arrays.toString(shape));
+		// System.out.println("getting at =" + Arrays.toString(sh));
 		int len=shape.length - sh.length;
-		System.out.println("new len =" + len);
+		// System.out.println("new len =" + len);
 		if (len > baseShape.length)
 		{
-			System.out.println("still in broadcast");
+			// System.out.println("still in broadcast");
 			int[]nsh=Arrays.copyOfRange(shape, sh.length, shape.length);
-			System.out.println("new shape =" + Arrays.toString(nsh));
+			// System.out.println("new shape =" + Arrays.toString(nsh));
 			return new BShape(base, baseShape, nsh, offset);
 		}
 		else
 		{
-			System.out.println("length is in range checking again.");
+			// System.out.println("length is in range checking again.");
 			int[]nsh=Arrays.copyOfRange(shape, sh.length, shape.length);
 			int[]bnsh=Arrays.copyOfRange(baseShape, baseShape.length - len, baseShape.length);
-			System.out.println("new shape =" + Arrays.toString(nsh));
-			System.out.println("trimmed base shape =" + Arrays.toString(bnsh));
+			// System.out.println("new shape =" + Arrays.toString(nsh));
+			// System.out.println("trimmed base shape =" + Arrays.toString(bnsh));
 			if (Arrays.equals(nsh, bnsh))
 			{
-				System.out.println("Arrays are equal existing broadcast");
+				// System.out.println("Arrays are equal existing broadcast");
 				return base.get(sh);
 			}
 			else
 			{
 				// problem. convert broadcasted into newBaseShape.
-				System.out.println("still in broadcast");
-				return base.get(sh).broadcast(nsh);
+				// System.out.println("still in broadcast");
+				convShape(sh, bnsh);
+				Shape s = base.get(sh);
+				// System.out.println("hape type =" + s);
+				s = s.broadcast(nsh);
+				// System.out.println("shape type afye broadcast =" + s);
+				return s;
 			}
 		}
 		// return base.get(sh);
 	}
-
+	private int[]convShape(int[]sh, int[]nsh)
+	{
+		for (int i=0;i < sh.length;i++)
+			sh[i] = Math.min(sh[i], nsh[i] - 1);
+		return sh;
+	}
 //	@Override
 //	public float getFloat(int[] index)
 //	{
