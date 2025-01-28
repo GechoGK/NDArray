@@ -6,50 +6,107 @@ import java.util.*;
 
 import gss2.math.Data;
 
-public class Test
+public class Test1
 {
-	public static void main(String[] args)
+	public static void test(String[] args)
 	{
 
-		new Test().test();
+		new Test1().test();
 
 	}
 	void test()
 	{
 
-//		test1();
-//		test2();
-//		test3();
-//		test4();
-//		test5();
-//		test6();
-//		test7();
-//		test8();
-//		test9();
-//		test10();
-//		test11();
-//		test12();
-		a();
+		test1();
+		test2();
+		test3();
+		test4();
+		test5();
+		test6();
+		test7();
+		test8();
+		test9();
+		test10();
+		test11();
+		test12();
+		test13();
 
 	}
-	void a()
+	void test13()
 	{
 		System.out.println("=== 13. Shape toArray test. ===");
 		Shape s=new Shape(3, 1, 4);
 		fillR(s.data);
 
 		Shape s2=s.transpose();
-		s2 = s2.broadcast(3, 2, 4, 2, 3);
+		s2 = s2.broadcast(4, 2, 3);
 		// System.out.println(s2.getFloat(0, 1));
 
-		print(s);
-		float[] ar=s.toArray();
-		System.out.println("=== " + Arrays.toString(ar));
-		System.out.println("---------");
-		// System.out.println(s2.getDataAsString());
-		print(s2);
-		ar = s2.toArray();
-		System.out.println("=== " + Arrays.toString(ar));
+		float[][][] itm=
+		{
+			{
+				{ 0.74243414f, 0.39531714f, 0.53885365f, 0.06623876f}
+			},
+
+			{
+				{ 0.63934743f, 0.22939426f, 0.41859204f, 0.75884575f}
+			},
+
+			{
+				{ 0.21058547f, 0.84329474f, 0.20217377f, 0.05789256f}
+			}
+		};
+		test(equals(itm, s), "Item equals");
+		float[][][] itm2=
+		{
+			{
+				{ 0.74243414f, 0.63934743f, 0.21058547f},
+				{ 0.74243414f, 0.63934743f, 0.21058547f}
+			},
+			{
+				{ 0.39531714f, 0.22939426f, 0.84329474f},
+				{ 0.39531714f, 0.22939426f, 0.84329474f}
+			},
+
+			{
+				{ 0.53885365f, 0.41859204f, 0.20217377f},
+				{ 0.53885365f, 0.41859204f, 0.20217377f}
+			},
+
+			{
+				{ 0.06623876f, 0.75884575f, 0.05789256f},
+				{ 0.06623876f, 0.75884575f, 0.05789256f}
+			}
+		};
+		// print(s2);
+		test(equals(itm2, s2), "broadcasted item equals");
+		float[][][][] itm3=
+		{
+			{
+				{
+					{ 0.74243414f, 0.63934743f, 0.21058547f},
+					{ 0.74243414f, 0.63934743f, 0.21058547f}
+				},
+				{
+					{ 0.39531714f, 0.22939426f, 0.84329474f},
+					{ 0.39531714f, 0.22939426f, 0.84329474f}
+				},
+
+				{
+					{ 0.53885365f, 0.41859204f, 0.20217377f},
+					{ 0.53885365f, 0.41859204f, 0.20217377f}
+				},
+
+				{
+					{ 0.06623876f, 0.75884575f, 0.05789256f},
+					{ 0.06623876f, 0.75884575f, 0.05789256f}
+				}
+			},
+			{}
+		};
+		itm3[1] = itm3[0];
+		s2 = s2.broadcast(2, 4, 2, 3);
+		test(equals(itm3, s2), "broadcasted item equals 2");
 	}
 	void test12()
 	{
@@ -113,7 +170,7 @@ public class Test
 		};
 		test(equals(itm, s), "set methods");
 	}
-	void testBroadcast()
+	void test10()
 	{
 		System.out.println("=== Test 10. broadcast. ===");
 		Shape s=new Shape(3, 1, 1);
@@ -783,13 +840,34 @@ public class Test
 	{
 		if (s.dim != 3)
 		{
-			// System.out.println("dim not equals");
+			System.out.println("dim not equals");
 			return false;
 		}
 		int[] sh=s.shape;
-		if (f.length != sh[0] || f[0].length != sh[1] || f[1].length != sh[2])
+		if (f.length != sh[0] || f[0].length != sh[1] || f[0][0].length != sh[2])
 		{
-			// System.out.println("shape not equals");
+			System.out.println(Arrays.toString(s.shape) + " != (" + f.length + ", " + f[0].length + ", " + f[0][0].length + ")");
+			System.out.println("shape not equals");
+			return false;
+		}
+		float[] a=Util.flatten(f);
+		for (int i=0;i < s.length;i++)
+			if (a[i] != s.getFlat(i))
+				return false;
+		return true;
+	}
+	public static boolean equals(float[][][][]f, Shape s)
+	{
+		if (s.dim != 4)
+		{
+			System.out.println("dim not equals");
+			return false;
+		}
+		int[] sh=s.shape;
+		if (f.length != sh[0] || f[0].length != sh[1] || f[0][0].length != sh[2] || f[0][0][0].length  != sh[3])
+		{
+			System.out.println(Arrays.toString(s.shape) + " != (" + f.length + ", " + f[0].length + ", " + f[0][0].length + ", " + f[0][0][0].length + ")");
+			System.out.println("shape not equals");
 			return false;
 		}
 		float[] a=Util.flatten(f);

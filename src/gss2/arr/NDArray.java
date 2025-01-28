@@ -3,10 +3,12 @@ package gss2.arr;
 import gss.math.*;
 import gss2.math.*;
 import java.util.*;
-
+import gss2.math.Value;
 public class NDArray
 {
 	private Shape base;
+	public List<NDArray> childs = new ArrayList<>();
+	public GradFunc gradientFunction;
 
 	public NDArray(Shape shp)
 	{
@@ -30,6 +32,15 @@ public class NDArray
 		for (int i=0;i < data.length;i++)
 			base.data.data[i] = dt[i];
 		// storage.base.values = Util.flatten(data);
+	}
+	public NDArray setEnableGradient(boolean enable)
+	{
+		base.setEnableGradient(enable);
+		return this;
+	}
+	public boolean requoreGradient()
+	{
+		return base.data.requireGradient;
 	}
 	public NDArray get(int...sh)
 	{
@@ -59,7 +70,46 @@ public class NDArray
 	{
 		base.setFlat(p, v);
 	}
+	// // // gradient
+	// gradient set end get functions.
+
+	public Value getExactValue(int...index)
+	{
+		return base.getExactValue(index);
+	}
+	public Value getFlatValue(int p)
+	{
+		return base.getFlatValue(p);
+	}
+	public float getExactGrad(int...index)
+	{
+		return base.getExactGrad(index);
+	}
+	public float getFlatGrad(int...index)
+	{
+		return base.getFlatGrad(index);
+	}
+	public void setExactValue(Value v, int...index)
+	{
+		base.setExactValue(v, index);
+	}
+	public void setFlatValue(Value v, int p)
+	{
+		base.setFlatValue(v, p);
+	}
+	public void setExactGrad(int[]index, float val)
+	{
+		base.setExactGrad(index, val);
+	}
+	public void setFlatGrad(int pos, float val)
+	{
+		base.setFlatGrad(pos, val);
+	}
+	// end set and get functions.
+	// // // emd gradient
 	// implement operators.
+
+	// end operator implementation.
 	public NDArray fromShape(Shape str)
 	{
 		NDArray arr=new NDArray(str);

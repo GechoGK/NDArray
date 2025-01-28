@@ -28,6 +28,21 @@ public class Util
 					dt[pos++] = data[d][r][c];
 		return dt;
 	}
+	public static float[] flatten(float[][][][] data)
+	{
+		int dp=data.length;
+		int rw=data[0].length;
+		int cl=data[0][0].length;
+		int dd=data[0][0][0].length;
+		int pos=0;
+		float[] dt=new float[dp * rw * cl * dd];
+		for (int d=0;d < dp;d++)
+			for (int r=0;r < rw;r++)
+				for (int c=0;c < cl;c++)
+					for (int i=0;i < dd;i++)
+						dt[pos++] = data[d][r][c][i];
+		return dt;
+	}
 	public static int length(int...sh)
 	{
 		return length(-2, sh);

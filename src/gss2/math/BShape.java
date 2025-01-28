@@ -38,6 +38,7 @@ public class BShape extends Shape
 		newBaseShape = Util.overlap(baseShape, newBaseShape);
 		this.stride = Util.sumShapes(stride, null);
 		this.length = Util.length(brdShape);
+		this.dim = brdShape.length;
 		// System.out.println(Arrays.toString(newBaseShape));
 	}
 	@Override
@@ -78,7 +79,10 @@ public class BShape extends Shape
 			{
 				// problem. convert broadcasted into newBaseShape.
 				// System.out.println("still in broadcast");
-				convShape(sh, bnsh);
+				// System.out.println("base shape " + Arrays.toString(baseShape));
+				// System.out.println("new base shape " + Arrays.toString(newBaseShape));
+				convShape(sh, newBaseShape);
+				// System.out.println("get at after =" + Arrays.toString(sh));
 				Shape s = base.get(sh);
 				// System.out.println("hape type =" + s);
 				s = s.broadcast(nsh);

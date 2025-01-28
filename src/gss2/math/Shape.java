@@ -39,6 +39,14 @@ public class Shape
 	{
 		init(d, sh, strd, off);
 	}
+	public void setEnableGradient(boolean b)
+	{
+		data.setRequireGrad(b);
+	}
+	public void resetGradient()
+	{
+		data.enableGrad();
+	}
 	private void init(Data d, int[]sh, int[] strd, int off)
 	{
 		this.data = d;
@@ -95,6 +103,46 @@ public class Shape
 	{
 		return getFloat(getShape(p));
 	}
+	// gradient set end get functions.
+	public Value getExactValue(int...index)
+	{
+		int ind=shapeToIndex(index);
+		// System.out.println(".." + ind);
+		return data.gradValues[ind];
+	}
+	public Value getFlatValue(int p)
+	{
+		return getExactValue(getShape(p));
+	}
+	public float getExactGrad(int...index)
+	{
+		int ind=shapeToIndex(index);
+		// System.out.println(".." + ind);
+		return data.grad[ind];
+	}
+	public float getFlatGrad(int...index)
+	{
+		return getExactGrad(index);
+	}
+	public void setExactValue(Value v, int...index)
+	{
+		int ps=shapeToIndex(index);
+		data.gradValues[ps] = v;
+	}
+	public void setFlatValue(Value v, int p)
+	{
+		setExactValue(v, getShape(p));
+	}
+	public void setExactGrad(int[]index, float val)
+	{
+		int ps=shapeToIndex(index);
+		data.grad[ps] = val;
+	}
+	public void setFlatGrad(int pos, float val)
+	{
+		setExactGrad(getShape(pos), val);
+	}
+	// end set and get functions.
 	public int shapeToIndex(int...index)
 	{
 		if (index.length > shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
@@ -160,6 +208,8 @@ public class Shape
 		if (!isBrodcastable(this.shape, newShape))
 			throw new RuntimeException("the shape " + Arrays.toString(newShape) + " can't be broadcast to " + Arrays.toString(this.shape));
 		// broadcastable shapes are used only to get scalar value. for now.
+		if (shape.length == newShape.length && Arrays.equals(newShape, shape))
+			return this;
 		BShape sh = new BShape(this, shape, newShape);
 		return sh;
 	}
@@ -170,8 +220,10 @@ public class Shape
 		int len=newShape.length - orgShape.length;
 		// System.out.println("checking... len =" + len);
 		for (int i=0;i < orgShape.length;i++)
+		{
 			if (!(orgShape[i] == newShape[len + i] || (orgShape[i] == 1 && newShape[len + i] > 0)))
 				return false;
+		}
 		// System.out.println("brodcastable shape " + Arrays.toString(tarShape) + " with " + Arrays.toString(orgShape));
 		return true;
 	}
