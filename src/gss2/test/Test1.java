@@ -1,6 +1,5 @@
 package gss2.test;
 
-import gss.math.*;
 import gss2.math.*;
 import java.util.*;
 

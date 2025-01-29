@@ -74,6 +74,12 @@ public class Shape
 			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
 		get(index).fill(val);
 	}
+	public void setGrad(int[]index, float val)
+	{
+		if (index.length > shape.length)
+			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+		get(index).fillGrad(val);
+	}
 	public void setExact(int[]index, float v)
 	{
 		// if (index.length != shape.length)
@@ -87,6 +93,16 @@ public class Shape
 	}
 	public void fill(float v)
 	{
+		for (int i=0;i < length;i++)
+		{
+			int ind=shapeToIndex(getShape(i));
+			data.data[ind] = v;
+		}
+	}
+	public void fillGrad(float v)
+	{
+		if (!requiresGradient())
+			throw new RuntimeException("gradient not found try enabling it: requiresGradient = " + requiresGradient());
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
@@ -202,6 +218,28 @@ public class Shape
 		//		can't view this array into new shape.
 		return new Shape(data, newShape, offset);
 	}
+	public Shape reshape(int...newShape)
+	{
+		// !!! the returning value must be a new copy of storage.
+		// TO-DO  fix return this. instead create a new Storage(...);
+
+		// try to broadcast if posible, if not copy the array.
+		// reshape chnges the shape, also the underlaying data shape.
+		int len=Util.length(newShape);
+		if (length != len)
+			throw new RuntimeException("different type of shape is not allowed.");
+		if (this instanceof BShape || this instanceof TShape || this instanceof TVShape)
+		{
+			// System.out.println("reshaping broadcasted shape");
+			Shape str=view(newShape).copy();
+			return str;
+		}
+//		// Storage str=copy();
+//		base.changeShape(newShape, this.shape); 
+//		init(base, newShape, offset, null);
+//		return this;
+		return view(newShape);
+	}
 	public Shape broadcast(int...newShape)
 	{
 		// check for broadcastable shape
@@ -267,60 +305,64 @@ public class Shape
 			sh.data.data[i] = getFloat(getShape(i));
 		return sh;
 	}
-	public String getDataAsString()
+	public boolean requiresGradient()
 	{
-		StringBuilder sb=new StringBuilder();
-		sb.append(getFromShape(shape, 0));
-		return sb.toString();
+		return data.requireGradient;
 	}
-	public String getFromShape(int[]sh, int off)
-	{
-		if (sh.length == 1)
-		{
-			StringBuilder sb=new StringBuilder();
-			sb.append("[");
-			for (int i=off;i < off + sh[0];i++)
-			{
-				if (i != off)
-					sb.append(",");
-				sb.append(" ");
-				sb.append(data.data[i]);
-				if (i == off + sh[0] - 1)
-					sb.append(" ");
-			}
-			sb.append("]");
-			return sb.toString();
-		}
-		else if (sh.length == 2)
-		{
-			StringBuilder sb=new StringBuilder();
-			sb.append("[");
-			for (int i=0;i < sh[0];i++)
-			{
-				if (i != off)
-				{
-					sb.append("\n");
-					sb.append(" ");
-				}
-				sb.append(getFromShape(new int[]{sh[1]}, off + sh[1] * i));
-			}
-			sb.append("]");
-			return sb.toString();
-		}
-		else
-		{
-			StringBuilder sb=new StringBuilder();
-			sb.append("[");
-			int[]nsh=Arrays.copyOfRange(sh, 1, sh.length);
-			int[] str=Util.sumShapes(sh, null);
-			for (int i=0;i < sh[0];i++)
-			{
-				sb.append(getFromShape(nsh, off + str[0] * i));
-				sb.append("\n");
-			}
-			sb.append("]");
-			return sb.toString();
-		}
-		// return null;
-	}
+//	public String getDataAsString()
+//	{
+//		StringBuilder sb=new StringBuilder();
+//		sb.append(getFromShape(shape, 0));
+//		return sb.toString();
+//	}
+//	public String getFromShape(int[]sh, int off)
+//	{
+//		if (sh.length == 1)
+//		{
+//			StringBuilder sb=new StringBuilder();
+//			sb.append("[");
+//			for (int i=off;i < off + sh[0];i++)
+//			{
+//				if (i != off)
+//					sb.append(",");
+//				sb.append(" ");
+//				sb.append(data.data[i]);
+//				if (i == off + sh[0] - 1)
+//					sb.append(" ");
+//			}
+//			sb.append("]");
+//			return sb.toString();
+//		}
+//		else if (sh.length == 2)
+//		{
+//			StringBuilder sb=new StringBuilder();
+//			sb.append("[");
+//			for (int i=0;i < sh[0];i++)
+//			{
+//				if (i != off)
+//				{
+//					sb.append("\n");
+//					sb.append(" ");
+//				}
+//				sb.append(getFromShape(new int[]{sh[1]}, off + sh[1] * i));
+//			}
+//			sb.append("]");
+//			return sb.toString();
+//		}
+//		else
+//		{
+//			StringBuilder sb=new StringBuilder();
+//			sb.append("[");
+//			int[]nsh=Arrays.copyOfRange(sh, 1, sh.length);
+//			int[] str=Util.sumShapes(sh, null);
+//			for (int i=0;i < sh[0];i++)
+//			{
+//				sb.append(getFromShape(nsh, off + str[0] * i));
+//				sb.append("\n");
+//			}
+//			sb.append("]");
+//			return sb.toString();
+//		}
+//		// return null;
+//	}
 }

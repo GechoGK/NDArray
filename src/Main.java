@@ -1,11 +1,14 @@
-import gss.math.*;
+
+
+import gss2.arr.*;
+import gss2.math.*;
 import java.util.*;
 
-import static gss.math.Util.*;
+import static gss2.math.Util.*;
 
 public class Main
 {
-	public static void main2(String[] args) throws Exception
+	public static void main(String[] args) throws Exception
 	{
 		// to be broadcastable
 		// if the org shape is (2,3,2)
@@ -18,13 +21,18 @@ public class Main
 	void a() throws Exception
 	{
 
-		
+		// testCommonBroadcastableShape();
+		// testArrayMathBasic();
+		// testBasicMathGrad(); // !!!!!! error.
+		// gradTet();  // !!!!!!  error.
+		calcWithValueForwardAndBackward(); // !!!!!! error.
+
 	}
 	void calcWithValueForwardAndBackward() throws Exception
 	{
 		// works.
-		NDArray a1=NDArray.rand(new int[]{2, 5}, true); 
-		NDArray a2=NDArray.rand(new int[]{5}, true);
+		NDArray a1=NDIO.rand(new int[]{2, 5}, true); 
+		NDArray a2=NDIO.rand(new int[]{5}, true);
 
 		NDArray out=a1.mul(a2);
 
@@ -37,8 +45,8 @@ public class Main
 		System.out.println("-------------");
 		printGrad(out);
 
-		NDArray b1=NDArray.rand(new int[]{2,5}, true);
-		NDArray b2=NDArray.rand(new int[]{5}, true);
+		NDArray b1=NDIO.rand(new int[]{2,5}, true);
+		NDArray b2=NDIO.rand(new int[]{5}, true);
 
 		NDArray out2=b1.mul2(b2);
 
@@ -73,9 +81,9 @@ public class Main
 	}
 	void gradTet() throws Exception
 	{
-		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
-		NDArray arr2 = NDArray.rand(new int[]{2, 2}, true);
-		NDArray arr3= NDArray.value(new int[]{1}, 100);
+		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
+		NDArray arr2 = NDIO.rand(new int[]{2, 2}, true);
+		NDArray arr3= NDIO.value(new int[]{1}, 100);
 
 		NDArray rs1=arr1.add(arr2);
 		NDArray rs2=arr3.add(arr2);
@@ -91,17 +99,17 @@ public class Main
 		rs.setGrad(new int[]{}, 2);
 		rs.backward();
 		System.out.println("result grad");
-		printGrad(rs.storage);
+		printGrad(rs.base);
 		System.out.println("rs1 & rs2 grad == rs1");
-		printGrad(rs1.storage);
+		printGrad(rs1.base);
 		System.out.println("------- == rs2");
-		printGrad(rs2.storage);
+		printGrad(rs2.base);
 		System.out.println("--- arr's gradient  == arr1");
-		printGrad(arr1.storage);
+		printGrad(arr1.base);
 		System.out.println("---- == arr2");
-		printGrad(arr2.storage);
+		printGrad(arr2.base);
 		System.out.println("---- == arr3");
-		printGrad(arr3.storage);
+		printGrad(arr3.base);
 
 	}
 	void backTree(Value[] vls)
@@ -134,7 +142,7 @@ public class Main
 		if (arr.gradientFunction == GradFunc.itemGradient)
 		{
 			System.out.println(t + "listing child gradient");
-			Value[] vls=arr.storage.base.getValues();
+			Value[] vls=arr.base.data.getValues();
 			for (Value v:vls)
 				treeV(v, t);
 		}
@@ -152,8 +160,8 @@ public class Main
 	void testBasicMathGrad() throws Exception
 	{
 		// gradient. adding methods ....
-		NDArray arr1 = NDArray.rand(new int[]{3, 1, 2}, true);
-		NDArray arr2 = NDArray.rand(new int[]{2, 2}, true);
+		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
+		NDArray arr2 = NDIO.rand(new int[]{2, 2}, true);
 		// uncomment the line below to check for errors.
 		// arr2 = NDArray.rand(new int[]{4,2}, false);
 
@@ -164,11 +172,11 @@ public class Main
 		System.out.println(arr1);
 		System.out.println(arr2);
 		System.out.println(res);
-		print(arr1.storage);
+		print(arr1.base);
 		System.out.println("---------");
-		print(arr2.storage);
+		print(arr2.base);
 		System.out.println("---------");
-		print(res.storage);
+		print(res.base);
 		System.out.println("-----");
 		// System.out.println(Arrays.toString(res.storage.base.grads));
 
@@ -190,30 +198,30 @@ public class Main
 		NDArray a1=new NDArray(new float[]{4,8,3,9,20,50,8,5,3,7});
 		NDArray a2=new NDArray(new float[][]{{9},{5},{2},{3}});
 		System.out.println("adding two arrays");
-		print(a1.storage);
+		print(a1.base);
 		System.out.println("  ::::: ");
-		print(a2.storage);
+		print(a2.base);
 		System.out.println("  ===== ");
 
 		// addition.
 		System.out.println("\naddition result");
 		NDArray rs = a1.add(a2);
-		print(rs.storage);
+		print(rs.base);
 
 		// subtraction.
 		System.out.println("\nsubtraction result");
 		rs = a1.sub(a2);
-		print(rs.storage);
+		print(rs.base);
 
 		// division.
 		System.out.println("\ndivision result");
 		rs = a1.div(a2);
-		print(rs.storage);
+		print(rs.base);
 
 		// multiplucation.
 		System.out.println("\nmultiplication result");
 		rs = a1.mul(a2);
-		print(rs.storage);
+		print(rs.base);
 
 	}
 	void testCommonBroadcastableShape() throws Exception

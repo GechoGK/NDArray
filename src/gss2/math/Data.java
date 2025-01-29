@@ -86,4 +86,16 @@ public class Data
 	{
 		grad[p] += v;
 	}
+	public Value[] getValues()
+	{
+		return gradValues;
+	}
+	public float[] getData()
+	{
+		return data;
+	}
+	public float[] getGrads()
+	{
+		return grad;
+	}
 }
