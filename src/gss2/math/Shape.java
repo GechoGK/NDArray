@@ -85,7 +85,7 @@ public class Shape
 		// if (index.length != shape.length)
 		// 	throw new RuntimeException("ivalid index size :" + Arrays.toString(index) + " >> the index length should be equal to the shape length of the array.");
 		int ps=shapeToIndex(index);
-		data.data[ps] = v;
+		data.setData(ps, v);
 	}
 	public void setFlat(int p, float v)
 	{
@@ -96,7 +96,7 @@ public class Shape
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
-			data.data[ind] = v;
+			data.setData(ind, v);
 		}
 	}
 	public void fillGrad(float v)
@@ -106,14 +106,14 @@ public class Shape
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
-			data.data[ind] = v;
+			data.setGrad(ind, v);
 		}
 	}
 	public float getFloat(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
-		return data.data[ind];
+		return data.getData(ind);
 	}
 	public float getFlat(int p)
 	{
@@ -124,7 +124,7 @@ public class Shape
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
-		return data.gradValues[ind];
+		return data.getGradValue(ind);
 	}
 	public Value getFlatValue(int p)
 	{
@@ -134,16 +134,16 @@ public class Shape
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
-		return data.grad[ind];
+		return data.getGrad(ind);
 	}
-	public float getFlatGrad(int...index)
+	public float getFlatGrad(int index)
 	{
-		return getExactGrad(index);
+		return getExactGrad(getShape(index));
 	}
 	public void setExactValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
-		data.gradValues[ps] = v;
+		data.setGradValue(ps, v);
 	}
 	public void setFlatValue(Value v, int p)
 	{
@@ -152,7 +152,7 @@ public class Shape
 	public void setExactGrad(int[]index, float val)
 	{
 		int ps=shapeToIndex(index);
-		data.grad[ps] = val;
+		data.setGrad(ps, val);
 	}
 	public void setFlatGrad(int pos, float val)
 	{
@@ -163,12 +163,14 @@ public class Shape
 	{
 		if (index.length > shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
 			throw new IndexOutOfBoundsException();
+		// System.out.println("finding index =" + Arrays.toString(shape) + ",  " + Arrays.toString(index));
 		int newPos=0;
 		for (int i=0;i < index.length;i++)
 		{
 			int shapeInd = index[i];// Math.min(index[i], shape[i] - 1); // uncomment to enable broadcasting.
+			// System.out.println("...."+shape[i]);
 			if (shapeInd >= shape[i])
-				throw new IndexOutOfBoundsException();
+				throw new IndexOutOfBoundsException(">> " + shapeInd + ", " + shape[i]);
 			newPos += shapeInd *  stride[i];
 		}
 		int finalIndex=newPos + offset;
@@ -275,7 +277,7 @@ public class Shape
 			throw new RuntimeException("the length of the input array doesn't match the length specified: " + len + " > " + out.length);
 		int str=offset + start;
 		for (int i=0;i < len;i++)
-			out[i] = data.data[str + i];
+			out[i] = data.getData(str + i);
 		return out;
 	}
 	public float[]toArray()
@@ -302,7 +304,7 @@ public class Shape
 	{
 		Shape sh=new Shape(this.shape);
 		for (int i=0;i < sh.length;i++)
-			sh.data.data[i] = getFloat(getShape(i));
+			sh.data.setData(i, getFloat(getShape(i)));
 		return sh;
 	}
 	public boolean requiresGradient()

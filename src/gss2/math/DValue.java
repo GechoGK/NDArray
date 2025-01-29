@@ -28,7 +28,7 @@ public class DValue extends Value
 	@Override
 	public void setGrad(float v)
 	{
-		data.addGrad(index, v);
+		data.setGrad(index, v);
 	}
 	@Override
 	public float getData()
@@ -39,6 +39,6 @@ public class DValue extends Value
 	@Override
 	public String toString()
 	{
-		return super.toString()+" >> "+data;
+		return super.toString() + " >> " + data;
 	}
 }

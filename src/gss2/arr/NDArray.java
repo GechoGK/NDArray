@@ -21,7 +21,7 @@ public class NDArray
 	{
 		this.base = new Shape(new int[]{data.length});
 		for (int i=0;i < data.length;i++)
-			base.data.data[i] = data[i]; 
+			base.data.setData(i, data[i]); 
 		//storage.base.values = Arrays.copyOf(data, data.length);
 	}
 	public NDArray(float[][] data)
@@ -29,7 +29,7 @@ public class NDArray
 		this.base = new Shape(new int[]{data.length, data[0].length});
 		float[] dt=Util.flatten(data);
 		for (int i=0;i < data.length;i++)
-			base.data.data[i] = dt[i];
+			base.data.setData(i, dt[i]);
 		// storage.base.values = Util.flatten(data);
 	}
 	public NDArray setEnableGradient(boolean enable)
@@ -98,9 +98,9 @@ public class NDArray
 	{
 		return base.getExactGrad(index);
 	}
-	public float getFlatGrad(int...index)
+	public float getFlatGrad(int pos)
 	{
-		return base.getFlatGrad(index);
+		return base.getFlatGrad(pos);
 	}
 	public void setExactValue(Value v, int...index)
 	{
@@ -130,13 +130,18 @@ public class NDArray
 	// shape functions
 	public NDArray broadcast(int...newShape)
 	{
-		NDArray str = fromShape(base.broadcast(newShape));
+		Shape sh=base.broadcast(newShape);
+		if (sh == this.base)
+			return this;
+		NDArray str = fromShape(sh);
 		str.setGradientFunction(GradFunc.stepGradient, this);
 		return str;
 	}
 	// view into another shape.
 	public NDArray view(int...newShape)
 	{
+		if (base.length != Util.length(newShape))
+			throw new RuntimeException("invalid array length");
 		NDArray arr = fromShape(base.view(newShape));
 		arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
@@ -229,25 +234,25 @@ public class NDArray
 	// test addition.
 	// this method is for only testing purpose dont use it.
 	// to check vakue gradient we used this method.
-	public NDArray add2(NDArray other)
-	{
-		int[] shp=getCommonShape(this.base.shape, other.base.shape);
-		NDArray a1=broadcast(shp);
-		NDArray a2=other.broadcast(shp);
-		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
-		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
-		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
-		for (int i=0;i < a1.getLength();i++)
-		{
-			Value v1=a1.getFlatValue(i);
-			Value v2=a2.getFlatValue(i);
-			// System.out.println(v1 + " ,,,, " + v2);
-			arrOut.setFlatValue(v1.add(v2), i);
-		}
-		return arrOut;
-	}
+//	public NDArray add2(NDArray other)
+//	{
+//		int[] shp=getCommonShape(this.base.shape, other.base.shape);
+//		NDArray a1=broadcast(shp);
+//		NDArray a2=other.broadcast(shp);
+//		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
+//		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+//		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+//		if (a1.getLength() != a2.getLength())
+//			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+//		for (int i=0;i < a1.getLength();i++)
+//		{
+//			Value v1=a1.getFlatValue(i);
+//			Value v2=a2.getFlatValue(i);
+//			// System.out.println(v1 + " ,,,, " + v2);
+//			arrOut.setFlatValue(v1.add(v2), i);
+//		}
+//		return arrOut;
+//	}
 	public NDArray sub(NDArray other)
 	{
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
@@ -287,24 +292,24 @@ public class NDArray
 	// test multiplication
 	// this method is for only testing purpose dont use it.
 	// to check vakue gradient we used this method.
-	public NDArray mul2(NDArray other)
-	{
-		int[] shp=getCommonShape(this.base.shape, other.base.shape);
-		NDArray a1=broadcast(shp);
-		NDArray a2=other.broadcast(shp);
-		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
-		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
-		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
-		for (int i=0;i < a1.getLength();i++)
-		{
-			Value v1=a1.getFlatValue(i);
-			Value v2=a2.getFlatValue(i);
-			arrOut.setFlatValue(v1.mul(v2), i);
-		}
-		return arrOut;
-	}
+//	public NDArray mul2(NDArray other)
+//	{
+//		int[] shp=getCommonShape(this.base.shape, other.base.shape);
+//		NDArray a1=broadcast(shp);
+//		NDArray a2=other.broadcast(shp);
+//		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
+//		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+//		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+//		if (a1.getLength() != a2.getLength())
+//			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+//		for (int i=0;i < a1.getLength();i++)
+//		{
+//			Value v1=a1.getFlatValue(i);
+//			Value v2=a2.getFlatValue(i);
+//			arrOut.setFlatValue(v1.mul(v2), i);
+//		}
+//		return arrOut;
+//	}
 	public NDArray div(NDArray other)
 	{
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);

@@ -1,6 +1,7 @@
 package gss2.math;
 
 import gss.math.*;
+import java.util.*;
 
 public class Data
 {
@@ -55,7 +56,7 @@ public class Data
 		}
 		return v;
 	}
-	public Value setValue(int pos, Value v)
+	public Value setGradValue(int pos, Value v)
 	{
 		// System.out.println("setting flat " + ind + " = " + v);
 		if (gradValues == null)
@@ -82,9 +83,13 @@ public class Data
 	{
 		return grad[p];
 	}
-	public void addGrad(int p, float v)
+	public void setGrad(int p, float v)
 	{
 		grad[p] += v;
+	}
+	public void zeroGrad()
+	{
+		Arrays.fill(grad, 0);
 	}
 	public Value[] getValues()
 	{
