@@ -17,22 +17,30 @@ public class Test2
 	void test() throws Exception
 	{
 
-		Test1.test(null);
+		// Test1.test(null);
+		// testCommonBroadcastableShape();
+		// testArrayMathBasic();
+		// testBasicMathGrad(); // !!!!!! works.
+		// gradTet();  // !!!!!!  works.
+		// calcWithValueForwardAndBackward(); // !!!!!! works.
 		a();
 
 	}
 	void a() throws Exception
 	{
+		NDArray arr=NDIO.rand(6, 2, 4);
 
-		testCommonBroadcastableShape();
-		testArrayMathBasic();
-		testBasicMathGrad(); // !!!!!! works.
-		gradTet();  // !!!!!!  works.
-		calcWithValueForwardAndBackward(); // !!!!!! works.
+		print(arr);
+		
+		System.out.println("------------");
+		arr = arr.vStack();
+
+		print(arr);
 
 	}
 	void calcWithValueForwardAndBackward() throws Exception
 	{
+		System.out.println("=== Test 1. Gradient calculator on multiplication using raw Values. ===");
 		// works.
 		NDArray a1=NDIO.rand(new int[]{2, 5}, true); 
 		NDArray a2=NDIO.rand(new int[]{5}, true);
@@ -51,7 +59,7 @@ public class Test2
 		NDArray b1=NDIO.rand(new int[]{2,5}, true);
 		NDArray b2=NDIO.rand(new int[]{5}, true);
 
-		NDArray out2=b1.mul(b2);
+		NDArray out2=b1.mul2(b2);
 
 		out2.setGrad(new int[]{}, 1);
 		out2.backward();
@@ -84,6 +92,8 @@ public class Test2
 	}
 	void gradTet() throws Exception
 	{
+		System.out.println("=== Test 1. Gradient calculator 2 on addition ===");
+
 		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
 		NDArray arr2 = NDIO.rand(new int[]{2, 2}, true);
 		NDArray arr3= NDIO.value(new int[]{1}, 100);
@@ -162,6 +172,7 @@ public class Test2
 	}
 	void testBasicMathGrad() throws Exception
 	{
+		System.out.println("=== Test 3. Gradient calculator on addition ===");
 		// gradient. adding methods ....
 		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
 		NDArray arr2 = NDIO.rand(new int[]{2, 2}, true);
@@ -197,6 +208,7 @@ public class Test2
 	}
 	void testArrayMathBasic() throws Exception
 	{
+		System.out.println("=== Test 2. NDArray basic math ===");
 
 		NDArray a1=new NDArray(new float[]{4,8,3,9,20,50,8,5,3,7});
 		NDArray a2=new NDArray(new float[][]{{9},{5},{2},{3}});
@@ -229,11 +241,18 @@ public class Test2
 	}
 	void testCommonBroadcastableShape() throws Exception
 	{
-		int[] sh1={6,2,3};
-		sh1 = new int[]{1,4,2,8};
-		sh1 = new int[]{9,6,3,4,5,7,2,120};
+		System.out.println("=== Test 1. test common broadcast shape ===");
+
 		int[] sh2={5,1,2,1}; // 1 in sh1 changes into 4.
+		int[] sh1={6,2,3};
 		int[] newShape=NDArray.getCommonShape(sh1, sh2);
+		Test1.test(Arrays.equals(newShape, new int[]{5,6,2,3}), "common shape 1 equals");
+		sh1 = new int[]{1,4,2,8};
+		newShape = NDArray.getCommonShape(sh1, sh2);
+		Test1.test(Arrays.equals(newShape, new int[]{5,4,2,8}), "common shape 2 equals");
+		sh1 = new int[]{9,6,3,4,5,7,2,120};
+		newShape = NDArray.getCommonShape(sh1, sh2);
+		Test1.test(Arrays.equals(newShape, new int[]{9,6,3,4,5,7,2,120}), "common shape 3 equals");
 
 		/*
 		 sh1  =        [1, 2, 3]
@@ -241,6 +260,5 @@ public class Test2
 		 newShape = [5, 4, 2, 3]
 		 */
 
-		System.out.println(" ==== " + Arrays.toString(newShape));
 	}
 }

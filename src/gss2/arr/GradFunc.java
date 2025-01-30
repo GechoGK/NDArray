@@ -189,6 +189,22 @@ public abstract class GradFunc
 			return null;
 		}
 	};
+	public static GradFunc vStackGradient =new GradFunc("vstack"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			return null;
+		}
+	};
+	public static GradFunc hStackGradient =new GradFunc("hstack"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			return null;
+		}
+	};
 	public static GradFunc stepGradient = new GradFunc("step"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)

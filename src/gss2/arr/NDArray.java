@@ -123,8 +123,8 @@ public class NDArray
 	public NDArray fromShape(Shape str)
 	{
 		NDArray arr=new NDArray(str);
-		// arr.childs.addAll(this.childs);
-		// arr.gradientFunction = this.gradientFunction;
+		arr.childs.addAll(this.childs);
+		arr.gradientFunction = this.gradientFunction;
 		return arr;
 	}
 	// shape functions
@@ -149,6 +149,18 @@ public class NDArray
 	public NDArray reshape(int...newShape)
 	{
 		NDArray arr = fromShape(base.reshape(newShape));
+		arr.setGradientFunction(GradFunc.stepGradient, this);
+		return arr;
+	}
+	public NDArray transpose(int...order)
+	{
+		NDArray arr = fromShape(base.transpose(order));
+		arr.setGradientFunction(GradFunc.stepGradient, this);
+		return arr;
+	}
+	public NDArray transpose()
+	{
+		NDArray arr = fromShape(base.transpose());
 		arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
 	}
@@ -292,24 +304,24 @@ public class NDArray
 	// test multiplication
 	// this method is for only testing purpose dont use it.
 	// to check vakue gradient we used this method.
-//	public NDArray mul2(NDArray other)
-//	{
-//		int[] shp=getCommonShape(this.base.shape, other.base.shape);
-//		NDArray a1=broadcast(shp);
-//		NDArray a2=other.broadcast(shp);
-//		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-//		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
-//		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
-//		if (a1.getLength() != a2.getLength())
-//			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
-//		for (int i=0;i < a1.getLength();i++)
-//		{
-//			Value v1=a1.getFlatValue(i);
-//			Value v2=a2.getFlatValue(i);
-//			arrOut.setFlatValue(v1.mul(v2), i);
-//		}
-//		return arrOut;
-//	}
+	public NDArray mul2(NDArray other)
+	{
+		int[] shp=getCommonShape(this.base.shape, other.base.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			Value v1=a1.getFlatValue(i);
+			Value v2=a2.getFlatValue(i);
+			arrOut.setFlatValue(v1.mul(v2), i);
+		}
+		return arrOut;
+	}
 	public NDArray div(NDArray other)
 	{
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
@@ -345,6 +357,66 @@ public class NDArray
 			arrOut.setFlat(i, (float)Math.pow(v1 , v2));
 		}
 		return arrOut;
+	}
+	public NDArray vStack()
+	{
+		int[] shp=getVStackShape(this.base.shape);
+		NDArray tmp= this.view(shp);
+		NDArray out=tmp.copy();
+		out.setGradientFunction(GradFunc.vStackGradient, tmp);
+		return out;
+	}
+	private int[] getVStackShape(int[]shp)
+	{
+		if (shp.length == 1)
+			return new int[]{shp[0],1};
+		else if (shp.length == 2)
+			return shp;
+		else
+		{
+			int[]s=Arrays.copyOfRange(shp, 1, shp.length);
+			s[0] = shp[0] * shp[1];
+			// System.out.println("org " + Arrays.toString(shp));
+			// System.out.println("new " + Arrays.toString(s));
+			return s;
+		}
+	}
+	public NDArray hStack()
+	{
+		int[] shp=getHStackShape(this.base.shape);
+		int[] tp=range(getShape().length);
+		tp[0] = 1;
+		tp[1] = 0;
+		NDArray tmp=this.transpose(tp);
+		tmp = tmp.view(shp);
+		NDArray out=tmp.copy();
+		out.setGradientFunction(GradFunc.hStackGradient, tmp);
+		return out;
+	}
+	private int[] getHStackShape(int[]shp)
+	{
+		if (shp.length == 1)
+			return shp;
+		else if (shp.length == 2)
+		{
+			return new int[shp[0] * shp[1]];
+		}
+		else
+		{
+			int[]s=Arrays.copyOfRange(shp, 1, shp.length);
+			s[0] = shp[1];
+			s[1] = shp[0] * shp[2];
+			// System.out.println("org " + Arrays.toString(shp));
+			// System.out.println("new " + Arrays.toString(s));
+			return s;
+		}
+	}
+	private int[] range(int end)
+	{
+		int[] v=new int[end];
+		for (int i=0;i < end;i++)
+			v[i] = i;
+		return v;
 	}
 	public NDArray dot(NDArray other)
 	{
