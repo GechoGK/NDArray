@@ -1,6 +1,10 @@
-package gss.math;
+package gss2.math;
 
+import gss.math.*;
+import gss2.arr.*;
 import java.util.*;
+
+import gss2.arr.NDArray;
 
 public class Util
 {
@@ -160,9 +164,9 @@ public class Util
 	}
 	public static void print(NDArray ar)
 	{
-		print(ar.storage);
+		print(ar.base);
 	}
-	public static void print(Storage str)
+	public static void print(Shape str)
 	{
 		if (str.dim == 1)
 		{
@@ -192,9 +196,9 @@ public class Util
 	}
 	public static void printGrad(NDArray ar)
 	{
-		printGrad(ar.storage);
+		printGrad(ar.base);
 	}
-	public static void printGrad(Storage str)
+	public static void printGrad(Shape str)
 	{
 		if (!str.requiresGradient())
 		{
@@ -205,7 +209,7 @@ public class Util
 		{
 			System.out.print("[");
 			for (int i=0;i < str.shape[0];i++)
-				System.out.print(str.getFloatGrad(i) + ", ");
+				System.out.print(str.getExactGrad(i) + ", ");
 			System.out.println("]");
 		}
 		else if (str.dim == 2)
@@ -215,7 +219,7 @@ public class Util
 			{
 				System.out.print((j == 0 ?"": " ") + "[");
 				for (int k=0;k < str.shape[1];k++)
-					System.out.print((k == 0 ?" ": ", ") + str.getFloatGrad(j, k));
+					System.out.print((k == 0 ?" ": ", ") + str.getExactGrad(j, k));
 				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
 			}
 			System.out.println("]");
@@ -264,10 +268,10 @@ public class Util
 			return false;
 		if (!equals(a1.getShape(), a2.getShape()))
 			return false;
-		if (!equals(a1.storage.base.getArray(), a2.storage.base.getArray()))
+		if (!equals(a1.base.data.getData(), a2.base.data.getData()))
 			return false;
 		if (checkGrad.length != 0 && checkGrad[0])
-			if (!equals(a1.storage.base.getGrads(), a2.storage.base.getGrads()))
+			if (!equals(a1.base.data.getGrads(), a2.base.data.getGrads()))
 				return false;
 		return true;
 	}

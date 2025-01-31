@@ -1,5 +1,6 @@
-package gss.math;
+package gss2.arr;
 
+import gss2.math.*;
 import java.util.*;
 
 public abstract class GradFunc
@@ -10,7 +11,7 @@ public abstract class GradFunc
 	 the values are just overwritten,
 
 	 --- Fix
-	 --- enabling append mode. onece every zero graidient...
+	 --- enabling append mode. once every zero gradient...
 
 	 // Bug 2.
 	 all gradient calculators diesn't check if the childs support gradient or not.
@@ -188,6 +189,22 @@ public abstract class GradFunc
 			return null;
 		}
 	};
+	public static GradFunc vStackGradient =new GradFunc("vstack"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			return null;
+		}
+	};
+	public static GradFunc hStackGradient =new GradFunc("hstack"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			return null;
+		}
+	};
 	public static GradFunc stepGradient = new GradFunc("step"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
@@ -200,7 +217,7 @@ public abstract class GradFunc
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
 			// iterate over each stores Value classes and then call backward on them.
-			Value[] vls=host.storage.base.getValues();
+			Value[] vls=host.base.data.getValues();
 			if (vls == null || vls.length == 0)
 			 	return null;
 			// System.out.println("== .." + host);

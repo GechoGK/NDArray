@@ -12,7 +12,13 @@ public class Data
 	public int dim;
 	public boolean requiresGrad;
 
-	public Data(int[]sh)
+	public Data(float[] val, int...sh)
+	{
+		this(sh);
+		for (int i=0;i < val.length;i++)
+			values[i] = val[i];
+	}
+	public Data(int...sh)
 	{
 		this(sh, false);
 	}
@@ -24,9 +30,9 @@ public class Data
 		if (requireGrad)
 		{
 			this.grads  = new float[values.length];
-			this.gradTracks = new Value[grads.length];
-			for (int i=0;i < gradTracks.length;i++)
-				gradTracks[i] = new Value(this, i);
+			// this.gradTracks = new Value[grads.length];
+			// for (int i=0;i < gradTracks.length;i++)
+			// 	gradTracks[i] = new Value(this, i);
 		}
 		else
 		{
@@ -67,9 +73,9 @@ public class Data
 	{
 		requiresGrad = true;
 		grads = new float[values.length];
-		gradTracks = new Value[grads.length];
-		for (int i=0;i < gradTracks.length;i++)
-			gradTracks[i] = new Value(this, i);
+		// gradTracks = new Value[grads.length];
+		// for (int i=0;i < gradTracks.length;i++)
+		// 	gradTracks[i] = new Value(this, i);
 		return this;
 	}
 	public Data disableGradient()
@@ -107,6 +113,8 @@ public class Data
 	public void setGrad(int ind, float val)
 	{
 		grads[ind] = val;
+		// use this to accumulate..
+		//grads[ind] += val;
 		// values[ind].grad = val;
 	}
 	public void addGrad(int ind, float val)
@@ -116,6 +124,41 @@ public class Data
 	}
 	public Value getValue(int ind)
 	{
-		return gradTracks[ind];
+		if (gradTracks == null)
+			gradTracks = new Value[values.length];
+		Value v=gradTracks[ind];
+		if (v == null)	
+		{
+			v = new DValue(this, ind);
+			gradTracks[ind] = v;
+		}
+		return v;
+	}
+	public Value setValue(int ind, Value v)
+	{
+		// System.out.println("setting flat " + ind + " = " + v);
+		if (gradTracks == null)
+		 	gradTracks = new Value[values.length];
+		DValue dv=(DValue)gradTracks[ind];
+		if (dv == null)
+		{
+			dv = new DValue(this, ind);
+			gradTracks[ind] = dv;
+		}
+		dv.set(v);
+		// System.out.println(dv);
+		return dv;
+	}
+	public float[]getArray()
+	{
+		return values;
+	}
+	public float[] getGrads()
+	{
+		return grads;
+	}
+	public Value[] getValues()
+	{
+		return gradTracks;
 	}
 }
