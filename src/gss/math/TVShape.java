@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;
@@ -80,7 +80,7 @@ public class TVShape extends Shape
 			out = new float[len];
 		if (out.length < len)
 			throw new RuntimeException("the length of the inpht array doesn't match the length specified: " + len + " > " + out.length);
-		
+
 		for (int l=0;l < len;l++)
 			out[l] = getFlat(l);
 

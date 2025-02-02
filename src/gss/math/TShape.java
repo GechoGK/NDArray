@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;

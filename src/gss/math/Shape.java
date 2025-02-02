@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;
@@ -87,10 +87,12 @@ public class Shape
 		int ps=shapeToIndex(index);
 		data.setData(ps, v);
 	}
+	// set float value, assuming the array is flat.
 	public void setFlat(int p, float v)
 	{
 		setExact(getShape(p), v);
 	}
+	// fills the scalar value tot the array data.
 	public void fill(float v)
 	{
 		for (int i=0;i < length;i++)
@@ -99,6 +101,7 @@ public class Shape
 			data.setData(ind, v);
 		}
 	}
+	// fills the scalar value to the gradient.
 	public void fillGrad(float v)
 	{
 		if (!requiresGradient())
@@ -119,7 +122,7 @@ public class Shape
 	{
 		return getFloat(getShape(p));
 	}
-	// gradient set end get functions.
+	// gradient set and get functions.
 	public Value getExactValue(int...index)
 	{
 		int ind=shapeToIndex(index);
@@ -158,6 +161,13 @@ public class Shape
 	{
 		setExactGrad(getShape(pos), val);
 	}
+	/*
+	 public void setFlatGrad(int startPosition,float[]array){
+	 // it assign array value starts from "startPosition" to the length of an array.
+	 // it aims to achieve by calulating indexToShape with multiple values,
+	 // since these values are consecutive, we can find the first index then increment on that value.
+	 }
+	 */
 	// end set and get functions.
 	public int shapeToIndex(int...index)
 	{
@@ -216,6 +226,7 @@ public class Shape
 	}
 	public Shape view(int...newShape)
 	{
+		getShape(newShape);
 		// if newShape length != length
 		//		can't view this array into new shape.
 		return new Shape(data, newShape, offset);
@@ -227,6 +238,7 @@ public class Shape
 
 		// try to broadcast if posible, if not copy the array.
 		// reshape chnges the shape, also the underlaying data shape.
+		getShape(newShape);
 		int len=Util.length(newShape);
 		if (length != len)
 			throw new RuntimeException("different type of shape is not allowed.");
@@ -241,6 +253,28 @@ public class Shape
 //		init(base, newShape, offset, null);
 //		return this;
 		return view(newShape);
+	}
+	// this functiom is used to calculate the index if it have -1 in their item.
+	public int[] getShape(int...shp)
+	{
+		int nIndex=-1;
+		for (int i=0;i < shp.length;i++)
+		{
+			if (shp[i] == -1 && nIndex != -1)
+				throw new RuntimeException("the shape can't have multiple -1 values.");
+			else if (shp[i] == -1)
+				nIndex = i;
+		}
+		if (nIndex != -1)
+		{
+			shp[nIndex] = 1;
+			int len=Util.length(shp);
+			int remSize=length / len;
+			if (length % len != 0)
+				throw new RuntimeException("choose an appropriate array size: unable to fill the missing value.");
+			shp[nIndex] = remSize;
+		}
+		return shp;
 	}
 	public Shape broadcast(int...newShape)
 	{
@@ -303,8 +337,14 @@ public class Shape
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
+		sh.setEnableGradient(data.requireGradient);
 		for (int i=0;i < sh.length;i++)
+		{
 			sh.data.setData(i, getFloat(getShape(i)));
+			if (requiresGradient())
+				sh.data.setGrad(i, getExactGrad(getShape(i)));
+		}
+
 		return sh;
 	}
 	public boolean requiresGradient()

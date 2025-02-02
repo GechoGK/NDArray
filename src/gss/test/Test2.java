@@ -1,10 +1,10 @@
-package gss2.test;
+package gss.test;
 
-import gss2.arr.*;
-import gss2.math.*;
+import gss.arr.*;
+import gss.math.*;
 import java.util.*;
 
-import static gss2.math.Util.*;
+import static gss.math.Util.*;
 
 public class Test2
 {
@@ -17,30 +17,74 @@ public class Test2
 	void test() throws Exception
 	{
 
-		// Test1.test(null);
-		// testCommonBroadcastableShape();
-		// testArrayMathBasic();
-		// testBasicMathGrad(); // !!!!!! works.
-		// gradTet();  // !!!!!!  works.
-		// calcWithValueForwardAndBackward(); // !!!!!! works.
+		Test1.test(null);
+		test1();
+		test2();
+		test3(); // !!!!!! works.
+		test4();  // !!!!!!  works.
+		test5(); // !!!!!! works.
+		test6();
+		test7();
 		a();
 
 	}
-	void a() throws Exception
+	void a()
 	{
-		NDArray arr=NDIO.rand(6, 2, 4);
 
-		print(arr);
-		
-		System.out.println("------------");
-		arr = arr.vStack();
-
-		print(arr);
+		System.out.println("Hello World!");
 
 	}
-	void calcWithValueForwardAndBackward() throws Exception
+	void test7()
 	{
-		System.out.println("=== Test 1. Gradient calculator on multiplication using raw Values. ===");
+		System.out.println("=== Test 7. shape fill -1 values. ===");
+		Shape s=new Shape(3, 2, 4);
+
+		// System.out.println("shape =" + Arrays.toString(s.shape));
+
+		int[] sh=s.getShape(3, 2, 4);
+		// System.out.println(Arrays.toString(sh));
+		Test1.test(Arrays.equals(sh, new int[]{3,2,4}), "array fill equals 1");
+
+		sh = s.getShape(4, -1);
+		// System.out.println(Arrays.toString(sh));
+		Test1.test(Arrays.equals(sh, new int[]{4,6}), "array fill equals 2");
+
+		sh = s.getShape(2, 2, 2, -1);
+		// System.out.println(Arrays.toString(sh));
+		Test1.test(Arrays.equals(sh, new int[]{2,2,2,3}), "array fill equals 3");
+
+
+	}
+	void test6() throws Exception
+	{
+		System.out.println("=== Test 6. Gradient calcator for hStack and vStack. ===");
+
+		NDArray arr2=NDIO.rand(6, 2, 4).setEnableGradient(true);
+
+		// print(arr2);
+		// System.out.println("------------");
+		// printGrad(arr2);
+		NDArray arr = arr2.vStack();
+		// System.out.println("gradient =" + arr.requiresGradient());
+		// print(arr);
+		arr.setGrad(new int[]{}, 1);
+		arr.backward();
+		// printGrad(arr);
+		// printGrad(arr2);
+		Test1.test(Arrays.equals(arr.base.data.getGrads(), arr2.base.data.getGrads()), "vStack backward gradient");
+		arr2.base.data.zeroGrad();
+		arr = arr2.hStack();
+		arr.setGrad(new int[]{}, 1);
+		arr.backward();
+		// printGrad(arr2);
+
+		Test1.test(Arrays.equals(arr.base.data.getGrads(), arr2.base.data.getGrads()), "hStack backward gradient");
+
+
+	}
+	void test5() throws Exception
+	{
+		System.out.println("=== Test 5. Gradient calculator on multiplication using raw Values. ===");
 		// works.
 		NDArray a1=NDIO.rand(new int[]{2, 5}, true); 
 		NDArray a2=NDIO.rand(new int[]{5}, true);
@@ -90,9 +134,9 @@ public class Test2
 
 
 	}
-	void gradTet() throws Exception
+	void test4() throws Exception
 	{
-		System.out.println("=== Test 1. Gradient calculator 2 on addition ===");
+		System.out.println("=== Test 4. Gradient calculator 2 on addition ===");
 
 		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
 		NDArray arr2 = NDIO.rand(new int[]{2, 2}, true);
@@ -170,7 +214,7 @@ public class Test2
 			for (Value  vv:vl.args)
 				treeV(vv, t.replace("_", " ").replace("|", " ") + "|_____ ");
 	}
-	void testBasicMathGrad() throws Exception
+	void test3() throws Exception
 	{
 		System.out.println("=== Test 3. Gradient calculator on addition ===");
 		// gradient. adding methods ....
@@ -206,7 +250,7 @@ public class Test2
 		System.out.println(Arrays.toString(arr2.base.data.getGrads()));
 
 	}
-	void testArrayMathBasic() throws Exception
+	void test2() throws Exception
 	{
 		System.out.println("=== Test 2. NDArray basic math ===");
 
@@ -239,7 +283,7 @@ public class Test2
 		print(rs.base);
 
 	}
-	void testCommonBroadcastableShape() throws Exception
+	void test1() throws Exception
 	{
 		System.out.println("=== Test 1. test common broadcast shape ===");
 

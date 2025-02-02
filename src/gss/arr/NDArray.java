@@ -1,6 +1,6 @@
-package gss2.arr;
+package gss.arr;
 
-import gss2.math.*;
+import gss.math.*;
 import java.util.*;
 
 public class NDArray
@@ -422,11 +422,13 @@ public class NDArray
 	{
 		/// fix. dot product is made using 2d array.
 		/// this function doesn't work.
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("incompatable arrays for dot product :: the two arrays must be the same length.");
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		// we dont't know the gradient so we use itemGradient to automatically calculate for us.
+		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
 		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())

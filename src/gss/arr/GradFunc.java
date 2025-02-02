@@ -1,6 +1,6 @@
-package gss2.arr;
+package gss.arr;
 
-import gss2.math.*;
+import gss.math.*;
 import java.util.*;
 
 public abstract class GradFunc
@@ -193,7 +193,12 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			// System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			NDArray a=childs[0];
+			if (a.getLength() != host.getLength())
+				throw new RuntimeException("two array length doesn't match.");
+			for (int i=0;i < host.getLength();i++)
+				a.setFlatGrad(i, host.getFlatGrad(i));
 			return null;
 		}
 	};
@@ -201,7 +206,12 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			// System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			NDArray a=childs[0];
+			if (a.getLength() != host.getLength())
+				throw new RuntimeException("two array length doesn't match.");
+			for (int i=0;i < host.getLength();i++)
+				a.setFlatGrad(i, host.getFlatGrad(i));
 			return null;
 		}
 	};

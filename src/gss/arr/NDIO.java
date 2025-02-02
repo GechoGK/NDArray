@@ -1,4 +1,4 @@
-package gss2.arr;
+package gss.arr;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;
@@ -47,7 +47,7 @@ public class BShape extends Shape
 		// needs modificatio to spport broadcast.
 		/*
 		 check for length of the new array and the baseShapae array.
-		 if it found length greate than the base shape, it is still broadcast.
+		 if it found length greater than the base shape, it is still broadcast.
 		 if it found length less than and equal to the base shape , then
 		 it extracts the new base shape by subtracting the "sh" into baseShape and if it differ from original shape,
 		 then it broadcast the new shape and returns it.
