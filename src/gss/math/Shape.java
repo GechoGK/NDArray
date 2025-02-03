@@ -31,6 +31,11 @@ public class Shape
 		this.data = new Data(sh);
 		init(data, sh, null, 0);
 	}
+	public Shape(int[]sh, float[]dt)
+	{
+		this.data = new Data(dt);
+		init(data, sh, null, 0);
+	}
 	public Shape(Data d, int[]sh, int off)
 	{
 		init(d, sh, null, off);
@@ -127,7 +132,7 @@ public class Shape
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
-		return data.getGradValue(ind);
+		return data.getValue(ind);
 	}
 	public Value getFlatValue(int p)
 	{
@@ -146,7 +151,7 @@ public class Shape
 	public void setExactValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
-		data.setGradValue(ps, v);
+		data.setValue(ps, v);
 	}
 	public void setFlatValue(Value v, int p)
 	{
@@ -316,6 +321,14 @@ public class Shape
 			out[i] = data.getData(str + i);
 		return out;
 	}
+	public Value[] toValueArray()
+	{
+		Value[] out = new Value[length];
+		int str=offset;
+		for (int i=0;i < length;i++)
+			out[i] = data.getValue(str + i);
+		return out;
+	}
 	public float[]toArray()
 	{
 		return toArray(null, 0, length);
@@ -349,6 +362,20 @@ public class Shape
 			for (int j=0;j < out[0].length;j++)
 			{
 				out[i][j] = data.getData(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	public Value[][] to2DValueArray() // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getValue(str + pos);
 				pos++;
 			}
 		return out;

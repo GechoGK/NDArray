@@ -50,6 +50,14 @@ public class TShape extends Shape
 
 		return out;
 	}
+	@Override
+	public Value[] toValueArray()
+	{
+		Value[]out = new Value[length];
+		for (int l=0;l < length;l++)
+			out[l] = getFlatValue(l);
+		return out;
+	}
 	public float[][] to2DArray(float[][]out) // lazy collect.
 	{
 		Shape sh=view(-1, shape[shape.length - 1]);
@@ -63,6 +71,21 @@ public class TShape extends Shape
 			for (int j=0;j < out[0].length;j++)
 			{
 				out[i][j] = getFlat(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	@Override
+	public Value[][] to2DValueArray()
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = getFlatValue(str + pos);
 				pos++;
 			}
 		return out;

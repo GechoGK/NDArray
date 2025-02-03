@@ -21,34 +21,35 @@ public class NDArray
 	}
 	public NDArray(float[] data)
 	{
-		this.base = new Shape(new int[]{data.length});
-		base.data.data = data;
+		this.base = new Shape(new int[]{data.length}, data);
+		// base.data.data = data;
 //		for (int i=0;i < data.length;i++)
 //			base.data.setData(i, data[i]); 
 		//storage.base.values = Arrays.copyOf(data, data.length);
 	}
 	public NDArray(int[]shape,  float[] data)
 	{
-		this.base = new Shape(shape);
-		base.data.data = data;
+		this.base = new Shape(shape, data);
+		// base.data.data = data;
 //		for (int i=0;i < data.length;i++)
 //			base.data.setData(i, data[i]); 
 		//storage.base.values = Arrays.copyOf(data, data.length);
 	}
 	public NDArray(float[][] data)
 	{
-		this.base = new Shape(new int[]{data.length, data[0].length});
 		float[] dt=Util.flatten(data);
-		base.data.data = dt;
+		// base.data.data = dt;
+		this.base = new Shape(new int[]{data.length, data[0].length}, dt);
 //		for (int i=0;i < data.length;i++)
 //			base.data.setData(i, dt[i]);
 		// storage.base.values = Util.flatten(data);
 	}
 	public NDArray(int[]shape, float[][] data)
 	{
-		this.base = new Shape(shape);
+
 		float[] dt=Util.flatten(data);
-		base.data.data = dt;
+		// base.data.data = dt;
+		this.base = new Shape(shape, dt);
 //		for (int i=0;i < data.length;i++)
 //			base.data.setData(i, dt[i]);
 		// storage.base.values = Util.flatten(data);
@@ -454,31 +455,10 @@ public class NDArray
 		if (getAtR(getShape(), 0) != getAtR(other.getShape(), 1))
 			throw new RuntimeException("shape not equal(" + getAtR(getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
 		int[]outputShape=getShapeForDot(getShape(), other.getShape());
-		/*
-		 for (int r=0;r < x.row;r++)
-		 for (int c=0;c < y.col;c++)
-		 {
-		 Value sum=new Value(0);
-		 for (int i=0;i < x.col;i++)
-		 sum = Value.add(sum, Value.mul(x.get(r, i) , y.get(i, c)));
-		 m.put(r, c, sum);
-		 }
-		 */
 
-		NDArray x=view(-1, Util.getAtR(getShape(), 0));
-		// System.out.println(Arrays.toString(x.getShape()));
-		int[] tr=new int[other.getDim()];
-		for (int i=0;i < other.getDim();i++)
-			tr[i] = i;
-		int tmp=tr[tr.length - 1];
-		tr[tr.length - 1] = tr[tr.length - 2];
-		tr[tr.length - 2] = tmp;
-		NDArray y=other.transpose(tr);
-		int osh=y.getShape()[y.getShape().length - 1];
-		// System.out.println("== " + Arrays.toString(y.getShape()));
-		y = y.view(-1, osh);
-		// System.out.println(Arrays.toString(y.getShape()));
-
+		NDArray[] prps=prepareArrayForDotProduct(this, other);
+		NDArray x=prps[0];
+		NDArray y=prps[1];
 		// preparing...
 		int xr=x.getShape()[0];
 		int yr=y.getShape()[0];
@@ -502,10 +482,57 @@ public class NDArray
 				out[ps] = sm;
 				ps++;
 			}
-		// System.out.println(Arrays.toString(out));
 		NDArray arrOut=new NDArray(outputShape, out).setEnableGradient(this.requiresGradient() || other.requiresGradient());
 		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
-		arrOut.setGradientFunction(GradFunc.itemGradient, this, other);
+		// arrOut.setGradientFunction(GradFunc.itemGradient, x, y);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+
+		return arrOut;
+	}
+	public NDArray dot2(NDArray other)
+	{
+		/// fix. dot product is made using 2d array.
+		/// this function doesn't work. works 10%
+//		if (this.getLength() != other.getLength())
+//			throw new RuntimeException("incompatable arrays for dot product :: the two arrays must be the same length.");
+		if (getDim() < 2 || other.getDim() < 2)
+			throw new RuntimeException("incompatable dimention for dot product");
+		if (getAtR(getShape(), 0) != getAtR(other.getShape(), 1))
+			throw new RuntimeException("shape not equal(" + getAtR(getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
+		int[]outputShape=getShapeForDot(getShape(), other.getShape());
+
+		NDArray[] prps=prepareArrayForDotProduct(this, other);
+		NDArray x=prps[0];
+		NDArray y=prps[1];
+		// preparing...
+		int xr=x.getShape()[0];
+		int yr=y.getShape()[0];
+		int xc=x.getShape()[1];
+		// System.out.println("copying...");
+		Value[][] xx=x.base.to2DValueArray();
+		Value[][] yy=y.base.to2DValueArray();
+		// System.out.println("copy done");
+		// float[] out=new float[xr * yr];
+		NDArray arrOut=new NDArray(outputShape).setEnableGradient(this.requiresGradient() || other.requiresGradient());
+		int ps=0;
+		// System.out.println("output =" + out.length);
+		for (int i=0;i < xr;i++)
+			for (int j=0;j < yr;j++)
+			{
+				Value sm=null;
+				for (int k=0;k < xc;k++)
+				{
+					Value m=xx[i][k].mul(yy[j][k]);
+					if (sm == null)
+						sm = m;
+					else
+						sm = sm.add(m);
+				}
+				arrOut.setFlatValue(sm, ps);
+				ps++;
+			}
+		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
+		arrOut.setGradientFunction(GradFunc.itemGradient, x, y);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 
 		return arrOut;
@@ -536,6 +563,24 @@ public class NDArray
 		newShape[newShape.length - 1] = s2[s2.length - 1];
 		// System.out.println("new Shape =" + Arrays.toString(newShape));
 		return newShape;
+	}
+	public NDArray[]prepareArrayForDotProduct(NDArray a1, NDArray a2)
+	{
+		NDArray x=a1.view(-1, Util.getAtR(getShape(), 0));
+		// System.out.println(Arrays.toString(x.getShape()));
+		int[] tr=new int[a2.getDim()];
+		for (int i=0;i < a2.getDim();i++)
+			tr[i] = i;
+		int tmp=tr[tr.length - 1];
+		tr[tr.length - 1] = tr[tr.length - 2];
+		tr[tr.length - 2] = tmp;
+		NDArray y=a2.transpose(tr);
+		int osh=y.getShape()[y.getShape().length - 1];
+		// System.out.println("== " + Arrays.toString(y.getShape()));
+		y = y.view(-1, osh);
+		// System.out.println(Arrays.toString(y.getShape()));
+
+		return new NDArray[]{x,y};
 	}
 	// end operator implementation.
 }

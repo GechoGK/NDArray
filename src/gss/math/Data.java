@@ -17,6 +17,11 @@ public class Data
 		this.data = new float[Util.length(shape)];
 		this.length = data.length;
 	}
+	public Data(float[]data)
+	{
+		this.data = data;
+		this.length = data.length;
+	}
 	public void setRequireGrad(boolean b)
 	{
 		if (b && grad == null)
@@ -44,7 +49,7 @@ public class Data
 		// gradValue = null;
 		requireGradient = false;
 	}
-	public Value getGradValue(int pos)
+	public Value getValue(int pos)
 	{
 		if (gradValues == null)
 			gradValues = new Value[data.length];
@@ -56,7 +61,7 @@ public class Data
 		}
 		return v;
 	}
-	public Value setGradValue(int pos, Value v)
+	public Value setValue(int pos, Value v)
 	{
 		// System.out.println("setting flat " + ind + " = " + v);
 		if (gradValues == null)

@@ -32,13 +32,73 @@ public class Test2
 	}
 	void a()
 	{
-		System.out.println("Hello world");
-		System.out.println("dot product backPropagation");
-		
+		System.out.println("preparing...");
+		NDArray a1=NDIO.rand(new int[]{5,10}).setEnableGradient(true);
+		NDArray a2=NDIO.rand(new int[]{10,8}).setEnableGradient(true);
+		System.out.println("prepared");
+		NDArray a3=null;
+		// while (new Boolean(true))
+		{
+			float tm=0;
+			int cnt=10;
+			// for (int i=0;i < cnt;i++)
+			{
+				long l=System.currentTimeMillis();
+				a3 = a1.dot(a2);
+				l = System.currentTimeMillis() - l;
+				tm += l;
+			}
+			System.out.println((tm / cnt) + " millis to calculate dot product");
+		}
+		if (1 == 1)
+		{
+			print(a1);
+			System.out.println("-----");
+			print(a2);
+			System.out.println("---- dot product ----");
+			print(a3);
+			System.out.println("----- Gradients -----");
+			System.out.println("====  out  ====");
+			printGrad(a3);
+			System.out.println("====  a  ====");
+			printGrad(a1);
+			System.out.println("====  b  ====");
+			printGrad(a2);
+			System.out.println("-----------------------");
+			a3.setGrad(new int[]{}, 1);
+			// drawTree(a3);
+			a3.backward();
+			System.out.println("----- Gradients -----");
+			System.out.println("====  out  ====");
+			printGrad(a3);
+			System.out.println("====  a  ====");
+			printGrad(a1);
+			System.out.println("====  b  ====");
+			printGrad(a2);
+			System.out.println("-----------------------");
+		}
+	}
+	void drawTree(NDArray ar)
+	{
+		Value[] vs=ar.base.data.getValues();
+		if (vs == null)
+		{
+			System.out.println("no tree to display");
+			return;
+		}
+		for (Value v:vs)
+			draw(v, "");
+	}
+	void draw(Value v, String t)
+	{
+		System.out.println(t + v);
+		if (v.args != null)
+			for (Value vv:v.args)
+				draw(vv, t + "    ");
 	}
 	void test9()
 	{
-		System.out.println("=== Test 9. test dot product ===");
+		System.out.println("=== Test 9. test dot product (no backpropagation)===");
 
 		NDArray a1=NDIO.fromArray(new int[]{2, 4}, new float[]{1,2,3,4,5,6,7,8});
 		NDArray a2=NDIO.fromArray(new int[]{4,2}, new float[]{3,4,5,6,7,8,9,10});

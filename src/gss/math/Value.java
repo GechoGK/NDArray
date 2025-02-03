@@ -36,6 +36,7 @@ public class Value
 		this.func = v.func;
 		this.args = v.args;
 		this.val = v.val;
+		this.grad = v.grad;
 		return this;
 	}
 	public float getData()
@@ -55,7 +56,7 @@ public class Value
 		// System.out.println("adding " + v);
 		return v;
 	}
-	public static ValueGradFunc additionGrad =new ValueGradFunc(){
+	public static ValueGradFunc additionGrad =new ValueGradFunc("addition gradient"){
 		@Override
 		public void backward(Value self, Value[] args)
 		{
@@ -68,10 +69,10 @@ public class Value
 	public Value sub(Value other)
 	{
 		Value v=new Value(getData() - other.getData());
-		v.setOP(subtractGrad, this, other);
+		v.setOP(subtractionGrad, this, other);
 		return v;
 	}
-	public static ValueGradFunc subtractGrad =new ValueGradFunc(){
+	public static ValueGradFunc subtractionGrad =new ValueGradFunc("subtraction gradient"){
 		@Override
 		public void backward(Value self, Value[] args)
 		{
@@ -84,10 +85,10 @@ public class Value
 	public Value mul(Value other)
 	{
 		Value v=new Value(getData() * other.getData());
-		v.setOP(multiplyGrad, this, other);
+		v.setOP(multiplicationGrad, this, other);
 		return v;
 	}
-	public static ValueGradFunc multiplyGrad =new ValueGradFunc(){
+	public static ValueGradFunc multiplicationGrad =new ValueGradFunc("multiplication gradient"){
 		@Override
 		public void backward(Value self, Value[] args)
 		{
@@ -103,7 +104,7 @@ public class Value
 		v.setOP(divisionGrad, this, other);
 		return v;
 	}
-	public static ValueGradFunc divisionGrad =new ValueGradFunc(){
+	public static ValueGradFunc divisionGrad =new ValueGradFunc("division gradient"){
 		@Override
 		public void backward(Value self, Value[] args)
 		{
@@ -119,7 +120,7 @@ public class Value
 		v.setOP(powerGrad, this, other);
 		return v;
 	}
-	public static ValueGradFunc powerGrad =new ValueGradFunc(){
+	public static ValueGradFunc powerGrad =new ValueGradFunc("power gradient"){
 		@Override
 		public void backward(Value self, Value[] args)
 		{
