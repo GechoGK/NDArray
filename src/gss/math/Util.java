@@ -164,7 +164,10 @@ public class Util
 	}
 	public static void print(NDArray ar)
 	{
-		print(ar.base);
+		if (ar == null)
+			System.out.println("null array");
+		else
+			print(ar.base);
 	}
 	public static void print(Shape str)
 	{

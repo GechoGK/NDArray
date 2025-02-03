@@ -52,8 +52,7 @@ public class NDIO
 	}
 	public static NDArray fromArray(int[] shape, float...arr)
 	{
-		throw new RuntimeException("not implemented.");
-		// return null;
+		return new NDArray(shape, arr);
 	}
 	// the seed value can be -1.
 	public static NDArray rand(int...shape)

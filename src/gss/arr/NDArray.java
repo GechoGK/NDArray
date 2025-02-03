@@ -3,6 +3,8 @@ package gss.arr;
 import gss.math.*;
 import java.util.*;
 
+import static gss.math.Util.*;
+
 public class NDArray
 {
 	public Shape base;
@@ -20,16 +22,35 @@ public class NDArray
 	public NDArray(float[] data)
 	{
 		this.base = new Shape(new int[]{data.length});
-		for (int i=0;i < data.length;i++)
-			base.data.setData(i, data[i]); 
+		base.data.data = data;
+//		for (int i=0;i < data.length;i++)
+//			base.data.setData(i, data[i]); 
+		//storage.base.values = Arrays.copyOf(data, data.length);
+	}
+	public NDArray(int[]shape,  float[] data)
+	{
+		this.base = new Shape(shape);
+		base.data.data = data;
+//		for (int i=0;i < data.length;i++)
+//			base.data.setData(i, data[i]); 
 		//storage.base.values = Arrays.copyOf(data, data.length);
 	}
 	public NDArray(float[][] data)
 	{
 		this.base = new Shape(new int[]{data.length, data[0].length});
 		float[] dt=Util.flatten(data);
-		for (int i=0;i < data.length;i++)
-			base.data.setData(i, dt[i]);
+		base.data.data = dt;
+//		for (int i=0;i < data.length;i++)
+//			base.data.setData(i, dt[i]);
+		// storage.base.values = Util.flatten(data);
+	}
+	public NDArray(int[]shape, float[][] data)
+	{
+		this.base = new Shape(shape);
+		float[] dt=Util.flatten(data);
+		base.data.data = dt;
+//		for (int i=0;i < data.length;i++)
+//			base.data.setData(i, dt[i]);
 		// storage.base.values = Util.flatten(data);
 	}
 	public NDArray setEnableGradient(boolean enable)
@@ -48,6 +69,10 @@ public class NDArray
 	public int[] getShape()
 	{
 		return base.shape;
+	}
+	public int getDim()
+	{
+		return base.dim;
 	}
 	public NDArray get(int...sh)
 	{
@@ -140,8 +165,8 @@ public class NDArray
 	// view into another shape.
 	public NDArray view(int...newShape)
 	{
-		if (base.length != Util.length(newShape))
-			throw new RuntimeException("invalid array length");
+//		if (base.length != Util.length(newShape))
+//			throw new RuntimeException("invalid array length");
 		NDArray arr = fromShape(base.view(newShape));
 		arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
@@ -421,26 +446,96 @@ public class NDArray
 	public NDArray dot(NDArray other)
 	{
 		/// fix. dot product is made using 2d array.
-		/// this function doesn't work.
-		if (this.getLength() != other.getLength())
-			throw new RuntimeException("incompatable arrays for dot product :: the two arrays must be the same length.");
-		int[] shp=getCommonShape(this.base.shape, other.base.shape);
-		NDArray a1=broadcast(shp);
-		NDArray a2=other.broadcast(shp);
-		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
-		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
-		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
-		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
-		for (int i=0;i < a1.getLength();i++)
-		{
-			Value v1=a1.getFlatValue(i);
-			Value v2=a2.getFlatValue(i);
+		/// this function doesn't work. works 10%
+//		if (this.getLength() != other.getLength())
+//			throw new RuntimeException("incompatable arrays for dot product :: the two arrays must be the same length.");
+		if (getDim() < 2 || other.getDim() < 2)
+			throw new RuntimeException("incompatable dimention for dot product");
+		if (getAtR(getShape(), 0) != getAtR(other.getShape(), 1))
+			throw new RuntimeException("shape not equal(" + getAtR(getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
+		int[]outputShape=getShapeForDot(getShape(), other.getShape());
+		/*
+		 for (int r=0;r < x.row;r++)
+		 for (int c=0;c < y.col;c++)
+		 {
+		 Value sum=new Value(0);
+		 for (int i=0;i < x.col;i++)
+		 sum = Value.add(sum, Value.mul(x.get(r, i) , y.get(i, c)));
+		 m.put(r, c, sum);
+		 }
+		 */
 
-			arrOut.setFlatValue(v1.mul(v2), i);
-		}
+		NDArray x=view(-1, Util.getAtR(getShape(), 0));
+		// System.out.println(Arrays.toString(x.getShape()));
+		int[] tr=new int[other.getDim()];
+		for (int i=0;i < other.getDim();i++)
+			tr[i] = i;
+		int tmp=tr[tr.length - 1];
+		tr[tr.length - 1] = tr[tr.length - 2];
+		tr[tr.length - 2] = tmp;
+		NDArray y=other.transpose(tr);
+		int osh=y.getShape()[y.getShape().length - 1];
+		// System.out.println("== " + Arrays.toString(y.getShape()));
+		y = y.view(-1, osh);
+		// System.out.println(Arrays.toString(y.getShape()));
+
+		// preparing...
+		int xr=x.getShape()[0];
+		int yr=y.getShape()[0];
+		int xc=x.getShape()[1];
+		// System.out.println("copying...");
+		float[][] xx=x.base.to2DArray(null);
+		float[][] yy=y.base.to2DArray(null);
+		// System.out.println("copy done");
+		float[] out=new float[xr * yr];
+		int ps=0;
+		// System.out.println("output =" + out.length);
+		for (int i=0;i < xr;i++)
+			for (int j=0;j < yr;j++)
+			{
+				float sm=0;
+				for (int k=0;k < xc;k++)
+				{
+					float m=xx[i][k] * yy[j][k];
+					sm += m;
+				}
+				out[ps] = sm;
+				ps++;
+			}
+		// System.out.println(Arrays.toString(out));
+		NDArray arrOut=new NDArray(outputShape, out).setEnableGradient(this.requiresGradient() || other.requiresGradient());
+		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
+		arrOut.setGradientFunction(GradFunc.itemGradient, this, other);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+
 		return arrOut;
+	}
+	private int[] getShapeForDot(int[]s1, int[]s2)
+	{
+		/*
+		 output shape is determined by the given array's shape.
+		 example  a.shape = (x,y,z)
+		 ..       b.shape = (h,i,j) then
+		 ..
+		 ..       c = a.dot(b)
+		 ..
+		 .. first we need to check if "z" and "i" are equal if true.
+		 the output shape(c.shape) would be (x,y,h,j) it increase by 1 dimension.
+
+		 */
+		int[] newShape=new int[s1.length + s2.length - 2];
+		// System.out.println("finding shape for dot.");
+		// System.out.println(Arrays.toString(s1) + ", " + Arrays.toString(s2));
+		// System.out.println("new array length =" + newShape.length);
+
+		for (int i=0;i < s1.length - 1;i++)
+			newShape[i] = s1[i];
+		int str=s1.length - 1;
+		for (int i=0;i < s2.length - 1;i++)
+			newShape[str + i] = s2[i];
+		newShape[newShape.length - 1] = s2[s2.length - 1];
+		// System.out.println("new Shape =" + Arrays.toString(newShape));
+		return newShape;
 	}
 	// end operator implementation.
 }

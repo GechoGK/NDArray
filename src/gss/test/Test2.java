@@ -17,22 +17,50 @@ public class Test2
 	void test() throws Exception
 	{
 
-		Test1.test(null);
-		test1();
-		test2();
-		test3(); // !!!!!! works.
-		test4();  // !!!!!!  works.
-		test5(); // !!!!!! works.
-		test6();
-		test7();
+//		Test1.test(null);
+//		test1();
+//		test2();
+//		test3(); // !!!!!! works.
+//		test4();  // !!!!!!  works.
+//		test5(); // !!!!!! works.
+//		test6();
+//		test7();
+//		test8();
+//		test9();
 		a();
 
 	}
 	void a()
 	{
+		System.out.println("Hello world");
+		System.out.println("dot product backPropagation");
+		
+	}
+	void test9()
+	{
+		System.out.println("=== Test 9. test dot product ===");
 
-		System.out.println("Hello World!");
+		NDArray a1=NDIO.fromArray(new int[]{2, 4}, new float[]{1,2,3,4,5,6,7,8});
+		NDArray a2=NDIO.fromArray(new int[]{4,2}, new float[]{3,4,5,6,7,8,9,10});
 
+		NDArray a3=a1.dot(a2);
+		// print(a3);
+		// System.out.println(Arrays.toString(a3.getShape()));
+		float[][]r=
+		{
+			{70.0f, 80.0f},
+			{166.0f, 192.0f}
+		};
+		Test1.test(Test1.equals(r, a3.base), " dot product item equals");
+	}
+	void test8()
+	{
+		System.out.println("=== Test 8. test to2DArray. ===");
+		Shape s=new Shape(3, 2, 4);
+		s = s.view(-1, 4);
+		fillRand(s);
+		float[][] f=s.to2DArray(null);
+		Test1.test(Test1.equals(f, s), "to2DArray item equals.");
 	}
 	void test7()
 	{
@@ -45,13 +73,17 @@ public class Test2
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{3,2,4}), "array fill equals 1");
 
-		sh = s.getShape(4, -1);
+		sh = s.getShape(4, -1); // or new int[]{4,-1}
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{4,6}), "array fill equals 2");
 
-		sh = s.getShape(2, 2, 2, -1);
+		sh = s.getShape(2, 2, 2, -1); // or new int[]{2,2,2,-1}
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{2,2,2,3}), "array fill equals 3");
+
+		sh = s.getShape(new int[]{-1});
+		// System.out.println(Arrays.toString(sh));
+		Test1.test(Arrays.equals(sh, new int[]{24}), "array fill equals 4");
 
 
 	}

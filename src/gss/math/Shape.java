@@ -227,6 +227,8 @@ public class Shape
 	public Shape view(int...newShape)
 	{
 		getShape(newShape);
+		if (length != Util.length(newShape))
+			throw new RuntimeException("can't view this array into " + Arrays.toString(newShape) + " because the length is not equal");
 		// if newShape length != length
 		//		can't view this array into new shape.
 		return new Shape(data, newShape, offset);
@@ -333,6 +335,23 @@ public class Shape
 	public float[]toArray(int start)
 	{
 		return toArray(null, start, length);
+	}
+	public float[][] to2DArray(float[][]out) // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		if (out == null)
+			out = new float[sh.shape[0]][sh.shape[1]];
+		if (out.length < sh.shape[0] || out[0].length < sh.shape[1])
+			throw new RuntimeException("the length of the input array doesn't match the length specified:");
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getData(str + pos);
+				pos++;
+			}
+		return out;
 	}
 	public Shape copy()
 	{
