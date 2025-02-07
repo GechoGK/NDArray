@@ -215,6 +215,40 @@ public abstract class GradFunc
 			return null;
 		}
 	};
+	public static GradFunc dotGradient=new GradFunc("dot"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// System.out.println("performing dot product backpropagation");
+			// System.out.println("host = " + host.getDim() + ": " + Arrays.toString(host.getShape()));
+			// System.out.println("x = " + childs[0].getDim() + ": " + Arrays.toString(childs[0].getShape()));
+			// System.out.println("y = " + childs[1].getDim() + ": " + Arrays.toString(childs[1].getShape()));
+
+			NDArray x=childs[0];
+			NDArray y=childs[1];
+			// float[][] xx=x.base.to2dGradArray();
+
+			if (x.getDim() != 2 || y.getDim() != 2 || x.getDim() != y.getDim())
+				throw new RuntimeException("unable to compute gradient with different dimensions.");
+
+			for (int i=0;i < x.getShape()[0];i++) // for i in x.row
+			{
+				for (int j=0;j < y.getShape()[0];j++) // for j in y.row
+				{
+					float gr=host.getExactGrad(i, j);
+					for (int k=0;k < x.getShape()[1];k++) // for k in x.col
+					{
+						if (x.requiresGradient())
+							x.setExactGrad(new int[]{i,k}, gr * y.getFloat(j, k));
+						if (y.requiresGradient())
+							y.setExactGrad(new int[]{j,k}, gr * x.getFloat(i, k));
+					}
+				}
+			}
+
+			return null;
+		}
+	};
 	public static GradFunc stepGradient = new GradFunc("step"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)

@@ -9,29 +9,67 @@ import static gss.math.Util.*;
 public class Test2
 {
 	public static void main(String[]args) throws Exception
-	{
+    {
 
 		new Test2().test();
 
 	}
 	void test() throws Exception
-	{
+    {
 
 //		Test1.test(null);
 //		test1();
 //		test2();
-//		test3(); // !!!!!! works.
-//		test4();  // !!!!!!  works.
-//		test5(); // !!!!!! works.
+//		test3(); // !!!!!!  works.
+//		test4(); // !!!!!!  works.
+//		test5(); // !!!!!!  works.
 //		test6();
 //		test7();
 //		test8();
 //		test9();
+//		test10();
+//		test11();
 		a();
 
 	}
 	void a()
+    {
+		System.out.println("Hellow world!");
+	}
+	void test11()
 	{
+		System.out.println("=== Test 11. test dot product with backpropagation ===");
+
+		NDArray a1=NDIO.fromArray(new int[]{2,4}, new float[]{1,2,3,4,5,6,7,8}).setEnableGradient(true);
+		NDArray a2=NDIO.fromArray(new int[]{4,3}, new float[]{10,11,12,13,14,15,16,17,18,19,20,21}).setEnableGradient(true);
+
+		NDArray a3=a1.dot(a2);
+
+		NDArray b1=a1.copy();
+		NDArray b2=a2.copy();
+
+		NDArray b3=b1.dot2(b2);
+
+		Test1.test(Util.equals(a1, b1), "dot product with float and value");
+
+		a3.setGrad(new int[]{}, 1);
+		b3.setGrad(new int[]{}, 1);
+
+		a3.backward();
+		b3.backward();
+
+		printGrad(a1);
+		printGrad(a2);
+		printGrad(b1);
+		printGrad(b2);
+
+		Test1.test(Util.equals(a1, b1, true), "dot product gradient with float and value");
+
+	}
+	void test10()
+    {
+		System.out.println("=== Test 10. test dot product (no backpropagation)===");
+		System.out.println("this test is only for Value class, may be it doesn't give accurate results");
 		System.out.println("preparing...");
 		NDArray a1=NDIO.rand(new int[]{5,10}).setEnableGradient(true);
 		NDArray a2=NDIO.rand(new int[]{10,8}).setEnableGradient(true);
@@ -44,20 +82,20 @@ public class Test2
 			// for (int i=0;i < cnt;i++)
 			{
 				long l=System.currentTimeMillis();
-				a3 = a1.dot(a2);
+				a3 = a1.dot2(a2);
 				l = System.currentTimeMillis() - l;
 				tm += l;
 			}
 			System.out.println((tm / cnt) + " millis to calculate dot product");
 		}
 		if (1 == 1)
-		{
+        {
 			print(a1);
 			System.out.println("-----");
 			print(a2);
 			System.out.println("---- dot product ----");
 			print(a3);
-			System.out.println("----- Gradients -----");
+			System.out.println("----- Gradients before backward pass.-----");
 			System.out.println("====  out  ====");
 			printGrad(a3);
 			System.out.println("====  a  ====");
@@ -68,7 +106,7 @@ public class Test2
 			a3.setGrad(new int[]{}, 1);
 			// drawTree(a3);
 			a3.backward();
-			System.out.println("----- Gradients -----");
+			System.out.println("----- Gradients after backward pass.-----");
 			System.out.println("====  out  ====");
 			printGrad(a3);
 			System.out.println("====  a  ====");
@@ -79,10 +117,10 @@ public class Test2
 		}
 	}
 	void drawTree(NDArray ar)
-	{
+    {
 		Value[] vs=ar.base.data.getValues();
 		if (vs == null)
-		{
+        {
 			System.out.println("no tree to display");
 			return;
 		}
@@ -90,14 +128,14 @@ public class Test2
 			draw(v, "");
 	}
 	void draw(Value v, String t)
-	{
+    {
 		System.out.println(t + v);
 		if (v.args != null)
 			for (Value vv:v.args)
 				draw(vv, t + "    ");
 	}
 	void test9()
-	{
+    {
 		System.out.println("=== Test 9. test dot product (no backpropagation)===");
 
 		NDArray a1=NDIO.fromArray(new int[]{2, 4}, new float[]{1,2,3,4,5,6,7,8});
@@ -114,7 +152,7 @@ public class Test2
 		Test1.test(Test1.equals(r, a3.base), " dot product item equals");
 	}
 	void test8()
-	{
+    {
 		System.out.println("=== Test 8. test to2DArray. ===");
 		Shape s=new Shape(3, 2, 4);
 		s = s.view(-1, 4);
@@ -123,7 +161,7 @@ public class Test2
 		Test1.test(Test1.equals(f, s), "to2DArray item equals.");
 	}
 	void test7()
-	{
+    {
 		System.out.println("=== Test 7. shape fill -1 values. ===");
 		Shape s=new Shape(3, 2, 4);
 
@@ -148,7 +186,7 @@ public class Test2
 
 	}
 	void test6() throws Exception
-	{
+    {
 		System.out.println("=== Test 6. Gradient calcator for hStack and vStack. ===");
 
 		NDArray arr2=NDIO.rand(6, 2, 4).setEnableGradient(true);
@@ -175,7 +213,7 @@ public class Test2
 
 	}
 	void test5() throws Exception
-	{
+    {
 		System.out.println("=== Test 5. Gradient calculator on multiplication using raw Values. ===");
 		// works.
 		NDArray a1=NDIO.rand(new int[]{2, 5}, true); 
@@ -227,7 +265,7 @@ public class Test2
 
 	}
 	void test4() throws Exception
-	{
+    {
 		System.out.println("=== Test 4. Gradient calculator 2 on addition ===");
 
 		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
@@ -262,10 +300,10 @@ public class Test2
 
 	}
 	void backTree(Value[] vls)
-	{
+    {
 		System.out.println("backing tree");
 		if (vls == null || vls.length == 0)
-		{
+        {
 			System.out.println("empty values");
 			return;
 		}
@@ -273,10 +311,10 @@ public class Test2
 		HashSet<Value> lst=new HashSet<>();
 		lst.addAll(Arrays.asList(vls));
 		while (lst.size() != 0)
-		{
+        {
 			System.out.println(lst.size() + " items to backward");
 			for (Value v:lst)
-			{
+            {
 				v.backward();
 				tmpLst.addAll(v.args);
 			}
@@ -286,10 +324,10 @@ public class Test2
 		}
 	}
 	void tree(NDArray arr, String t)
-	{
+    {
 		System.out.println(t + arr);
 		if (arr.gradientFunction == GradFunc.itemGradient)
-		{
+        {
 			System.out.println(t + "listing child gradient");
 			Value[] vls=arr.base.data.getValues();
 			for (Value v:vls)
@@ -300,14 +338,14 @@ public class Test2
 				tree(ar, t.replace("_", " ").replace("|", " ") + "|_____ ");
 	}
 	void treeV(Value vl, String t)
-	{
+    {
 		System.out.println(t + vl);
 		if (vl.args != null && vl.args.size() != 0)
 			for (Value  vv:vl.args)
 				treeV(vv, t.replace("_", " ").replace("|", " ") + "|_____ ");
 	}
 	void test3() throws Exception
-	{
+    {
 		System.out.println("=== Test 3. Gradient calculator on addition ===");
 		// gradient. adding methods ....
 		NDArray arr1 = NDIO.rand(new int[]{3, 1, 2}, true);
@@ -343,7 +381,7 @@ public class Test2
 
 	}
 	void test2() throws Exception
-	{
+    {
 		System.out.println("=== Test 2. NDArray basic math ===");
 
 		NDArray a1=new NDArray(new float[]{4,8,3,9,20,50,8,5,3,7});
@@ -376,7 +414,7 @@ public class Test2
 
 	}
 	void test1() throws Exception
-	{
+    {
 		System.out.println("=== Test 1. test common broadcast shape ===");
 
 		int[] sh2={5,1,2,1}; // 1 in sh1 changes into 4.

@@ -7,6 +7,7 @@ import static gss.math.Util.*;
 
 public class NDArray
 {
+
 	public Shape base;
 	public List<NDArray> childs = new ArrayList<>();
 	public GradFunc gradientFunction;
@@ -459,6 +460,10 @@ public class NDArray
 		NDArray[] prps=prepareArrayForDotProduct(this, other);
 		NDArray x=prps[0];
 		NDArray y=prps[1];
+//		System.out.println("-----  x data  -----");
+//		Util.print(x);
+//		System.out.println("-----  y data  -----");
+//		Util.print(y);
 		// preparing...
 		int xr=x.getShape()[0];
 		int yr=y.getShape()[0];
@@ -475,16 +480,13 @@ public class NDArray
 			{
 				float sm=0;
 				for (int k=0;k < xc;k++)
-				{
-					float m=xx[i][k] * yy[j][k];
-					sm += m;
-				}
+					sm += xx[i][k] * yy[j][k];
 				out[ps] = sm;
 				ps++;
 			}
 		NDArray arrOut=new NDArray(outputShape, out).setEnableGradient(this.requiresGradient() || other.requiresGradient());
 		// we dont't know the gradient function for dot product so we use itemGradient to it automatically calculate for us.
-		// arrOut.setGradientFunction(GradFunc.itemGradient, x, y);
+		arrOut.setGradientFunction(GradFunc.dotGradient, x, y);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 
 		return arrOut;

@@ -1,7 +1,6 @@
 package gss.math;
 
-import gss.math.*;
-import java.util.*;
+import java.util.Arrays;
 
 public class Shape
 {
@@ -390,7 +389,6 @@ public class Shape
 			if (requiresGradient())
 				sh.data.setGrad(i, getExactGrad(getShape(i)));
 		}
-
 		return sh;
 	}
 	public boolean requiresGradient()
