@@ -29,12 +29,34 @@ public class Test2
 		test9();
 		test10();
 		test11();
+		test12();
 		a();
 
 	}
 	void a()
     {
 		System.out.println("Test finished.");
+	}
+	void test12()
+	{
+		print("Test 12. arange and range utils");
+		print("float ange");
+		for (float i=1;i < 10;i += .5f)
+		{
+			float[] f=range(0f, 20, i);
+			print(i + ":= " + Arrays.toString(f));
+		}
+		print("int range");
+		for (int i=1;i < 10;i++)
+		{
+			int[] ar=range(0, 20, i);
+			print(i + ":= " + Arrays.toString(ar));
+		}
+		print("ndarray arange");
+		NDArray ar=NDIO.arange(1, 10, .5f);
+		print(ar.getLength() + " = " + ar);
+		ar = ar.reshape(-1, 6);
+		print(ar);
 	}
 	void test11()
 	{
@@ -63,8 +85,8 @@ public class Test2
 		// printGrad(b1);
 		// printGrad(b2);
 
-		Test1.test(Util.equals(a1, b1, true), "dot product gradient with float and value");
-
+		Test1.test(Util.equals(a1, b1, true), "dot product gradient with float and value 1");
+		Test1.test(Util.equals(a2, b2, true), "dot product gradient with float and value 2");
 	}
 	void test10()
     {
