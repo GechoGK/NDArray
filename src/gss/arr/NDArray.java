@@ -7,7 +7,6 @@ import static gss.math.Util.*;
 
 public class NDArray
 {
-
 	public Shape base;
 	public List<NDArray> childs = new ArrayList<>();
 	public GradFunc gradientFunction;
@@ -35,7 +34,6 @@ public class NDArray
 	}
 	public NDArray(int[]shape, float[][] data)
 	{
-
 		float[] dt=Util.flatten(data);
 		this.base = new Shape(shape, dt);
 	}
@@ -47,6 +45,10 @@ public class NDArray
 	public boolean requiresGradient()
 	{
 		return base.data.requireGradient;
+	}
+	public void zeroGrad()
+	{
+		base.data.zeroGrad();
 	}
 	public int getLength()
 	{
@@ -76,9 +78,17 @@ public class NDArray
 	{
 		return base.getFlat(p);
 	}
+	public void set(float v)
+	{
+		base.set(new int[]{}, v);
+	}
 	public void set(int...sh, float v)
 	{
 		base.set(sh, v);
+	}
+	public void setGrad(float v)
+	{
+		base.setGrad(new int[]{}, v);
 	}
 	public void setGrad(int...sh, float v)
 	{
@@ -137,6 +147,14 @@ public class NDArray
 		arr.childs.addAll(this.childs);
 		arr.gradientFunction = this.gradientFunction;
 		return arr;
+	}
+	public NDArray getGradient()
+	{
+		return fromShape(base.getGradient());
+	}
+	public NDArray detachGradient()
+	{
+		return fromShape(base.detachGradient());
 	}
 	// shape functions
 	public NDArray broadcast(int...newShape)
@@ -434,7 +452,7 @@ public class NDArray
 	{
 		// peefect for dot product wothout transposing.
 		if (b.getDim() == 1)
-			b = b.reshape(b.getShape()[0], 1);
+			b = b.view(b.getShape()[0], 1);
 		int[] newShape=getShapeForDot(this.getShape(), b.getShape());
 		// print("new shape =" + Arrays.toString(newShape));
 		NDArray[] arrs=prepareArrayForDotProduct(this, b);

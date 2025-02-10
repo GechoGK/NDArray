@@ -2,19 +2,11 @@ package gss.math;
 
 import java.util.Arrays;
 
-public class Shape
+public class Shape implements Cloneable
 {
 	/*
 	 this shape is used to get and set item to and from data.
 
-	 */
-	/*
-	 // error not checked for all shape variants.
-	 // get check for error.
-	 // view check for length.
-	 // transpose check for length
-	 // broadcast check for broadcast rules.
-	 // 
 	 */
 	public Data data;
 	public int[] shape;
@@ -54,7 +46,7 @@ public class Shape
 	private void init(Data d, int[]sh, int[] strd, int off)
 	{
 		this.data = d;
-		this.shape = sh;
+		this.shape = sh; // copy this shape is a better idea b/c it may be come from another shape class through NDIO....alike(..). if not copied modifying shape would also change the other unknown shape.
 		this.dim = shape.length;
 		if (stride == null)
 			this.stride = Util.sumShapes(sh, null);
@@ -75,13 +67,13 @@ public class Shape
 	public void set(int[]index, float val)
 	{
 		if (index.length > shape.length)
-			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fill(val);
 	}
 	public void setGrad(int[]index, float val)
 	{
 		if (index.length > shape.length)
-			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fillGrad(val);
 	}
 	public void setExact(int[]index, float v)
@@ -109,7 +101,7 @@ public class Shape
 	public void fillGrad(float v)
 	{
 		if (!requiresGradient())
-			throw new RuntimeException("gradient not found try enabling it: requiresGradient = " + requiresGradient());
+			throw new RuntimeException("gradient not found :: requiresGradient = " + requiresGradient() + " ?? try enabling it by .setEnableGradient(true);");
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
@@ -166,6 +158,8 @@ public class Shape
 		setExactGrad(getShape(pos), val);
 	}
 	/*
+	 // TO-DO for performance.
+
 	 public void setFlatGrad(int startPosition,float[]array){
 	 // it assign array value starts from "startPosition" to the length of an array.
 	 // it aims to achieve by calulating indexToShape with multiple values,
@@ -391,64 +385,42 @@ public class Shape
 		}
 		return sh;
 	}
+	@Override
+	protected Shape clone() 
+	{
+		Shape s=new Shape(this.shape);
+		s.data = this.data;
+		s.shape = this.shape;
+		s.stride = this.stride;
+		s.length = this.length;
+		s. offset = this.offset;
+		s.dim = this.dim;
+		return s;
+	}
 	public boolean requiresGradient()
 	{
 		return data.requireGradient;
 	}
-//	public String getDataAsString()
-//	{
-//		StringBuilder sb=new StringBuilder();
-//		sb.append(getFromShape(shape, 0));
-//		return sb.toString();
-//	}
-//	public String getFromShape(int[]sh, int off)
-//	{
-//		if (sh.length == 1)
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			for (int i=off;i < off + sh[0];i++)
-//			{
-//				if (i != off)
-//					sb.append(",");
-//				sb.append(" ");
-//				sb.append(data.data[i]);
-//				if (i == off + sh[0] - 1)
-//					sb.append(" ");
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		else if (sh.length == 2)
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			for (int i=0;i < sh[0];i++)
-//			{
-//				if (i != off)
-//				{
-//					sb.append("\n");
-//					sb.append(" ");
-//				}
-//				sb.append(getFromShape(new int[]{sh[1]}, off + sh[1] * i));
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		else
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			int[]nsh=Arrays.copyOfRange(sh, 1, sh.length);
-//			int[] str=Util.sumShapes(sh, null);
-//			for (int i=0;i < sh[0];i++)
-//			{
-//				sb.append(getFromShape(nsh, off + str[0] * i));
-//				sb.append("\n");
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		// return null;
-//	}
+	public Shape getGradient()
+	{
+		if (!requiresGradient())
+			throw new RuntimeException("gradient not enabled : try enabling it.");
+		GData data=new GData(this.data.grad);
+		Shape s=this.clone();
+		s.data = data;
+		return s;
+	}
+	public Shape detachGradient()
+	{
+		if (!requiresGradient())
+			throw new RuntimeException("gradient not enabled : try enabling it.");
+		float[] f=new float[this.data.length];
+		for (int i=0;i < f.length;i++)
+			f[i] = this.data.grad[i];
+		Data data=new Data(f);
+		Shape s=new Shape(this.shape);
+		s.data = data;
+		return s;
+	}
+	
 }

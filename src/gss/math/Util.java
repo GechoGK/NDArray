@@ -150,9 +150,9 @@ public class Util
 	}
 	/*
 	 float[] arr={1,2,3};
-	 float v1=getAt(arr,0); //  3,
-	 float v1=getAt(arr,1); //  2,
-	 float v1=getAt(arr,2); //  1,
+	 float v1=getAtR(arr,0); //  3,
+	 float v1=getAtR(arr,1); //  2,
+	 float v1=getAtR(arr,2); //  1,
 	 */
 	public static float getAtR(float[] arr, int index)
 	{

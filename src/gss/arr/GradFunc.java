@@ -184,7 +184,7 @@ public abstract class GradFunc
 				float a=a1.getFlat(i); // a.data
 				float b=a2.getFlat(i); // b.data
 				if (a1.requiresGradient())
-					a1.setFlatGrad(i, host.getFlatGrad(i) * b * (float)Math.pow(a, b - 1));
+					a1.setFlatGrad(i, b * host.getFlatGrad(i) * (float)Math.pow(a, b - 1));
 				if (a2.requiresGradient())
 					a2.setFlatGrad(i, host.getFlatGrad(i) * (float)Math.pow(a, b) * (float)Math.log(a));
 			}
@@ -272,6 +272,8 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
+			if (host.base.data != childs[0].base.data)
+				throw new RuntimeException("unknown step gradient.");
 			return null;
 		}
 	};
