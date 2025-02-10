@@ -234,6 +234,38 @@ public class Util
 				System.out.println();
 			}
 	}
+	public static void print(float[] f)
+	{
+		if (f == null)
+		{
+			System.out.println("null array");
+			return;
+		}
+		System.out.print("[ ");
+		for (int i=0;i < f.length;i++)
+			System.out.print(f[i] + (i == f.length - 1 ?"": ", "));
+		System.out.println(" ]");
+	}
+	public static void print(float[][] f)
+	{
+		if (f == null)
+		{
+			System.out.println("null array");
+			return;
+		}
+		System.out.print("[");
+		for (int j=0;j < f.length;j++)
+		{
+			System.out.print((j == 0 ?"": " ") + "[ ");
+			for (int i=0;i < f[0].length;i++)
+				System.out.print(f[j][i] + (i == f[0].length - 1 ?"": ", "));
+			System.out.println(" ]" + (j == f.length - 1 ?"]": ""));
+		}
+	}
+	public static void print(Object o)
+	{
+		System.out.println(o);
+	}
 	public static void fill(Shape str, float val)
 	{
 		for (int i=0;i < str.data.getLength();i++)
@@ -280,9 +312,42 @@ public class Util
 	}
 	public static int[] range(int len)
 	{
-		int[] acc=new int[len];
-		for (int i=0;i < acc.length;i++)
-			acc[i] = i;
-		return acc;
+		return range(0, len, 1);
+	}
+	public static int[] range(int str, int end)
+	{
+		return range(str, end, 1);
+	}
+	public static int[] range(int str, int end, int inc)
+	{
+		int cnt=(end - str);
+		int[] arr=new int[(cnt / inc) + (cnt % inc == 0 ?0: 1)];
+		int p=0;
+		for (int i=str;i < end;i += inc)
+		{
+			arr[p] = i;
+			p++;
+		}
+		return arr;
+	}
+	public static float[] range(float len)
+	{
+		return range(0, len, 1);
+	}
+	public static float[] range(float str, float end)
+	{
+		return range(str, end, 1);
+	}
+	public static float[] range(float str, float end, float inc)
+	{
+		float cnt=(end - str);
+		float[] f=new float[(int)(cnt / inc) + (cnt % inc == 0 ?0: 1)];
+		int p=0;
+		for (float i=str;i < end;i += inc)
+		{
+			f[p] = i;
+			p++;
+		}
+		return f;
 	}
 }

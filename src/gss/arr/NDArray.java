@@ -252,6 +252,10 @@ public class NDArray
 		return fromShape(base.copy());
 	}
 	// operator implementation
+	public NDArray add(float f)
+	{
+		return add(new NDArray(new float[]{f}));
+	}
 	public NDArray add(NDArray other)
 	{
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
@@ -292,6 +296,10 @@ public class NDArray
 //		}
 //		return arrOut;
 //	}
+	public NDArray sub(float f)
+	{
+		return sub(new NDArray(new float[]{f}));
+	}
 	public NDArray sub(NDArray other)
 	{
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
@@ -309,6 +317,10 @@ public class NDArray
 			arrOut.setFlat(i, v1 - v2);
 		}
 		return arrOut;
+	}
+	public NDArray mul(float f)
+	{
+		return mul(new NDArray(new float[]{f}));
 	}
 	public NDArray mul(NDArray other)
 	{
@@ -331,23 +343,27 @@ public class NDArray
 	// test multiplication
 	// this method is for only testing purpose dont use it.
 	// to check vakue gradient we used this method.
-	public NDArray mul2(NDArray other)
+//	public NDArray mul2(NDArray other)
+//	{
+//		int[] shp=getCommonShape(this.base.shape, other.base.shape);
+//		NDArray a1=broadcast(shp);
+//		NDArray a2=other.broadcast(shp);
+//		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
+//		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
+//		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+//		if (a1.getLength() != a2.getLength())
+//			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+//		for (int i=0;i < a1.getLength();i++)
+//		{
+//			Value v1=a1.getFlatValue(i);
+//			Value v2=a2.getFlatValue(i);
+//			arrOut.setFlatValue(v1.mul(v2), i);
+//		}
+//		return arrOut;
+//	}
+	public NDArray div(float f)
 	{
-		int[] shp=getCommonShape(this.base.shape, other.base.shape);
-		NDArray a1=broadcast(shp);
-		NDArray a2=other.broadcast(shp);
-		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.itemGradient, a1, a2);
-		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
-		if (a1.getLength() != a2.getLength())
-			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
-		for (int i=0;i < a1.getLength();i++)
-		{
-			Value v1=a1.getFlatValue(i);
-			Value v2=a2.getFlatValue(i);
-			arrOut.setFlatValue(v1.mul(v2), i);
-		}
-		return arrOut;
+		return div(new NDArray(new float[]{f}));
 	}
 	public NDArray div(NDArray other)
 	{
@@ -366,6 +382,10 @@ public class NDArray
 			arrOut.setFlat(i, v1 / v2);
 		}
 		return arrOut;
+	}
+	public NDArray pow(float f)
+	{
+		return pow(new NDArray(new float[]{f}));
 	}
 	public NDArray pow(NDArray exp)
 	{
@@ -451,13 +471,18 @@ public class NDArray
 		/// this function doesn't work. works 10%
 //		if (this.getLength() != other.getLength())
 //			throw new RuntimeException("incompatable arrays for dot product :: the two arrays must be the same length.");
-		if (getDim() < 2 || other.getDim() < 2)
-			throw new RuntimeException("incompatable dimention for dot product");
-		if (getAtR(getShape(), 0) != getAtR(other.getShape(), 1))
-			throw new RuntimeException("shape not equal(" + getAtR(getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
-		int[]outputShape=getShapeForDot(getShape(), other.getShape());
+		// if (getDim() < 2 || other.getDim() < 2)
+		// 	throw new RuntimeException("incompatable dimention for dot product");
+		if (other.getDim() == 1)
+			other = other.reshape(other.getShape()[0], 1);
+		NDArray a1=this;
+		if (this.getDim() == 1)
+			a1 = a1.reshape(1, a1.getShape()[0]);
+		if (getAtR(a1.getShape(), 0) != (other.getDim() == 1 ?getAtR(other.getShape(), 0): getAtR(other.getShape(), 1)))
+			throw new RuntimeException("shape not equal(" + getAtR(a1.getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
+		int[]outputShape=getShapeForDot(a1.getShape(), other.getShape());
 
-		NDArray[] prps=prepareArrayForDotProduct(this, other);
+		NDArray[] prps=prepareArrayForDotProduct(a1, other);
 		NDArray x=prps[0];
 		NDArray y=prps[1];
 //		System.out.println("-----  x data  -----");
@@ -503,9 +528,9 @@ public class NDArray
 			throw new RuntimeException("shape not equal(" + getAtR(getShape(), 0) + " != " + getAtR(other.getShape(), 1) + ")");
 		int[]outputShape=getShapeForDot(getShape(), other.getShape());
 
-		NDArray[] prps=prepareArrayForDotProduct(this, other);
-		NDArray x=prps[0];
-		NDArray y=prps[1];
+//		NDArray[] prps=prepareArrayForDotProduct(this, other);
+		NDArray x=this.view(-1, getAtR(getShape(), 0));
+		NDArray y=other.hStack();
 		// preparing...
 		int xr=x.getShape()[0];
 		int yr=y.getShape()[0];
@@ -552,8 +577,10 @@ public class NDArray
 		 the output shape(c.shape) would be (x,y,h,j) it increase by 1 dimension.
 
 		 */
+		if (getAtR(s1, 0) != getAtR(s2, 1))
+			throw new RuntimeException("dimensions not equal to compute dot product (" + getAtR(s1, 0) + " != " + getAtR(s2, 1) + ")");
 		int[] newShape=new int[s1.length + s2.length - 2];
-		// System.out.println("finding shape for dot.");
+		// System.out.println("finding shape for dot. ===" + newShape.length);
 		// System.out.println(Arrays.toString(s1) + ", " + Arrays.toString(s2));
 		// System.out.println("new array length =" + newShape.length);
 
@@ -568,21 +595,109 @@ public class NDArray
 	}
 	public NDArray[]prepareArrayForDotProduct(NDArray a1, NDArray a2)
 	{
-		NDArray x=a1.view(-1, Util.getAtR(getShape(), 0));
-		// System.out.println(Arrays.toString(x.getShape()));
-		int[] tr=new int[a2.getDim()];
-		for (int i=0;i < a2.getDim();i++)
-			tr[i] = i;
-		int tmp=tr[tr.length - 1];
-		tr[tr.length - 1] = tr[tr.length - 2];
-		tr[tr.length - 2] = tmp;
-		NDArray y=a2.transpose(tr);
-		int osh=y.getShape()[y.getShape().length - 1];
-		// System.out.println("== " + Arrays.toString(y.getShape()));
-		y = y.view(-1, osh);
-		// System.out.println(Arrays.toString(y.getShape()));
-
+		NDArray x=a1.view(-1, Util.getAtR(a1.getShape(), 0));
+		// don't transpose because transposing and hview is computationally expensive, so we use only view.
+		// and also we use anothe toe of dot product. by considering no transpose.
+		NDArray y=a2.view(-1, Util.getAtR(a2.getShape(), 0));
 		return new NDArray[]{x,y};
 	}
+	public NDArray dot3(NDArray b)
+	{
+		// peefect for dot product wothout transposing.
+		if (b.getDim() == 1)
+			b = b.reshape(b.getShape()[0], 1);
+		int[] newShape=getShapeForDot(this.getShape(), b.getShape());
+		// print("new shape =" + Arrays.toString(newShape));
+		NDArray[] arrs=prepareArrayForDotProduct(this, b);
+		NDArray a = arrs[0];
+		b = arrs[1];
+		float[][] af=a.base.to2DArray(null);
+		float[][] bf=b.base.to2DArray(null);
+
+		float[][] fout=sdot(af, bf);
+		// print(fout.length + ", " + fout[0].length);
+		NDArray out=new NDArray(newShape, fout).setEnableGradient(a.requiresGradient() | b.requiresGradient());
+		out.setGradientFunction(GradFunc.dotGradient, a, b);
+		return out;
+	}
+	private float[][] sdot(float[][] a1, float[][] a2)
+	{
+		// print("calculating specialized do product.");
+		// print(a1.length + ", " + a1[0].length + " :: " + a2.length + ", " + a2[0].length);
+		if (a2.length % a1[0].length != 0)
+			throw new RuntimeException("unable to compute dot product");
+		int cnt=a2.length / a1[0].length;
+		float[][] m=new float[a1.length][a2[0].length * cnt];
+		// print("output =" + m.length + ", " + m[0].length);
+		// print("count =" + cnt);
+		for (int xr=0;xr < a1.length;xr++)
+		{
+			for (int yc=0;yc < a2[0].length;yc++)
+			{
+				for (int cn=0;cn < cnt;cn++)
+				{
+					float s=0;
+					for (int xc=0;xc < a1[0].length;xc++)
+					{
+						int ps=cn * a1[0].length + xc;
+						s += a1[xr][xc] * a2[ps][yc];
+					}
+					int ps=a2[0].length * cn + yc;
+					m[xr][ps] = s;	
+				}
+			}
+		}
+		// print(m);
+		return m;
+	}
+//	public NDArray dot4(NDArray b)
+//	{
+//		// peefect for dot product wothout transposing.
+//		if (b.getDim() == 1)
+//			b = b.reshape(b.getShape()[0], 1);
+//		int[] newShape=getShapeForDot(this.getShape(), b.getShape());
+//		// print("new shape =" + Arrays.toString(newShape));
+//		NDArray[] arrs=prepareArrayForDotProduct(this, b);
+//		NDArray a = arrs[0];
+//		b = arrs[1];
+//		Value[][] af=a.base.to2DValueArray();
+//		Value[][] bf=b.base.to2DValueArray();
+//
+//		Value[][] fout=sdotv(af, bf);
+//		// print(fout.length + ", " + fout[0].length);
+//		NDArray out=new NDArray(newShape, fout).setEnableGradient(a.requiresGradient() | b.requiresGradient());
+//		out.setGradientFunction(GradFunc.dotGradient, a, b);
+//		return out;
+//	}
+//	private float[][] sdotv(float[][] a1, float[][] a2)
+//	{
+//		// print("calculating specialized do product.");
+//		// print(a1.length + ", " + a1[0].length + " :: " + a2.length + ", " + a2[0].length);
+//		if (a2.length % a1[0].length != 0)
+//			throw new RuntimeException("unable to compute dot product");
+//		int cnt=a2.length / a1[0].length;
+//		float[][] m=new float[a1.length][a2[0].length * cnt];
+//		// print("output =" + m.length + ", " + m[0].length);
+//		// print("count =" + cnt);
+//		for (int xr=0;xr < a1.length;xr++)
+//		{
+//			for (int yc=0;yc < a2[0].length;yc++)
+//			{
+//				for (int cn=0;cn < cnt;cn++)
+//				{
+//					float s=0;
+//					for (int xc=0;xc < a1[0].length;xc++)
+//					{
+//						int ps=cn * a1[0].length + xc;
+//						s += a1[xr][xc] * a2[ps][yc];
+//					}
+//					int ps=a2[0].length * cn + yc;
+//					m[xr][ps] = s;	
+//				}
+//			}
+//		}
+//		// print(m);
+//		return m;
+//	}
 	// end operator implementation.
 }

@@ -8,7 +8,7 @@ import static gss.math.Util.*;
 
 public class Test2
 {
-	public static void main(String[]args) throws Exception
+	public static void main2(String[]args) throws Exception
     {
 
 		new Test2().test();
@@ -17,24 +17,24 @@ public class Test2
 	void test() throws Exception
     {
 
-//		Test1.test(null);
-//		test1();
-//		test2();
-//		test3(); // !!!!!!  works.
-//		test4(); // !!!!!!  works.
-//		test5(); // !!!!!!  works.
-//		test6();
-//		test7();
-//		test8();
-//		test9();
-//		test10();
-//		test11();
+		Test1.test(null);
+		test1();
+		test2();
+		test3(); // !!!!!!  works.
+		test4(); // !!!!!!  works.
+		test5(); // !!!!!!  works.
+		test6();
+		test7();
+		test8();
+		test9();
+		test10();
+		test11();
 		a();
 
 	}
 	void a()
     {
-		System.out.println("Hellow world!");
+		System.out.println("Test finished.");
 	}
 	void test11()
 	{
@@ -48,7 +48,7 @@ public class Test2
 		NDArray b1=a1.copy();
 		NDArray b2=a2.copy();
 
-		NDArray b3=b1.dot2(b2);
+		NDArray b3=b1.dot(b2);
 
 		Test1.test(Util.equals(a1, b1), "dot product with float and value");
 
@@ -58,10 +58,10 @@ public class Test2
 		a3.backward();
 		b3.backward();
 
-		printGrad(a1);
-		printGrad(a2);
-		printGrad(b1);
-		printGrad(b2);
+		// printGrad(a1);
+		// printGrad(a2);
+		// printGrad(b1);
+		// printGrad(b2);
 
 		Test1.test(Util.equals(a1, b1, true), "dot product gradient with float and value");
 
@@ -82,7 +82,7 @@ public class Test2
 			// for (int i=0;i < cnt;i++)
 			{
 				long l=System.currentTimeMillis();
-				a3 = a1.dot2(a2);
+				a3 = a1.dot(a2);
 				l = System.currentTimeMillis() - l;
 				tm += l;
 			}
@@ -233,36 +233,36 @@ public class Test2
 		NDArray b1=NDIO.rand(new int[]{2,5}, true);
 		NDArray b2=NDIO.rand(new int[]{5}, true);
 
-		NDArray out2=b1.mul2(b2);
-
-		out2.setGrad(new int[]{}, 1);
-		out2.backward();
-		// backTree(out2.storage.base.getValues());
-
-		System.out.println("====== value equals =====");
-
-		System.out.println(Util.equals(a1, b1));
-		System.out.println(Util.equals(a2, b2));
-
-		System.out.println(Util.equals(out, out2));
-
-		System.out.println("------ grad equals ------");
-
-		System.out.println(Util.equals(a1, b1, true));
-		System.out.println(Util.equals(a2, b2, true));
-
-		System.out.println(Util.equals(out, out2, true));
-
-
-		System.out.println("==================");
-
-		printGrad(b1);
-		System.out.println("-------------");
-		printGrad(b2);
-		System.out.println("-------------");
-		printGrad(out2);
-
-
+//		NDArray out2=b1.mul2(b2);
+//
+//		out2.setGrad(new int[]{}, 1);
+//		out2.backward();
+//		// backTree(out2.storage.base.getValues());
+//
+//		System.out.println("====== value equals =====");
+//
+//		System.out.println(Util.equals(a1, b1));
+//		System.out.println(Util.equals(a2, b2));
+//
+//		System.out.println(Util.equals(out, out2));
+//
+//		System.out.println("------ grad equals ------");
+//
+//		System.out.println(Util.equals(a1, b1, true));
+//		System.out.println(Util.equals(a2, b2, true));
+//
+//		System.out.println(Util.equals(out, out2, true));
+//
+//
+//		System.out.println("==================");
+//
+//		printGrad(b1);
+//		System.out.println("-------------");
+//		printGrad(b2);
+//		System.out.println("-------------");
+//		printGrad(out2);
+//
+//
 	}
 	void test4() throws Exception
     {

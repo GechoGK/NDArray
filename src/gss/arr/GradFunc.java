@@ -3,6 +3,8 @@ package gss.arr;
 import gss.math.*;
 import java.util.*;
 
+import static gss.math.Util.*;
+
 public abstract class GradFunc
 {
 	/*
@@ -226,26 +228,43 @@ public abstract class GradFunc
 
 			NDArray x=childs[0];
 			NDArray y=childs[1];
-			// float[][] xx=x.base.to2dGradArray();
-
-			if (x.getDim() != 2 || y.getDim() != 2 || x.getDim() != y.getDim())
-				throw new RuntimeException("unable to compute gradient with different dimensions.");
-
-			for (int i=0;i < x.getShape()[0];i++) // for i in x.row
-			{
-				for (int j=0;j < y.getShape()[0];j++) // for j in y.row
-				{
-					float gr=host.getExactGrad(i, j);
-					for (int k=0;k < x.getShape()[1];k++) // for k in x.col
-					{
-						if (x.requiresGradient())
-							x.setExactGrad(new int[]{i,k}, gr * y.getFloat(j, k));
-						if (y.requiresGradient())
-							y.setExactGrad(new int[]{j,k}, gr * x.getFloat(i, k));
-					}
-				}
-			}
-
+//			print("----------");
+//			print(x);
+//			print("----------");
+//			print(y);
+//			print("------");
+			int xr=x.getShape()[0];
+			int xc=x.getShape()[1];
+			int yr=y.getShape()[0];
+			int yc=y.getShape()[1];
+			int count=yr / xc;
+			NDArray g=host.reshape(-1, count * getAtR(host.getShape(), 0));
+			// print(g);
+			// print("count =" + count);
+			// print("(" + xr + ", " + xc + " :: " + yr + ", " + yc + ")");
+			for (int rx=0;rx < xr;rx++)
+				for (int cnt=0;cnt < count;cnt++)			
+					for (int cy=0;cy < yc;cy++)				
+						for (int cx=0;cx < xc;cx++)
+						{
+							int p=cnt * xc + cx;
+							int pg=yc * cnt + cy;
+							// gv = g[rx][p]
+							// xgrad[rx][cx] =  y[p][cy] * grad
+							// ygrad[p][cy]  =  x[rx][cx] * grad
+							float grd=g.getExactGrad(rx, pg); // ensure g is 2d array.
+							if (x.requiresGradient())
+							{
+								float yv = y.getFloat(p, cy);
+								x.setExactGrad(new int[]{rx,cx}, yv * grd);
+							}
+							if (y.requiresGradient())
+							{
+								float xv = x.getFloat(rx, cx);
+								y.setExactGrad(new int[]{p,cy}, xv * grd);
+							}
+							// print(grd + " = " + xv + " : " + yv);
+						}
 			return null;
 		}
 	};
