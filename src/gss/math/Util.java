@@ -1,6 +1,10 @@
 package gss.math;
 
+import gss.math.*;
+import gss.arr.*;
 import java.util.*;
+
+import gss.arr.NDArray;
 
 public class Util
 {
@@ -146,9 +150,9 @@ public class Util
 	}
 	/*
 	 float[] arr={1,2,3};
-	 float v1=getAt(arr,0); //  3,
-	 float v1=getAt(arr,1); //  2,
-	 float v1=getAt(arr,2); //  1,
+	 float v1=getAtR(arr,0); //  3,
+	 float v1=getAtR(arr,1); //  2,
+	 float v1=getAtR(arr,2); //  1,
 	 */
 	public static float getAtR(float[] arr, int index)
 	{
@@ -160,9 +164,12 @@ public class Util
 	}
 	public static void print(NDArray ar)
 	{
-		print(ar.storage);
+		if (ar == null)
+			System.out.println("null array");
+		else
+			print(ar.base);
 	}
-	public static void print(Storage str)
+	public static void print(Shape str)
 	{
 		if (str.dim == 1)
 		{
@@ -192,9 +199,9 @@ public class Util
 	}
 	public static void printGrad(NDArray ar)
 	{
-		printGrad(ar.storage);
+		printGrad(ar.base);
 	}
-	public static void printGrad(Storage str)
+	public static void printGrad(Shape str)
 	{
 		if (!str.requiresGradient())
 		{
@@ -205,7 +212,7 @@ public class Util
 		{
 			System.out.print("[");
 			for (int i=0;i < str.shape[0];i++)
-				System.out.print(str.getFloatGrad(i) + ", ");
+				System.out.print(str.getExactGrad(i) + ", ");
 			System.out.println("]");
 		}
 		else if (str.dim == 2)
@@ -215,7 +222,7 @@ public class Util
 			{
 				System.out.print((j == 0 ?"": " ") + "[");
 				for (int k=0;k < str.shape[1];k++)
-					System.out.print((k == 0 ?" ": ", ") + str.getFloatGrad(j, k));
+					System.out.print((k == 0 ?" ": ", ") + str.getExactGrad(j, k));
 				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
 			}
 			System.out.println("]");
@@ -227,16 +234,48 @@ public class Util
 				System.out.println();
 			}
 	}
-	public static void fill(Storage str, float val)
+	public static void print(float[] f)
 	{
-		for (int i=0;i < str.base.getArrayLength();i++)
-			str.base.setData(i, val);
+		if (f == null)
+		{
+			System.out.println("null array");
+			return;
+		}
+		System.out.print("[ ");
+		for (int i=0;i < f.length;i++)
+			System.out.print(f[i] + (i == f.length - 1 ?"": ", "));
+		System.out.println(" ]");
 	}
-	public static void fillRand(Storage str)
+	public static void print(float[][] f)
+	{
+		if (f == null)
+		{
+			System.out.println("null array");
+			return;
+		}
+		System.out.print("[");
+		for (int j=0;j < f.length;j++)
+		{
+			System.out.print((j == 0 ?"": " ") + "[ ");
+			for (int i=0;i < f[0].length;i++)
+				System.out.print(f[j][i] + (i == f[0].length - 1 ?"": ", "));
+			System.out.println(" ]" + (j == f.length - 1 ?"]": ""));
+		}
+	}
+	public static void print(Object o)
+	{
+		System.out.println(o);
+	}
+	public static void fill(Shape str, float val)
+	{
+		for (int i=0;i < str.data.getLength();i++)
+			str.data.setData(i, val);
+	}
+	public static void fillRand(Shape str)
 	{
 		Random r=new Random(128);
-		for (int i=0;i < str.base.getArrayLength();i++)
-			str.base.setData(i, r.nextFloat());
+		for (int i=0;i < str.data.getLength();i++)
+			str.data.setData(i, r.nextFloat());
 	}
 	public static boolean equals(int[] s1, int[] s2)
 	{
@@ -264,18 +303,51 @@ public class Util
 			return false;
 		if (!equals(a1.getShape(), a2.getShape()))
 			return false;
-		if (!equals(a1.storage.base.getArray(), a2.storage.base.getArray()))
+		if (!equals(a1.base.data.getData(), a2.base.data.getData()))
 			return false;
 		if (checkGrad.length != 0 && checkGrad[0])
-			if (!equals(a1.storage.base.getGrads(), a2.storage.base.getGrads()))
+			if (!equals(a1.base.data.getGrads(), a2.base.data.getGrads()))
 				return false;
 		return true;
 	}
 	public static int[] range(int len)
 	{
-		int[] acc=new int[len];
-		for (int i=0;i < acc.length;i++)
-			acc[i] = i;
-		return acc;
+		return range(0, len, 1);
+	}
+	public static int[] range(int str, int end)
+	{
+		return range(str, end, 1);
+	}
+	public static int[] range(int str, int end, int inc)
+	{
+		int cnt=(end - str);
+		int[] arr=new int[(cnt / inc) + (cnt % inc == 0 ?0: 1)];
+		int p=0;
+		for (int i=str;i < end;i += inc)
+		{
+			arr[p] = i;
+			p++;
+		}
+		return arr;
+	}
+	public static float[] range(float len)
+	{
+		return range(0, len, 1);
+	}
+	public static float[] range(float str, float end)
+	{
+		return range(str, end, 1);
+	}
+	public static float[] range(float str, float end, float inc)
+	{
+		float cnt=(end - str);
+		float[] f=new float[(int)(cnt / inc) + (cnt % inc == 0 ?0: 1)];
+		int p=0;
+		for (float i=str;i < end;i += inc)
+		{
+			f[p] = i;
+			p++;
+		}
+		return f;
 	}
 }

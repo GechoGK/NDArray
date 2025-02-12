@@ -1,164 +1,115 @@
 package gss.math;
 
+import gss.math.*;
 import java.util.*;
 
 public class Data
 {
-	private float[] values;
-	private float[] grads; // not null if requireGradient is true.
-	private Value[] gradTracks; // not null if requireGradientis true.
-	public int[] shape; // this shape can be changed using view method in Storage class.
+	// it just holds the flatten array that are used by many shape utils.
+	public float[] data;
+	public float[] grad;
+	public Value[] gradValues;
 	public int length;
-	public int dim;
-	public boolean requiresGrad;
+	public boolean requireGradient=false;
 
-	public Data(float[] val, int...sh)
+	public Data(int...shape)
 	{
-		this(sh);
-		for (int i=0;i < val.length;i++)
-			values[i] = val[i];
+		this.data = new float[Util.length(shape)];
+		this.length = data.length;
 	}
-	public Data(int...sh)
+	public Data(float[]data)
 	{
-		this(sh, false);
+		this.data = data;
+		this.length = data.length;
 	}
-	public Data(int[]sh,  boolean requireGrad)
+	public void setRequireGrad(boolean b)
 	{
-		this.requiresGrad   = requireGrad;
-		setShape(sh);
-		this.values = new float[length];
-		if (requireGrad)
+		if (b && grad == null)
 		{
-			this.grads  = new float[values.length];
-			// this.gradTracks = new Value[grads.length];
-			// for (int i=0;i < gradTracks.length;i++)
-			// 	gradTracks[i] = new Value(this, i);
+			grad = new float[length];
+			// gradValue = new Value[length];
+			requireGradient = true;
 		}
-		else
+		else if (!b)
 		{
-			this.grads = null;
-			this.gradTracks = null;
+			grad = null;
+			// gradValue = null;
+			requireGradient = false;
 		}
 	}
-	public void setShape(int[] sh)
+	public void enableGrad()
 	{
-		this.shape = Arrays.copyOf(sh, sh.length);
-		this.length = Util.sum(shape, 0);
-		this.dim = shape.length;
+		// gradValue = new Value[length];
+		grad = new float[length];
+		requireGradient = true;
 	}
-	public void changeShape(int[]newShape, int[]oldShape)
+	public void disableGrad()
 	{
-		// System.out.println("merging new shape =" + Arrays.toString(shape) + ", " + Arrays.toString(newShape));
-		// throw new RuntimeException("illengal shape assignment.");
-		int ln=oldShape.length - newShape.length;
-		int[] newSh=Arrays.copyOf(this.shape, this.shape.length - ln);
-		Util.overlap(newShape, newSh);
-		// System.out.println("=== " + Arrays.toString(newSh));
-		int len=Util.length(newSh);
-		if (len != length)
-			throw new RuntimeException("shape can't be changed to " + Arrays.toString(newShape) + ", the length is not equal");
-		this.shape = newSh;
-		this.dim = shape.length;
+		grad = null;
+		// gradValue = null;
+		requireGradient = false;
 	}
-	public Data copy(int[]newShape)
+	public Value getValue(int pos)
 	{
-		Data d=new Data(newShape, requiresGrad);
-		d.values = values;
-		d.grads = grads;
-		d.gradTracks = gradTracks;
-		// d.setShape(newShape);
-		return d;
-	}
-	public Data enableGradient()
-	{
-		requiresGrad = true;
-		grads = new float[values.length];
-		// gradTracks = new Value[grads.length];
-		// for (int i=0;i < gradTracks.length;i++)
-		// 	gradTracks[i] = new Value(this, i);
-		return this;
-	}
-	public Data disableGradient()
-	{
-		requiresGrad = false;
-		grads = null;
-		gradTracks = null;
-		return this;
-	}
-	public void zeroGrad()
-	{
-		Arrays.fill(grads, 0);
-	}
-	public int getArrayLength()
-	{
-		return values.length;
-	}
-	public float getData(int ind)
-	{
-		return values[ind];
-	}
-	public void setData(int ind, float val)
-	{
-		values[ind] = val;
-	}
-	public void addData(int ind, float val)
-	{
-		values[ind] += val;
-	}
-	public float getGrad(int ind)
-	{
-		return grads[ind];
-		// return values[ind].grad;
-	}
-	public void setGrad(int ind, float val)
-	{
-		grads[ind] = val;
-		// use this to accumulate..
-		//grads[ind] += val;
-		// values[ind].grad = val;
-	}
-	public void addGrad(int ind, float val)
-	{
-		grads[ind] += val;
-		// values[ind].grad += val;
-	}
-	public Value getValue(int ind)
-	{
-		if (gradTracks == null)
-			gradTracks = new Value[values.length];
-		Value v=gradTracks[ind];
+		if (gradValues == null)
+			gradValues = new Value[data.length];
+		Value v=gradValues[pos];
 		if (v == null)	
 		{
-			v = new DValue(this, ind);
-			gradTracks[ind] = v;
+			v = new DValue(this, pos);
+			gradValues[pos] = v;
 		}
 		return v;
 	}
-	public Value setValue(int ind, Value v)
+	public Value setValue(int pos, Value v)
 	{
 		// System.out.println("setting flat " + ind + " = " + v);
-		if (gradTracks == null)
-		 	gradTracks = new Value[values.length];
-		DValue dv=(DValue)gradTracks[ind];
+		if (gradValues == null)
+		 	gradValues = new Value[data.length];
+		DValue dv=(DValue)gradValues[pos];
 		if (dv == null)
 		{
-			dv = new DValue(this, ind);
-			gradTracks[ind] = dv;
+			dv = new DValue(this, pos);
+			gradValues[pos] = dv;
 		}
 		dv.set(v);
 		// System.out.println(dv);
 		return dv;
 	}
-	public float[]getArray()
+	public void setData(int p, float v)
 	{
-		return values;
+		data[p] = v;
 	}
-	public float[] getGrads()
+	public float getData(int p)
 	{
-		return grads;
+		return data[p];
+	}
+	public float getGrad(int p)
+	{
+		return grad[p];
+	}
+	public void setGrad(int p, float v)
+	{
+		grad[p] += v;
+	}
+	public void zeroGrad()
+	{
+		Arrays.fill(grad, 0);
 	}
 	public Value[] getValues()
 	{
-		return gradTracks;
+		return gradValues;
+	}
+	public float[] getData()
+	{
+		return data;
+	}
+	public float[] getGrads()
+	{
+		return grad;
+	}
+	public int getLength()
+	{
+		return data.length;
 	}
 }

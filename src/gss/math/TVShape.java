@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;
@@ -68,8 +68,9 @@ public class TVShape extends Shape
 		return indShape;
 	}
 	@Override
-	public Shape view(int[] newShape)
+	public Shape view(int...newShape)
 	{
+		getShape(newShape);
 		TVShape ts=new TVShape(data, newShape, offset, baseShape, baseStride);
 		return ts;
 	}
@@ -80,10 +81,50 @@ public class TVShape extends Shape
 			out = new float[len];
 		if (out.length < len)
 			throw new RuntimeException("the length of the inpht array doesn't match the length specified: " + len + " > " + out.length);
-		
+
 		for (int l=0;l < len;l++)
 			out[l] = getFlat(l);
 
+		return out;
+	}
+	@Override
+	public Value[] toValueArray()
+	{
+		Value[]out = new Value[length];
+		for (int l=0;l < length;l++)
+			out[l] = getFlatValue(l);
+		return out;
+	}
+	public float[][] to2DArray(float[][]out) // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		if (out == null)
+			out = new float[sh.shape[0]][sh.shape[1]];
+		if (out.length < sh.shape[0] || out[0].length < sh.shape[1])
+			throw new RuntimeException("the length of the input array doesn't match the length specified:");
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = getFlat(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	@Override
+	public Value[][] to2DValueArray()
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = getFlatValue(str + pos);
+				pos++;
+			}
 		return out;
 	}
 }

@@ -1,4 +1,4 @@
-package gss2.math;
+package gss.math;
 
 import gss.math.*;
 import java.util.*;
@@ -47,7 +47,7 @@ public class BShape extends Shape
 		// needs modificatio to spport broadcast.
 		/*
 		 check for length of the new array and the baseShapae array.
-		 if it found length greate than the base shape, it is still broadcast.
+		 if it found length greater than the base shape, it is still broadcast.
 		 if it found length less than and equal to the base shape , then
 		 it extracts the new base shape by subtracting the "sh" into baseShape and if it differ from original shape,
 		 then it broadcast the new shape and returns it.
@@ -151,8 +151,9 @@ public class BShape extends Shape
 		return base.transpose(axes);
 	}
 	@Override
-	public Shape view(int[] newShape)
+	public Shape view(int...newShape)
 	{
+		getShape(newShape);
 		return base.view(newShape);
 	}
 	@Override
@@ -171,6 +172,47 @@ public class BShape extends Shape
 		for (int l=0;l < len;l++)
 			out[l] = getFlat(l);
 
+		return out;
+	}
+
+	@Override
+	public Value[] toValueArray()
+	{
+		Value[]out = new Value[length];
+		for (int l=0;l < length;l++)
+			out[l] = getFlatValue(l);
+		return out;
+	}
+	public float[][] to2DArray(float[][]out) // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		if (out == null)
+			out = new float[sh.shape[0]][sh.shape[1]];
+		if (out.length < sh.shape[0] || out[0].length < sh.shape[1])
+			throw new RuntimeException("the length of the input array doesn't match the length specified:");
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = getFlat(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	@Override
+	public Value[][] to2DValueArray()
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = getFlatValue(str + pos);
+				pos++;
+			}
 		return out;
 	}
 

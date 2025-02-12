@@ -1,21 +1,12 @@
-package gss2.math;
+package gss.math;
 
-import gss.math.*;
-import java.util.*;
+import java.util.Arrays;
 
-public class Shape
+public class Shape implements Cloneable
 {
 	/*
 	 this shape is used to get and set item to and from data.
 
-	 */
-	/*
-	 // error not checked for all shape variants.
-	 // get check for error.
-	 // view check for length.
-	 // transpose check for length
-	 // broadcast check for broadcast rules.
-	 // 
 	 */
 	public Data data;
 	public int[] shape;
@@ -29,6 +20,11 @@ public class Shape
 	public Shape(int...sh)
 	{
 		this.data = new Data(sh);
+		init(data, sh, null, 0);
+	}
+	public Shape(int[]sh, float[]dt)
+	{
+		this.data = new Data(dt);
 		init(data, sh, null, 0);
 	}
 	public Shape(Data d, int[]sh, int off)
@@ -50,7 +46,7 @@ public class Shape
 	private void init(Data d, int[]sh, int[] strd, int off)
 	{
 		this.data = d;
-		this.shape = sh;
+		this.shape = sh; // copy this shape is a better idea b/c it may be come from another shape class through NDIO....alike(..). if not copied modifying shape would also change the other unknown shape.
 		this.dim = shape.length;
 		if (stride == null)
 			this.stride = Util.sumShapes(sh, null);
@@ -71,13 +67,13 @@ public class Shape
 	public void set(int[]index, float val)
 	{
 		if (index.length > shape.length)
-			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fill(val);
 	}
 	public void setGrad(int[]index, float val)
 	{
 		if (index.length > shape.length)
-			throw new RuntimeException("index outof bound exception " + Arrays.toString(index));
+			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fillGrad(val);
 	}
 	public void setExact(int[]index, float v)
@@ -87,10 +83,12 @@ public class Shape
 		int ps=shapeToIndex(index);
 		data.setData(ps, v);
 	}
+	// set float value, assuming the array is flat.
 	public void setFlat(int p, float v)
 	{
 		setExact(getShape(p), v);
 	}
+	// fills the scalar value tot the array data.
 	public void fill(float v)
 	{
 		for (int i=0;i < length;i++)
@@ -99,10 +97,11 @@ public class Shape
 			data.setData(ind, v);
 		}
 	}
+	// fills the scalar value to the gradient.
 	public void fillGrad(float v)
 	{
 		if (!requiresGradient())
-			throw new RuntimeException("gradient not found try enabling it: requiresGradient = " + requiresGradient());
+			throw new RuntimeException("gradient not found :: requiresGradient = " + requiresGradient() + " ?? try enabling it by .setEnableGradient(true);");
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
@@ -119,12 +118,12 @@ public class Shape
 	{
 		return getFloat(getShape(p));
 	}
-	// gradient set end get functions.
+	// gradient set and get functions.
 	public Value getExactValue(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
-		return data.getGradValue(ind);
+		return data.getValue(ind);
 	}
 	public Value getFlatValue(int p)
 	{
@@ -143,7 +142,7 @@ public class Shape
 	public void setExactValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
-		data.setGradValue(ps, v);
+		data.setValue(ps, v);
 	}
 	public void setFlatValue(Value v, int p)
 	{
@@ -158,6 +157,15 @@ public class Shape
 	{
 		setExactGrad(getShape(pos), val);
 	}
+	/*
+	 // TO-DO for performance.
+
+	 public void setFlatGrad(int startPosition,float[]array){
+	 // it assign array value starts from "startPosition" to the length of an array.
+	 // it aims to achieve by calulating indexToShape with multiple values,
+	 // since these values are consecutive, we can find the first index then increment on that value.
+	 }
+	 */
 	// end set and get functions.
 	public int shapeToIndex(int...index)
 	{
@@ -216,6 +224,9 @@ public class Shape
 	}
 	public Shape view(int...newShape)
 	{
+		getShape(newShape);
+		if (length != Util.length(newShape))
+			throw new RuntimeException("can't view this array into " + Arrays.toString(newShape) + " because the length is not equal");
 		// if newShape length != length
 		//		can't view this array into new shape.
 		return new Shape(data, newShape, offset);
@@ -227,6 +238,7 @@ public class Shape
 
 		// try to broadcast if posible, if not copy the array.
 		// reshape chnges the shape, also the underlaying data shape.
+		getShape(newShape);
 		int len=Util.length(newShape);
 		if (length != len)
 			throw new RuntimeException("different type of shape is not allowed.");
@@ -241,6 +253,28 @@ public class Shape
 //		init(base, newShape, offset, null);
 //		return this;
 		return view(newShape);
+	}
+	// this functiom is used to calculate the index if it have -1 in their item.
+	public int[] getShape(int...shp)
+	{
+		int nIndex=-1;
+		for (int i=0;i < shp.length;i++)
+		{
+			if (shp[i] == -1 && nIndex != -1)
+				throw new RuntimeException("the shape can't have multiple -1 values.");
+			else if (shp[i] == -1)
+				nIndex = i;
+		}
+		if (nIndex != -1)
+		{
+			shp[nIndex] = 1;
+			int len=Util.length(shp);
+			int remSize=length / len;
+			if (length % len != 0)
+				throw new RuntimeException("choose an appropriate array size: unable to fill the missing value.");
+			shp[nIndex] = remSize;
+		}
+		return shp;
 	}
 	public Shape broadcast(int...newShape)
 	{
@@ -280,6 +314,14 @@ public class Shape
 			out[i] = data.getData(str + i);
 		return out;
 	}
+	public Value[] toValueArray()
+	{
+		Value[] out = new Value[length];
+		int str=offset;
+		for (int i=0;i < length;i++)
+			out[i] = data.getValue(str + i);
+		return out;
+	}
 	public float[]toArray()
 	{
 		return toArray(null, 0, length);
@@ -300,71 +342,85 @@ public class Shape
 	{
 		return toArray(null, start, length);
 	}
+	public float[][] to2DArray(float[][]out) // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		if (out == null)
+			out = new float[sh.shape[0]][sh.shape[1]];
+		if (out.length < sh.shape[0] || out[0].length < sh.shape[1])
+			throw new RuntimeException("the length of the input array doesn't match the length specified:");
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getData(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	public Value[][] to2DValueArray() // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getValue(str + pos);
+				pos++;
+			}
+		return out;
+	}
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
+		sh.setEnableGradient(data.requireGradient);
 		for (int i=0;i < sh.length;i++)
+		{
 			sh.data.setData(i, getFloat(getShape(i)));
+			if (requiresGradient())
+				sh.data.setGrad(i, getExactGrad(getShape(i)));
+		}
 		return sh;
+	}
+	@Override
+	protected Shape clone() 
+	{
+		Shape s=new Shape(this.shape);
+		s.data = this.data;
+		s.shape = this.shape;
+		s.stride = this.stride;
+		s.length = this.length;
+		s. offset = this.offset;
+		s.dim = this.dim;
+		return s;
 	}
 	public boolean requiresGradient()
 	{
 		return data.requireGradient;
 	}
-//	public String getDataAsString()
-//	{
-//		StringBuilder sb=new StringBuilder();
-//		sb.append(getFromShape(shape, 0));
-//		return sb.toString();
-//	}
-//	public String getFromShape(int[]sh, int off)
-//	{
-//		if (sh.length == 1)
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			for (int i=off;i < off + sh[0];i++)
-//			{
-//				if (i != off)
-//					sb.append(",");
-//				sb.append(" ");
-//				sb.append(data.data[i]);
-//				if (i == off + sh[0] - 1)
-//					sb.append(" ");
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		else if (sh.length == 2)
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			for (int i=0;i < sh[0];i++)
-//			{
-//				if (i != off)
-//				{
-//					sb.append("\n");
-//					sb.append(" ");
-//				}
-//				sb.append(getFromShape(new int[]{sh[1]}, off + sh[1] * i));
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		else
-//		{
-//			StringBuilder sb=new StringBuilder();
-//			sb.append("[");
-//			int[]nsh=Arrays.copyOfRange(sh, 1, sh.length);
-//			int[] str=Util.sumShapes(sh, null);
-//			for (int i=0;i < sh[0];i++)
-//			{
-//				sb.append(getFromShape(nsh, off + str[0] * i));
-//				sb.append("\n");
-//			}
-//			sb.append("]");
-//			return sb.toString();
-//		}
-//		// return null;
-//	}
+	public Shape getGradient()
+	{
+		if (!requiresGradient())
+			throw new RuntimeException("gradient not enabled : try enabling it.");
+		GData data=new GData(this.data.grad);
+		Shape s=this.clone();
+		s.data = data;
+		return s;
+	}
+	public Shape detachGradient()
+	{
+		if (!requiresGradient())
+			throw new RuntimeException("gradient not enabled : try enabling it.");
+		float[] f=new float[this.data.length];
+		for (int i=0;i < f.length;i++)
+			f[i] = this.data.grad[i];
+		Data data=new Data(f);
+		Shape s=new Shape(this.shape);
+		s.data = data;
+		return s;
+	}
+	
 }

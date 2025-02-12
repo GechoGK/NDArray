@@ -1,7 +1,9 @@
-package gss2.arr;
+package gss.arr;
 
-import gss2.math.*;
+import gss.math.*;
 import java.util.*;
+
+import static gss.math.Util.*;
 
 public abstract class GradFunc
 {
@@ -182,7 +184,7 @@ public abstract class GradFunc
 				float a=a1.getFlat(i); // a.data
 				float b=a2.getFlat(i); // b.data
 				if (a1.requiresGradient())
-					a1.setFlatGrad(i, host.getFlatGrad(i) * b * (float)Math.pow(a, b - 1));
+					a1.setFlatGrad(i, b * host.getFlatGrad(i) * (float)Math.pow(a, b - 1));
 				if (a2.requiresGradient())
 					a2.setFlatGrad(i, host.getFlatGrad(i) * (float)Math.pow(a, b) * (float)Math.log(a));
 			}
@@ -193,7 +195,12 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			// System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			NDArray a=childs[0];
+			if (a.getLength() != host.getLength())
+				throw new RuntimeException("two array length doesn't match.");
+			for (int i=0;i < host.getLength();i++)
+				a.setFlatGrad(i, host.getFlatGrad(i));
 			return null;
 		}
 	};
@@ -201,7 +208,63 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-			System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			// System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
+			NDArray a=childs[0];
+			if (a.getLength() != host.getLength())
+				throw new RuntimeException("two array length doesn't match.");
+			for (int i=0;i < host.getLength();i++)
+				a.setFlatGrad(i, host.getFlatGrad(i));
+			return null;
+		}
+	};
+	public static GradFunc dotGradient=new GradFunc("dot"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// System.out.println("performing dot product backpropagation");
+			// System.out.println("host = " + host.getDim() + ": " + Arrays.toString(host.getShape()));
+			// System.out.println("x = " + childs[0].getDim() + ": " + Arrays.toString(childs[0].getShape()));
+			// System.out.println("y = " + childs[1].getDim() + ": " + Arrays.toString(childs[1].getShape()));
+
+			NDArray x=childs[0];
+			NDArray y=childs[1];
+//			print("----------");
+//			print(x);
+//			print("----------");
+//			print(y);
+//			print("------");
+			int xr=x.getShape()[0];
+			int xc=x.getShape()[1];
+			int yr=y.getShape()[0];
+			int yc=y.getShape()[1];
+			int count=yr / xc;
+			NDArray g=host.reshape(-1, count * getAtR(host.getShape(), 0));
+			// print(g);
+			// print("count =" + count);
+			// print("(" + xr + ", " + xc + " :: " + yr + ", " + yc + ")");
+			for (int rx=0;rx < xr;rx++)
+				for (int cnt=0;cnt < count;cnt++)			
+					for (int cy=0;cy < yc;cy++)				
+						for (int cx=0;cx < xc;cx++)
+						{
+							int p=cnt * xc + cx;
+							int pg=yc * cnt + cy;
+							// gv = g[rx][p]
+							// xgrad[rx][cx] =  y[p][cy] * grad
+							// ygrad[p][cy]  =  x[rx][cx] * grad
+							float grd=g.getExactGrad(rx, pg); // ensure g is 2d array.
+							if (x.requiresGradient())
+							{
+								float yv = y.getFloat(p, cy);
+								x.setExactGrad(new int[]{rx,cx}, yv * grd);
+							}
+							if (y.requiresGradient())
+							{
+								float xv = x.getFloat(rx, cx);
+								y.setExactGrad(new int[]{p,cy}, xv * grd);
+							}
+							// print(grd + " = " + xv + " : " + yv);
+						}
 			return null;
 		}
 	};
@@ -209,6 +272,8 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
+			if (host.base.data != childs[0].base.data)
+				throw new RuntimeException("unknown step gradient.");
 			return null;
 		}
 	};

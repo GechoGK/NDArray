@@ -1,9 +1,24 @@
-package gss2.arr;
+package gss.arr;
 
 import java.util.*;
+import gss.math.*;
 
 public class NDIO
 {
+	public static NDArray arange(float end)
+	{
+		return arange(0, end, 1);
+	}
+	public static NDArray arange(float str, float end)
+	{
+		return arange(str, end, 1);
+	}
+	public static NDArray arange(float str, float end, float inc)
+	{
+		float[] f=Util.range(str, end, inc);
+		NDArray ar=new NDArray(f);
+		return ar;
+	}
 	public static NDArray zeros(int...shape)
 	{
 		return value(shape, 0, false);
@@ -52,8 +67,7 @@ public class NDIO
 	}
 	public static NDArray fromArray(int[] shape, float...arr)
 	{
-		throw new RuntimeException("not implemented.");
-		// return null;
+		return new NDArray(shape, arr);
 	}
 	// the seed value can be -1.
 	public static NDArray rand(int...shape)
@@ -80,12 +94,5 @@ public class NDIO
 			arr.base.data.setData(i, r.nextFloat());
 		return arr;
 	}
-	// new array from alrrady prepared storage.
-//	public NDArray fromStorage(Storage str)
-//	{
-//		NDArray arr=new NDArray(str);
-//		arr.childs.addAll(this.childs);
-//		arr.gradientFunction = this.gradientFunction;
-//		return arr;
-//	}
+
 }

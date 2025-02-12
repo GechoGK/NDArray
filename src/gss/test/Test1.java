@@ -1,9 +1,9 @@
-package gss2.test;
+package gss.test;
 
-import gss2.math.*;
+import gss.math.*;
 import java.util.*;
 
-import gss2.math.Data;
+import gss.math.Data;
 
 public class Test1
 {
