@@ -287,7 +287,7 @@ public class Shape implements Cloneable
 		BShape sh = new BShape(this, shape, newShape);
 		return sh;
 	}
-	public boolean isBrodcastable(int[]orgShape, int[]newShape)
+	public static boolean isBrodcastable(int[]orgShape, int[]newShape)
 	{
 		if (newShape.length < orgShape.length)
 			return false;
@@ -422,5 +422,5 @@ public class Shape implements Cloneable
 		s.data = data;
 		return s;
 	}
-	
+
 }

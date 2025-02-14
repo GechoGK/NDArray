@@ -86,6 +86,21 @@ public class NDArray
 	{
 		base.set(sh, v);
 	}
+	public void set(NDArray ar)
+	{
+		set(new int[]{}, ar);
+	}
+	public void set(int...sh, NDArray ar)
+	{
+		// needs improvement.
+		int ps=base.shapeToIndex(sh);
+		float[]f=ar.base.toArray();
+		for (int i=0;i < f.length;i++)
+		{
+			setFlat(ps, f[i]);
+			ps++;
+		}
+	}
 	public void setGrad(float v)
 	{
 		base.setGrad(new int[]{}, v);
@@ -102,11 +117,10 @@ public class NDArray
 	{
 		base.setFlat(p, v);
 	}
-	// // // gradient
+	// // // gradient.
 	// gradient set end get functions.
 
-	/////// below not tested.
-
+	///////// below not tested.
 	public Value getExactValue(int...index)
 	{
 		return base.getExactValue(index);
@@ -250,7 +264,28 @@ public class NDArray
 	{
 		return fromShape(base.copy());
 	}
-	// operator implementation
+	// operator implementation.
+	// addition.
+	public NDArray addTo(float sc)
+	{
+		return addTo(new NDArray(new float[]{sc}));
+	}
+	public NDArray addTo(NDArray other)
+	{
+		// warning! gradient tracker can't track this operation.
+		if (!Shape.isBrodcastable(other.getShape(), this.getShape()))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + getShape() + " can't broadcast to " + getShape() + ")");
+		other = other.broadcast(this.getShape());
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + this.getLength() + " != " + this.getLength() + ")");
+		for (int i=0;i < this.getLength();i++)
+		{
+			float v1=this.getFlat(i);
+			float v2=other.getFlat(i);
+			this.setFlat(i, v1 + v2);
+		}
+		return this;
+	}
 	public NDArray add(float f)
 	{
 		return add(new NDArray(new float[]{f}));
@@ -272,6 +307,27 @@ public class NDArray
 			arrOut.setFlat(i, v1 + v2);
 		}
 		return arrOut;
+	}
+	// subtraction.
+	public NDArray subTo(float sc)
+	{
+		return subTo(new NDArray(new float[]{sc}));
+	}
+	public NDArray subTo(NDArray other)
+	{
+		// warning! gradient tracker can't track this operation.
+		if (!Shape.isBrodcastable(other.getShape(), this.getShape()))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + getShape() + " can't broadcast to " + getShape() + ")");
+		other = other.broadcast(this.getShape());
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + this.getLength() + " != " + this.getLength() + ")");
+		for (int i=0;i < this.getLength();i++)
+		{
+			float v1=this.getFlat(i);
+			float v2=other.getFlat(i);
+			this.setFlat(i, v1 - v2);
+		}
+		return this;
 	}
 	public NDArray sub(float f)
 	{
@@ -295,6 +351,27 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	// multiplication.
+	public NDArray mulTo(float sc)
+	{
+		return mulTo(new NDArray(new float[]{sc}));
+	}
+	public NDArray mulTo(NDArray other)
+	{
+		// warning! gradient tracker can't track this operation.
+		if (!Shape.isBrodcastable(other.getShape(), this.getShape()))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + getShape() + " can't broadcast to " + getShape() + ")");
+		other = other.broadcast(this.getShape());
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + this.getLength() + " != " + this.getLength() + ")");
+		for (int i=0;i < this.getLength();i++)
+		{
+			float v1=this.getFlat(i);
+			float v2=other.getFlat(i);
+			this.setFlat(i, v1 * v2);
+		}
+		return this;
+	}
 	public NDArray mul(float f)
 	{
 		return mul(new NDArray(new float[]{f}));
@@ -316,6 +393,29 @@ public class NDArray
 			arrOut.setFlat(i, v1 * v2);
 		}
 		return arrOut;
+	}
+	// division.
+	public NDArray divTo(float sc)
+	{
+		return divTo(new NDArray(new float[]{sc}));
+	}
+	public NDArray divTo(NDArray other)
+	{
+		// warning! gradient tracker can't track this operation.
+		if (!Shape.isBrodcastable(other.getShape(), this.getShape()))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + getShape() + " can't broadcast to " + getShape() + ")");
+		other = other.broadcast(this.getShape());
+
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + this.getLength() + " != " + this.getLength() + ")");
+		for (int i=0;i < this.getLength();i++)
+		{
+			float v1=this.getFlat(i);
+			float v2=other.getFlat(i);
+			this.setFlat(i, v1 / v2);
+		}
+
+		return this;
 	}
 	public NDArray div(float f)
 	{
@@ -339,6 +439,50 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	// modulo
+	public NDArray modTo(float sc)
+	{
+		return modTo(new NDArray(new float[]{sc}));
+	}
+	public NDArray modTo(NDArray other)
+	{
+		// warning! gradient tracker can't track this operation.
+		if (!Shape.isBrodcastable(other.getShape(), this.getShape()))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + getShape() + " can't broadcast to " + getShape() + ")");
+		other = other.broadcast(this.getShape());
+		if (this.getLength() != other.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + this.getLength() + " != " + this.getLength() + ")");
+		for (int i=0;i < this.getLength();i++)
+		{
+			float v1=this.getFlat(i);
+			float v2=other.getFlat(i);
+			this.setFlat(i, v1 % v2);
+		}
+		return this;
+	}
+	public NDArray mod(float f)
+	{
+		return mod(new NDArray(new float[]{f}));
+	}
+	public NDArray mod(NDArray other)
+	{
+		int[] shp=getCommonShape(this.base.shape, other.base.shape);
+		NDArray a1=broadcast(shp);
+		NDArray a2=other.broadcast(shp);
+		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
+		arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
+		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
+		if (a1.getLength() != a2.getLength())
+			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
+		for (int i=0;i < a1.getLength();i++)
+		{
+			float v1=a1.getFlat(i);
+			float v2=a2.getFlat(i);
+			arrOut.setFlat(i, v1 % v2);
+		}
+		return arrOut;
+	}
+	// power.
 	public NDArray pow(float f)
 	{
 		return pow(new NDArray(new float[]{f}));
@@ -361,6 +505,7 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	// end arthimetic operations.
 	public NDArray vStack()
 	{
 		int[] shp=getVStackShape(this.base.shape);

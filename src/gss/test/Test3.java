@@ -5,6 +5,7 @@ import gss.math.*;
 import java.util.*;
 
 import static gss.math.Util.*;
+import java.io.*;
 
 public class Test3
 {
@@ -24,9 +25,40 @@ public class Test3
 	void a()
 	{
 
-		print("Hello world!");
 		
 
+	}
+	void ndArrayApproximation2()
+	{
+		// gradient descent example.
+		float lr=0.0001f;
+
+		NDArray t=NDIO.fromArray(new int[]{2}, 12, 15);
+		NDArray in=NDIO.fromArray(new int[]{3}, 2, 3, 4);
+
+		NDArray w=NDIO.rand(new int[]{3, 2}).setEnableGradient(true);
+		NDArray b=NDIO.value(new int[]{2}, 1).setEnableGradient(true);
+
+		while (true)
+		{
+			NDArray o=in.dot(w).add(b);
+
+			print(o);
+
+			o = t.sub(o).pow(2);
+			o.setGrad(1);
+			o.backward();
+
+			NDArray wgr=w.sub(w.getGradient().mul(lr));
+			w.set(wgr);
+
+			NDArray bgr=b.sub(b.getGradient().mul(lr));
+			b.set(bgr);
+
+			w.zeroGrad();
+			b.zeroGrad();
+
+		}
 	}
 	void gradientDetach()
 	{
