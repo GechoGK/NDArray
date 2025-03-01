@@ -277,6 +277,108 @@ public abstract class GradFunc
 			return null;
 		}
 	};
+	public static GradFunc convolve1dGradient = new GradFunc("conv1d"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("convolution 1d backward");
+			NDArray a1=childs[0]; // input.
+			NDArray a2=childs[1]; // kernel.
+			float[][] hout=host.base.to2DArray(null);
+			float[][] inp=a1.base.to2DArray(null);
+			float[] kern=a2.base.toArray();
+			// gradients;
+			float[][] inpGrad=null;
+			boolean inpgrad=a1.requiresGradient();
+			boolean kerngrad=a2.requiresGradient();
+			if (inpgrad)
+				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create!, grab from input(a1).
+			float[] kgrad=null;
+			if (kerngrad)
+				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create, grad from kernel(a2).
+			if (inpgrad || kerngrad)
+				for (int or=0;or < hout.length;or++) // input row.
+				{	
+					int pos=0;
+					for (int oc=0;oc < hout[or].length;oc++)
+					{
+						float outd=hout[or][oc];
+						int kpos=kern.length - 1;
+						for (int kc=0;kc < kern.length;kc++) // kernel not flipped, flip through kpos var.
+						{					
+							// set kernel gradient
+							// kernelGradient += outd * in;
+							if (kerngrad)
+							{
+								float in=inp[or][pos + kc];   // input data at "or" row and "kc" column.
+								kgrad[kpos] += outd * in;
+							}
+							// set input gradient
+							// inputGradient += outd * kd
+							if (inpgrad)
+							{
+								float kd=kern[kpos];      // kernel data.
+								inpGrad[or][pos + kc] += outd * kd;
+							}
+							kpos--;
+						}
+					}
+					pos++;
+				}
+			return null;
+		}
+	};
+	public static GradFunc correlate1dGradient = new GradFunc("correlate1d"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("correlation 1d backward");
+			NDArray a1=childs[0]; // input.
+			NDArray a2=childs[1]; // kernel.
+			float[][] hout=host.base.to2DArray(null);
+			float[][] inp=a1.base.to2DArray(null);
+			float[] kern=a2.base.toArray();
+			// gradients;
+			float[][] inpGrad=null;
+			boolean inpgrad=a1.requiresGradient();
+			boolean kerngrad=a2.requiresGradient();
+			if (inpgrad)
+				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create!, grab from input(a1).
+			float[] kgrad=null;
+			if (kerngrad)
+				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create, grad from kernel(a2).
+			if (inpgrad || kerngrad)
+				for (int or=0;or < hout.length;or++) // input row.
+				{	
+					int pos=0;
+					for (int oc=0;oc < hout[or].length;oc++)
+					{
+						float outd=hout[or][oc];
+						// int kpos=kern.length - 1;
+						for (int kc=0;kc < kern.length;kc++) // kernel not flipped, flip through kpos var.
+						{					
+							// set kernel gradient
+							// kernelGradient += outd * in;
+							if (kerngrad)
+							{
+								float in=inp[or][pos + kc];   // input data at "or" row and "kc" column.
+								kgrad[kc] += outd * in;
+							}
+							// set input gradient
+							// inputGradient += outd * kd
+							if (inpgrad)
+							{
+								float kd=kern[kc];      // kernel data.
+								inpGrad[or][pos + kc] += outd * kd;
+							}
+							// kpos--;
+						}
+					}
+					pos++;
+				}
+			return null;
+		}
+	};
 	public static GradFunc itemGradient = new GradFunc("item"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)

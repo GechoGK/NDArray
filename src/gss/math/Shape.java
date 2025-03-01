@@ -322,6 +322,14 @@ public class Shape implements Cloneable
 			out[i] = data.getValue(str + i);
 		return out;
 	}
+	public float[] toGradArray()
+	{
+		float[] out = new float[length];
+		int str=offset;
+		for (int i=0;i < length;i++)
+			out[i] = data.getGrad(str + i);
+		return out;
+	}
 	public float[]toArray()
 	{
 		return toArray(null, 0, length);
@@ -369,6 +377,20 @@ public class Shape implements Cloneable
 			for (int j=0;j < out[0].length;j++)
 			{
 				out[i][j] = data.getValue(str + pos);
+				pos++;
+			}
+		return out;
+	}
+	public float[][] to2DGradArray() // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		float[][]out = new float[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getGrad(str + pos);
 				pos++;
 			}
 		return out;

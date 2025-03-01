@@ -5,7 +5,6 @@ import gss.math.*;
 import java.util.*;
 
 import static gss.math.Util.*;
-import java.io.*;
 
 public class Test3
 {
@@ -24,8 +23,17 @@ public class Test3
 	}
 	void a()
 	{
+		// next test convolve gradient. not tested!.
+		float[] a1=NDIO.arange(10).base.toArray();
+		float[] a2=NDIO.arange(3).base.toArray();
 
-		
+		float[] rs1=NDArray.convolve1d(a1, a2, null);
+		float[] rs2=NDArray.correlate1d(a1, a2, null);
+
+		print(Arrays.toString(a1));
+		print(Arrays.toString(a2));
+		print("== " + Arrays.toString(rs1));
+		print("== " + Arrays.toString(rs2));
 
 	}
 	void ndArrayApproximation2()

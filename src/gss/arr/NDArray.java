@@ -633,6 +633,78 @@ public class NDArray
 				}
 		return m;
 	}
+	public NDArray convolve1d(NDArray kernel)
+	{
+		// default mode = "normal"
+		if (kernel.getDim() != 1)
+			throw new RuntimeException("unable to compute convolution on different dimensions :" + kernel.getDim());
+		NDArray inp=view(-1, getAtR(getShape(), 0));
+		float[][] inpf=inp.base.to2DArray(null);
+		float[] k=kernel.base.toArray();
+		float[][] out=new float[inpf.length][];
+		for (int i=0;i < inpf.length;i++)
+			out[i] = convolve1d(inpf[i], k, null);
+
+		NDArray fout= new NDArray(out);
+		fout.setGradientFunction(GradFunc.convolve1dGradient, this, kernel);
+		return fout;
+	}
+	public static float[] convolve1d(float[]d, float[]k, float[]out)
+	{
+		// flip the kernel(kp)
+		if (out == null)
+			out = new float[d.length - k.length + 1];
+		int w=0;
+		while (w < out.length)
+		{
+			float vt=0;
+			int kp=k.length - 1;
+			for (int i=0;i < k.length;i++)
+			{
+				vt += d[i + w] * k[kp];
+				kp--;
+			}
+			out[w] = vt;
+			w++;
+		}
+		return out;
+	}
+	public NDArray correlate1d(NDArray kernel)
+	{
+		// default mode = "normal"
+		if (kernel.getDim() != 1)
+			throw new RuntimeException("unable to compute convolution on different dimensions :" + kernel.getDim());
+		NDArray inp=view(-1, getAtR(getShape(), 0));
+		float[][] inpf=inp.base.to2DArray(null);
+		float[] k=kernel.base.toArray();
+		float[][] out=new float[inpf.length][];
+		for (int i=0;i < inpf.length;i++)
+			out[i] = convolve1d(inpf[i], k, null);
+
+		NDArray fout= new NDArray(out);
+		fout.setGradientFunction(GradFunc.correlate1dGradient, this, kernel);
+		return fout;
+	}
+	public static float[] correlate1d(float[]d, float[]k, float[]out)
+	{
+		// the kernel is not flipped.
+		if (out == null)
+			out = new float[d.length - k.length + 1];
+		int w=0;
+		while (w < out.length)
+		{
+			float vt=0;
+			int kp=0;
+			for (int i=0;i < k.length;i++)
+			{
+				vt += d[i + w] * k[kp];
+				kp++;
+			}
+			out[w] = vt;
+			w++;
+		}
+		return out;
+	}
 	// end operator implementation.
 }
 
