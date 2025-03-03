@@ -303,6 +303,14 @@ public class Shape implements Cloneable
 	}
 	// to array methods.
 	// for other shapes, implement only this one: te others workoutby themself.
+	public void setGrad(float[]g)
+	{
+		data.setGrad(g);
+	}
+	public void setGrad(float[][]g)
+	{
+		data.setGrad(g);
+	}
 	public float[] toArray(float[]out, int start, int len) // lazy collect.
 	{
 		if (out == null)

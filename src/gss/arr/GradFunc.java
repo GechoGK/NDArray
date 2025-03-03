@@ -284,6 +284,7 @@ public abstract class GradFunc
 			// print("convolution 1d backward");
 			NDArray a1=childs[0]; // input.
 			NDArray a2=childs[1]; // kernel.
+			float[][]hostGrad=host.base.to2DGradArray();
 			float[][] hout=host.base.to2DArray(null);
 			float[][] inp=a1.base.to2DArray(null);
 			float[] kern=a2.base.toArray();
@@ -292,39 +293,32 @@ public abstract class GradFunc
 			boolean inpgrad=a1.requiresGradient();
 			boolean kerngrad=a2.requiresGradient();
 			if (inpgrad)
-				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create!, grab from input(a1).
+				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create array!, grab from input(a1).
 			float[] kgrad=null;
 			if (kerngrad)
-				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create, grad from kernel(a2).
+				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create array, grad from kernel(a2).
 			if (inpgrad || kerngrad)
-				for (int or=0;or < hout.length;or++) // input row.
+				for (int or=0;or < hout.length;or++) // output row.
 				{	
-					int pos=0;
-					for (int oc=0;oc < hout[or].length;oc++)
+					for (int oc=0;oc < hout[or].length;oc++) // output column.
 					{
-						float outd=hout[or][oc];
+						float fout=hostGrad[or][oc];
+						// reverse kernel.
 						int kpos=kern.length - 1;
-						for (int kc=0;kc < kern.length;kc++) // kernel not flipped, flip through kpos var.
-						{					
-							// set kernel gradient
-							// kernelGradient += outd * in;
-							if (kerngrad)
-							{
-								float in=inp[or][pos + kc];   // input data at "or" row and "kc" column.
-								kgrad[kpos] += outd * in;
-							}
-							// set input gradient
-							// inputGradient += outd * kd
+						for (int kc=0;kc < kern.length;kc++)
+						{
 							if (inpgrad)
-							{
-								float kd=kern[kpos];      // kernel data.
-								inpGrad[or][pos + kc] += outd * kd;
-							}
+								inpGrad[or][oc + kc] += fout * kern[kpos];
+							if (kerngrad)
+								kgrad[kc] += fout * inp[or][oc + kc];
 							kpos--;
 						}
 					}
-					pos++;
 				}
+			if (inpgrad)
+				a1.base.setGrad(inpGrad);
+			if (kerngrad)
+				a2.base.setGrad(kgrad);
 			return null;
 		}
 	};
@@ -335,6 +329,7 @@ public abstract class GradFunc
 			// print("correlation 1d backward");
 			NDArray a1=childs[0]; // input.
 			NDArray a2=childs[1]; // kernel.
+			float[][]hostGrad=host.base.to2DGradArray();
 			float[][] hout=host.base.to2DArray(null);
 			float[][] inp=a1.base.to2DArray(null);
 			float[] kern=a2.base.toArray();
@@ -348,34 +343,25 @@ public abstract class GradFunc
 			if (kerngrad)
 				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create, grad from kernel(a2).
 			if (inpgrad || kerngrad)
-				for (int or=0;or < hout.length;or++) // input row.
+				for (int or=0;or < hout.length;or++) // output row.
 				{	
-					int pos=0;
-					for (int oc=0;oc < hout[or].length;oc++)
+					for (int oc=0;oc < hout[or].length;oc++) // output column.
 					{
-						float outd=hout[or][oc];
-						// int kpos=kern.length - 1;
-						for (int kc=0;kc < kern.length;kc++) // kernel not flipped, flip through kpos var.
-						{					
-							// set kernel gradient
-							// kernelGradient += outd * in;
-							if (kerngrad)
-							{
-								float in=inp[or][pos + kc];   // input data at "or" row and "kc" column.
-								kgrad[kc] += outd * in;
-							}
-							// set input gradient
-							// inputGradient += outd * kd
+						float fout=hostGrad[or][oc];
+						// kernel not reversed.
+						for (int kc=0;kc < kern.length;kc++)
+						{
 							if (inpgrad)
-							{
-								float kd=kern[kc];      // kernel data.
-								inpGrad[or][pos + kc] += outd * kd;
-							}
-							// kpos--;
+								inpGrad[or][oc + kc] += fout * kern[kc];
+							if (kerngrad)
+								kgrad[kc] += fout * inp[or][oc + kc];
 						}
 					}
-					pos++;
 				}
+			if (inpgrad)
+				a1.base.setGrad(inpGrad);
+			if (kerngrad)
+				a2.base.setGrad(kgrad);
 			return null;
 		}
 	};

@@ -24,16 +24,38 @@ public class Test3
 	void a()
 	{
 		// next test convolve gradient. not tested!.
-		float[] a1=NDIO.arange(10).base.toArray();
-		float[] a2=NDIO.arange(3).base.toArray();
+		NDArray a1=NDIO.arange(5).setEnableGradient(true); // [0,1,2,3,4] -> [1,1,1,1,0],[0,1,1,1,1] conv,corre.. grad.
+		NDArray a2=NDIO.arange(2).setEnableGradient(true); // [0,1] -> [0,1,,1,2,,2,3,,3,4] -> [6,10] grad.
 
-		float[] rs1=NDArray.convolve1d(a1, a2, null);
-		float[] rs2=NDArray.correlate1d(a1, a2, null);
+		NDArray rs1=a1.convolve1d(a2); // [0,1,2,3] -> [1,1,1,1]
+		NDArray rs2=a1.correlate1d(a2); // [1,2,3,4] -> [1,1,1,1]
 
-		print(Arrays.toString(a1));
-		print(Arrays.toString(a2));
-		print("== " + Arrays.toString(rs1));
-		print("== " + Arrays.toString(rs2));
+		print(a1);
+		print(a2);
+		print(rs1);
+		print(rs2);
+
+		Test1.test(Arrays.equals(rs1.base.toArray(), new float[]{0,1,2,3}), "convolution result equals.");
+		Test1.test(Arrays.equals(rs2.base.toArray(), new float[]{1,2,3,4}), "correlation result equals.");
+
+		System.out.println("convolution gradient test");
+		rs1.setGrad(new int[]{}, 1);
+		rs1.backward();
+		printGrad(a1);
+		printGrad(a2);
+		Test1.test(Arrays.equals(a1.base.toGradArray(), new float[]{1,1,1,1,0}), "convolution input gradient result equals.");
+		Test1.test(Arrays.equals(a2.base.toGradArray(), new float[]{6,10}), "convolution kernel gradient result equals.");
+
+		a1.zeroGrad();
+		a2.zeroGrad();
+
+		System.out.println("correlation gradient test");
+		rs2.setGrad(new int[]{}, 1);
+		rs2.backward();
+		printGrad(a1);
+		printGrad(a2);
+		Test1.test(Arrays.equals(a1.base.toGradArray(), new float[]{0,1,1,1,1}), "correlation input gradient result equals.");
+		Test1.test(Arrays.equals(a2.base.toGradArray(), new float[]{6,10}), "correlation kernel gradient result equals.");
 
 	}
 	void ndArrayApproximation2()

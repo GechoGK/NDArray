@@ -645,7 +645,7 @@ public class NDArray
 		for (int i=0;i < inpf.length;i++)
 			out[i] = convolve1d(inpf[i], k, null);
 
-		NDArray fout= new NDArray(out);
+		NDArray fout= new NDArray(out).setEnableGradient(this.requiresGradient() || kernel.requiresGradient());
 		fout.setGradientFunction(GradFunc.convolve1dGradient, this, kernel);
 		return fout;
 	}
@@ -679,9 +679,9 @@ public class NDArray
 		float[] k=kernel.base.toArray();
 		float[][] out=new float[inpf.length][];
 		for (int i=0;i < inpf.length;i++)
-			out[i] = convolve1d(inpf[i], k, null);
+			out[i] = correlate1d(inpf[i], k, null);
 
-		NDArray fout= new NDArray(out);
+		NDArray fout= new NDArray(out).setEnableGradient(this.requiresGradient() || kernel.requiresGradient());
 		fout.setGradientFunction(GradFunc.correlate1dGradient, this, kernel);
 		return fout;
 	}
