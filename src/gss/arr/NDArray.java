@@ -633,6 +633,72 @@ public class NDArray
 				}
 		return m;
 	}
+	public NDArray sum()
+	{
+		// sum in all axes.
+		/*
+		 example
+		 a = [[3, 4, 5], [5, 6, 7]];
+		 the result will be.
+		 a.sum = [[3 + 4 + 5], [5 + 6 + 7]]=[[12 + 18]] = [30]
+		 */
+		float[] dt=base.toArray();
+		float sum=0;
+		for (float f:dt)
+			sum += f;
+		NDArray out=new NDArray(new float[]{sum}).setEnableGradient(this.requiresGradient());
+		// out.setGradientFunction(GradFunc.sumGradient, this);
+		return out;
+	}
+	public NDArray sum(int axes)
+	{
+		/*
+		 this sum function, is used to sum alomg with a specific axies.
+		 example
+		 a = [[3, 4, 5], [6, 7, 8]] = 2x3 array.
+		 a.sum(0) = [3 + 6, 4 + 7, 5 + 8] = [9, 11, 13]
+		 a.sum(1) = [[3 + 4 + 5], [6 + 7 + 8]] = [[12], [21]]
+		 a.sum(2) = error.
+
+
+		 // down below ther is a symbol // .... that describes the process is not optimized, please find a way to fix that.
+		 // find a way that doesn't use transpose and copy.
+		 */
+		int[]nsh=prepareShapeByAxes(axes);
+		NDArray ar=transpose(nsh); // ....
+		int[]shp= Arrays.copyOf(ar.getShape(), ar.getShape().length);
+		ar = ar.view(-1, getAtR(ar.getShape(), 0)); // ....
+		float[][] arr=ar.base.to2DArray(null); // ....
+		arr = sumAtEnd(arr);
+		ar = new NDArray(arr);
+		shp[shp.length - 1] = 1;
+		ar = ar.view(shp).transpose(nsh).copy(); // ...
+		ar.setEnableGradient(requiresGradient());
+		// ar.setGradientFunction(GradFunc.sumAxesGradient,this);
+		return ar;
+	}
+	private int[] prepareShapeByAxes(int ax)
+	{
+		int[] src=Util.range(getDim());
+		// System.out.println(Arrays.toString(src));
+		int tmp=src[src.length - 1];
+		src[src.length - 1] = src[ax];
+		src[ax] = tmp;
+		// System.out.println(Arrays.toString(src));
+		return src;
+	}
+	private float[][] sumAtEnd(float[][] d)
+	{
+		float[][] out=new float[d.length][1];
+		for (int r=0;r < d.length;r++)
+		{
+			float sm=0;
+			for (int c=0;c < d[r].length;c++)
+				sm += d[r][c];
+			out[r][0] = sm;
+		}
+		return out;
+	}
 	public NDArray convolve1d(NDArray kernel)
 	{
 		// default mode = "normal"
@@ -705,6 +771,6 @@ public class NDArray
 		}
 		return out;
 	}
-	// end operator implementation.
+// end operator implementation.
 }
 

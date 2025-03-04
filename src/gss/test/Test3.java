@@ -16,13 +16,85 @@ public class Test3
 	}
 	void test() throws Exception
     {
+
 		// Test2.main2(null);
+		// test1();
+		// test2();
 
 		a();
 
 	}
 	void a()
 	{
+
+	}
+	void test2()
+	{
+		System.out.println("Test 15. sum test.");
+		NDArray ar=NDIO.arange(48).reshape(2, 4, 3, 2);
+		// print(ar);
+		ar = ar.sum();
+		print(ar);
+		float[] f=ar.base.toArray();
+		float sum=0;
+		for (float s:f)
+			sum += s;
+		Test1.test(Arrays.equals(new float[]{sum}, ar.base.toArray()), "sum along all axis.");
+		NDArray arr = NDIO.arange(24).reshape(2, 3, 4);
+		ar = arr.sum(0);
+		print(ar);
+		// original array ---v
+//		float[][][] or={
+//			{
+//				{ 0.0f, 1.0f, 2.0f, 3.0f},
+//				{ 4.0f, 5.0f, 6.0f, 7.0f},
+//				{ 8.0f, 9.0f, 10.0f, 11.0f}
+//			},
+//			{
+//				{ 12.0f, 13.0f, 14.0f, 15.0f},
+//				{ 16.0f, 17.0f, 18.0f, 19.0f},
+//				{ 20.0f, 21.0f, 22.0f, 23.0f}
+//			}
+//		};
+		float[][][] sum0={
+			{
+				{12,14,16,18},
+				{20,22,24,26},
+				{28,30,32,34}
+			}
+		};
+		Test1.test(Test1.equals(sum0, ar.base), "sum with axes 0");
+		ar = arr.sum(1);
+		print(ar);
+		float[][][] sum1={
+			{
+				{12,15,18,21}
+			},
+			{
+				{48,51,54,57}
+			}
+		};
+		Test1.test(Test1.equals(sum1, ar.base), "sum with axes 1");
+		ar = arr.sum(2);
+		print(ar);
+		float[][][] sum2={
+			{
+				{6},
+				{22},
+				{38}
+			},
+			{
+				{54},
+				{70},
+				{86}
+			}
+		};
+		Test1.test(Test1.equals(sum2, ar.base), "sum with axes 2");
+
+	}
+	void test1()
+	{
+		System.out.println("Test 14. convolution 1d and correlation 1d test.");
 		// next test convolve gradient. not tested!.
 		NDArray a1=NDIO.arange(5).setEnableGradient(true); // [0,1,2,3,4] -> [1,1,1,1,0],[0,1,1,1,1] conv,corre.. grad.
 		NDArray a2=NDIO.arange(2).setEnableGradient(true); // [0,1] -> [0,1,,1,2,,2,3,,3,4] -> [6,10] grad.
