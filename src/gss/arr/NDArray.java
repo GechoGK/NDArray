@@ -109,6 +109,10 @@ public class NDArray
 	{
 		base.setGrad(sh, v);
 	}
+	public void fillGrad(NDArray ar)
+	{
+		base.fillGrad(ar.base);
+	}
 	public void setFloat(int...sh, float v)
 	{
 		base.setExact(sh, v);
@@ -206,6 +210,35 @@ public class NDArray
 		NDArray arr = fromShape(base.transpose());
 		arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
+	}
+	public NDArray trimShape()
+	{
+		// this function will remove "1" in the shape,
+		// because they are not very neccessary, besides increase the dimension of the array.
+		/*
+		 example.
+		 a = [[[[[2,3]], [[4,6]]]]]; -> [[2,3], [4,6]];
+		 a.shape = (1, 1, 2, 1, 2) -> (2,2)
+		 */
+		int[] shp=getShape();
+		int[] ind=new int[shp.length];
+		int count=0,indx=0;
+		for (int i=0;i < shp.length;i++)
+		{
+			if (shp[i] > 1)
+			{
+				count++;
+				ind[indx] = i;
+				indx++;
+			}
+		}
+		int[]nshp=new int[count];
+		for (int i=0;i < count;i++)
+		{
+			nshp[i] = shp[ind[i]];
+		}
+		//print(Arrays.toString(nshp));
+		return this.view(nshp);
 	}
 	public void setGradientFunction(GradFunc func, NDArray...chlds)
 	{
@@ -647,7 +680,7 @@ public class NDArray
 		for (float f:dt)
 			sum += f;
 		NDArray out=new NDArray(new float[]{sum}).setEnableGradient(this.requiresGradient());
-		// out.setGradientFunction(GradFunc.sumGradient, this);
+		out.setGradientFunction(GradFunc.sumGradient, this);
 		return out;
 	}
 	public NDArray sum(int axes)
@@ -674,8 +707,8 @@ public class NDArray
 		shp[shp.length - 1] = 1;
 		ar = ar.view(shp).transpose(nsh).copy(); // ...
 		ar.setEnableGradient(requiresGradient());
-		// ar.setGradientFunction(GradFunc.sumAxesGradient,this);
-		return ar;
+		ar.setGradientFunction(GradFunc.sumAxesGradient, this);
+		return ar.trimShape();
 	}
 	private int[] prepareShapeByAxes(int ax)
 	{

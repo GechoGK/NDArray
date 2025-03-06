@@ -108,6 +108,18 @@ public class Shape implements Cloneable
 			data.setGrad(ind, v);
 		}
 	}
+	public void fillGrad(Shape s)
+	{
+		if (!Shape.isBrodcastable(s.shape, this.shape))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + Arrays.toString(s.shape) + " can't broadcast to " + Arrays.toString(this.shape) + ")");
+		Shape os=s.broadcast(this.shape);
+		// Util.print("broadcaated shape =" + Arrays.toString(os.shape));
+		for (int i=0;i < length;i++)
+		{
+			int ind=shapeToIndex(getShape(i));
+			data.setGrad(ind, os.getFlat(ind));
+		}
+	}
 	public float getFloat(int...index)
 	{
 		int ind=shapeToIndex(index);
@@ -254,7 +266,7 @@ public class Shape implements Cloneable
 //		return this;
 		return view(newShape);
 	}
-	// this functiom is used to calculate the index if it have -1 in their item.
+	// this function is used to calculate the index if it have -1 in their item.
 	public int[] getShape(int...shp)
 	{
 		int nIndex=-1;

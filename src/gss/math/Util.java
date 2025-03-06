@@ -350,4 +350,11 @@ public class Util
 		}
 		return f;
 	}
+	public static String getString(String s, int times)
+	{
+		StringBuilder sb=new StringBuilder();
+		for (int i=0;i < times;i++)
+			sb.append(s);
+		return sb.toString();
+	}
 }

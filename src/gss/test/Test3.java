@@ -17,20 +17,127 @@ public class Test3
 	void test() throws Exception
     {
 
-		// Test2.main2(null);
-		// test1();
-		// test2();
-
+		Test2.main2(null);
+		test1();
+		test2();
+		test3();
+		test5();
+		test6();
 		a();
 
 	}
 	void a()
 	{
+		print("");
+		print("");
+		print(getString("=", 45));
+		print("All testes passed!");
+	}
+	void test6()
+	{
+		System.out.println("Test 6. sum with axis backward pass test.");
+		NDArray arr = NDIO.arange(24).reshape(2, 3, 4).setEnableGradient(true);
+		NDArray ar = arr.sum(1);
+//		print(arr);
+//		print("---");
+//		printGrad(arr);
+//		print("----------");
+//		print(ar);
+//		printGrad(ar);
+//		print("----------");
+		ar.setGrad(1);
+		ar.backward();
+//		print(ar);
+//		printGrad(ar);
+//		print("----------");
+//		print(arr);
+//		print("---");
+//		printGrad(arr);
 
+		float[][] finalGd=
+		{
+			{ 1.0f, 1.0f, 1.0f, 1.0f},
+			{ 1.0f, 1.0f, 1.0f, 1.0f}
+		};
+		Test1.test(Test1.equals(finalGd, ar.getGradient().base), "gradient after sum equals");
+		float[][][] beforeSumGd=
+		{
+			{
+				{ 1.0f, 1.0f, 1.0f, 1.0f},
+				{ 1.0f, 1.0f, 1.0f, 1.0f},
+				{ 1.0f, 1.0f, 1.0f, 1.0f}
+			},
+			{
+				{ 1.0f, 1.0f, 1.0f, 1.0f},
+				{ 1.0f, 1.0f, 1.0f, 1.0f},
+				{ 1.0f, 1.0f, 1.0f, 1.0f}
+			}
+		};
+
+		Test1.test(Test1.equals(beforeSumGd, arr.getGradient().base), "gradient before sum equals");
+	}
+	void test5()
+	{
+		System.out.println("Test 5. fill grad test.");
+		NDArray gdr = NDIO.arange(8).reshape(2, 1, 4).setEnableGradient(true);
+		NDArray arr=NDIO.arange(24).reshape(2, 3, 4).setEnableGradient(true);
+
+//		print(gdr);
+//		print("---------");
+//		printGrad(arr);
+//		print("---------");
+		arr.fillGrad(gdr);
+//		printGrad(arr);
+		float[][][] gd=
+		{
+			{
+				{0.0f, 1.0f, 2.0f, 3.0f},
+				{0.0f, 1.0f, 2.0f, 3.0f},
+				{0.0f, 1.0f, 2.0f, 3.0f}
+			},
+			{
+				{4.0f, 5.0f, 6.0f, 7.0f},
+				{4.0f, 5.0f, 6.0f, 7.0f},
+				{4.0f, 5.0f, 6.0f, 7.0f}
+			}
+		};
+
+		Test1.test(Test1.equals(gd, arr.getGradient().base), "gradient equals");
+
+	}
+	void test4()
+	{
+		System.out.println("Test 4. save array to file test.");
+		NDArray arr = NDIO.arange(24).reshape(2, 3, 4).setEnableGradient(false);
+		NDIO.toFile(arr, "/sdcard/test/arrayJson1.json"); // default json type will choosen.
+		NDIO.toFile(arr, "/sdcard/test/arrayJson2.json", NDIO.FileType.JSON); // the same as above.
+		NDIO.toFile(arr, "/sdcard/test/arrayText.txt", NDIO.FileType.TEXT); // save as text file.
+		NDIO.toFile(arr, "/sdcard/test/arrayBin.bin", NDIO.FileType.BINARY); // save as binary file.
+		// the name can be any name.
+		/*
+		 result file comparision
+		 file size. with the above array.
+
+		 json = 140B | 141B
+		 text = 173B | 174B
+		 bin  = 114B
+
+		 this is relativelly small in size but when the array size grows the difference gap also gets bigger.
+		 */
+	}
+	void test3()
+	{
+		System.out.println("Test 3. trimShape test.");
+		NDArray ar=NDIO.arange(6).reshape(1, 1, 2, 1, 3);
+
+		print(Arrays.toString(ar.getShape()));
+		ar = ar.trimShape();
+		print(Arrays.toString(ar.getShape()));
+		Test1.test(Arrays.equals(ar.getShape(), new int[]{2,3}), "trim shape.");
 	}
 	void test2()
 	{
-		System.out.println("Test 15. sum test.");
+		System.out.println("Test 2. sum test.");
 		NDArray ar=NDIO.arange(48).reshape(2, 4, 3, 2);
 		// print(ar);
 		ar = ar.sum();
@@ -56,45 +163,31 @@ public class Test3
 //				{ 20.0f, 21.0f, 22.0f, 23.0f}
 //			}
 //		};
-		float[][][] sum0={
-			{
-				{12,14,16,18},
-				{20,22,24,26},
-				{28,30,32,34}
-			}
+		float[][] sum0={
+			{12,14,16,18},
+			{20,22,24,26},
+			{28,30,32,34}
 		};
 		Test1.test(Test1.equals(sum0, ar.base), "sum with axes 0");
 		ar = arr.sum(1);
 		print(ar);
-		float[][][] sum1={
-			{
-				{12,15,18,21}
-			},
-			{
-				{48,51,54,57}
-			}
+		float[][]sum1={
+			{12,15,18,21},
+			{48,51,54,57}
 		};
 		Test1.test(Test1.equals(sum1, ar.base), "sum with axes 1");
 		ar = arr.sum(2);
 		print(ar);
-		float[][][] sum2={
-			{
-				{6},
-				{22},
-				{38}
-			},
-			{
-				{54},
-				{70},
-				{86}
-			}
+		float[][]sum2={
+			{6,22,38},
+			{54,70,86}
 		};
 		Test1.test(Test1.equals(sum2, ar.base), "sum with axes 2");
 
 	}
 	void test1()
 	{
-		System.out.println("Test 14. convolution 1d and correlation 1d test.");
+		System.out.println("Test 1. convolution 1d and correlation 1d test.");
 		// next test convolve gradient. not tested!.
 		NDArray a1=NDIO.arange(5).setEnableGradient(true); // [0,1,2,3,4] -> [1,1,1,1,0],[0,1,1,1,1] conv,corre.. grad.
 		NDArray a2=NDIO.arange(2).setEnableGradient(true); // [0,1] -> [0,1,,1,2,,2,3,,3,4] -> [6,10] grad.
