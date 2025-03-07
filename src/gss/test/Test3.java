@@ -17,21 +17,55 @@ public class Test3
 	void test() throws Exception
     {
 
-		Test2.main2(null);
-		test1();
-		test2();
-		test3();
-		test5();
-		test6();
+//		Test2.main2(null);
+//		test1();
+//		test2();
+//		test3();
+//		// test4();
+//		test5();
+//		test6();
+//		test7();
+
 		a();
 
 	}
 	void a()
 	{
-		print("");
-		print("");
-		print(getString("=", 45));
-		print("All testes passed!");
+
+		print("Hello world!");
+
+	}
+	void test7()
+	{
+		test4();
+
+		System.out.println("Test 7. load ndarray from file.");
+
+		NDArray orig=NDIO.arange(24).reshape(2, 3, 4).setEnableGradient(false);
+		try
+		{
+			NDArray arJson1=NDIO.loadJSON("/sdcard/test/arrayJson1.json");	
+			Test1.test(Util.equals(orig, arJson1), "load json array 1 equals");
+			NDArray arJson2=NDIO.load("/sdcard/test/arrayJson2.json", NDIO.FileType.JSON);
+			Test1.test(Util.equals(orig, arJson2), "load json array 2 equals");
+
+			NDArray arText1=NDIO.load("/sdcard/test/arrayText.txt");
+			Test1.test(Util.equals(orig, arText1), "load text array 1 equals");
+			NDArray arText2=NDIO.load("/sdcard/test/arrayText.txt", NDIO.FileType.TEXT);
+			Test1.test(Util.equals(orig, arText2), "load text array 2 equals");
+
+			NDArray arBin1=NDIO.load("/sdcard/test/arrayBin.ndbin");
+			Test1.test(Util.equals(orig, arBin1), "load binary array 1 equals");
+			NDArray arBin2=NDIO.load("/sdcard/test/arrayBin.ndbin", NDIO.FileType.BINARY);
+			Test1.test(Util.equals(orig, arBin2), "load binary array 2 equals");
+
+		}
+		catch (Exception e)
+		{
+			print("error " + e);
+			e.printStackTrace();
+		}
+
 	}
 	void test6()
 	{
@@ -112,7 +146,7 @@ public class Test3
 		NDIO.toFile(arr, "/sdcard/test/arrayJson1.json"); // default json type will choosen.
 		NDIO.toFile(arr, "/sdcard/test/arrayJson2.json", NDIO.FileType.JSON); // the same as above.
 		NDIO.toFile(arr, "/sdcard/test/arrayText.txt", NDIO.FileType.TEXT); // save as text file.
-		NDIO.toFile(arr, "/sdcard/test/arrayBin.bin", NDIO.FileType.BINARY); // save as binary file.
+		NDIO.toFile(arr, "/sdcard/test/arrayBin.ndbin", NDIO.FileType.BINARY); // save as binary file.
 		// the name can be any name.
 		/*
 		 result file comparision
