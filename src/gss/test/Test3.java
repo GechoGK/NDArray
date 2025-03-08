@@ -5,6 +5,8 @@ import gss.math.*;
 import java.util.*;
 
 import static gss.math.Util.*;
+import gss.nnet.lossfunctions.*;
+import gss.nnet.optimizers.*;
 
 public class Test3
 {
@@ -25,14 +27,62 @@ public class Test3
 //		test5();
 //		test6();
 //		test7();
+//		test8();
 
 		a();
 
 	}
 	void a()
 	{
+		System.out.println("Hello world!");
+		
+	}
+	void test8()
+	{
+		System.out.println("Test 8. Converge test");
+		NDArray tr=NDIO.value(new int[]{5}, 3);
+		NDArray w1=NDIO.rand(5).setEnableGradient(true);
+		NDArray b=NDIO.ones(5).setEnableGradient(true);
+		MSE mse=new MSE();
+		GradientDescent gd=new GradientDescent();
 
-		print("Hello world!");
+		NDArray in=NDIO.fromArray(new int[]{5}, new float[]{1,2,3,4,5});
+
+		System.out.print("training for 1000 iterations");
+		int count=0;
+		while (count < 1000)
+		{
+			NDArray rs=w1.dot(in).add(b);
+			NDArray loss=mse.forward(rs, tr);
+
+			loss.setGrad(1);
+			loss.backward();
+
+			// print(loss);
+			gd.update(w1, b);
+
+			gd.zeroGrad(w1, b);
+
+			count++;
+			if (count % 300 == 0)
+				System.out.print(".");
+		}
+		print("\ndone training");
+		NDArray result=w1.dot(in).add(b);
+
+		NDArray loss=mse.forward(result, tr);
+
+		print("final result with ---v   loss " + loss.getFloat(0));
+		print(result);
+		print("target ---v");
+		print(tr);
+		print(genString("=", 45));
+		print("weights");
+		print(w1);
+		print(genString("-", 20));
+		print(b);
+		print(genString("=", 10) + " loss = " + loss.getFloat(0));
+		Test1.test(loss.getFloat(0) < 0.001f, "loss less than 0.001");
 
 	}
 	void test7()
