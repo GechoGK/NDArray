@@ -92,6 +92,19 @@ public class Data
 	{
 		grad[p] += v;
 	}
+	public void setGrad(float[]d)
+	{
+		if (!requireGradient)
+			throw new RuntimeException("gradient not enabled!, try enable gradient before set value on it.");
+		if (grad.length != d.length)
+			throw new RuntimeException("the lemgth of the gradient is not equals to the array you trying to assign.");
+		grad = d;
+	}
+	public void setGrad(float[][]d)
+	{
+		float[]dd=Util.flatten(d);
+		setGrad(dd);
+	}
 	public void zeroGrad()
 	{
 		Arrays.fill(grad, 0);

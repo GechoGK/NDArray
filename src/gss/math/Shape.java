@@ -108,6 +108,18 @@ public class Shape implements Cloneable
 			data.setGrad(ind, v);
 		}
 	}
+	public void fillGrad(Shape s)
+	{
+		if (!Shape.isBrodcastable(s.shape, this.shape))
+			throw new RuntimeException("the array provided can't  broadcast to base shape = (" + Arrays.toString(s.shape) + " can't broadcast to " + Arrays.toString(this.shape) + ")");
+		Shape os=s.broadcast(this.shape);
+		// Util.print("broadcaated shape =" + Arrays.toString(os.shape));
+		for (int i=0;i < length;i++)
+		{
+			int ind=shapeToIndex(getShape(i));
+			data.setGrad(ind, os.getFlat(ind));
+		}
+	}
 	public float getFloat(int...index)
 	{
 		int ind=shapeToIndex(index);
@@ -254,7 +266,7 @@ public class Shape implements Cloneable
 //		return this;
 		return view(newShape);
 	}
-	// this functiom is used to calculate the index if it have -1 in their item.
+	// this function is used to calculate the index if it have -1 in their item.
 	public int[] getShape(int...shp)
 	{
 		int nIndex=-1;
@@ -287,7 +299,7 @@ public class Shape implements Cloneable
 		BShape sh = new BShape(this, shape, newShape);
 		return sh;
 	}
-	public boolean isBrodcastable(int[]orgShape, int[]newShape)
+	public static boolean isBrodcastable(int[]orgShape, int[]newShape)
 	{
 		if (newShape.length < orgShape.length)
 			return false;
@@ -303,6 +315,14 @@ public class Shape implements Cloneable
 	}
 	// to array methods.
 	// for other shapes, implement only this one: te others workoutby themself.
+	public void setGrad(float[]g)
+	{
+		data.setGrad(g);
+	}
+	public void setGrad(float[][]g)
+	{
+		data.setGrad(g);
+	}
 	public float[] toArray(float[]out, int start, int len) // lazy collect.
 	{
 		if (out == null)
@@ -320,6 +340,14 @@ public class Shape implements Cloneable
 		int str=offset;
 		for (int i=0;i < length;i++)
 			out[i] = data.getValue(str + i);
+		return out;
+	}
+	public float[] toGradArray()
+	{
+		float[] out = new float[length];
+		int str=offset;
+		for (int i=0;i < length;i++)
+			out[i] = data.getGrad(str + i);
 		return out;
 	}
 	public float[]toArray()
@@ -373,6 +401,20 @@ public class Shape implements Cloneable
 			}
 		return out;
 	}
+	public float[][] to2DGradArray() // lazy collect.
+	{
+		Shape sh=view(-1, shape[shape.length - 1]);
+		float[][]out = new float[sh.shape[0]][sh.shape[1]];
+		int str=offset;
+		int pos=0;
+		for (int i=0;i < out.length;i++)
+			for (int j=0;j < out[0].length;j++)
+			{
+				out[i][j] = data.getGrad(str + pos);
+				pos++;
+			}
+		return out;
+	}
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
@@ -422,5 +464,5 @@ public class Shape implements Cloneable
 		s.data = data;
 		return s;
 	}
-	
+
 }

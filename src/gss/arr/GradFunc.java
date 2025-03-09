@@ -7,32 +7,13 @@ import static gss.math.Util.*;
 
 public abstract class GradFunc
 {
-	/*
-	 // Bug 1.
-	 when the graidient is set on the array, it doesn't append the value.
-	 the values are just overwritten,
-
-	 --- Fix
-	 --- enabling append mode. once every zero gradient...
-
-	 // Bug 2.
-	 all gradient calculators diesn't check if the childs support gradient or not.
-	 this causes error when setGrad called with requireGradient = false arrays.
-
-	 --- Fix
-	 --- check every child if they require gradient or not.
-	 for(NDArray arr:childs)
-	 {
-	 .   if(!arr[0].requiresGradient())
-	 .       continue;
-	 .   // do gradient calculation.
-	 }
-	 */
-
 	// name for debugging purpose.
 	private String name;
+
 	public GradFunc()
-	{this.name = "unknown";}
+	{
+		this.name = "unknown";
+	}
 	public GradFunc(String name)
 	{
 		this.name = name;
@@ -48,10 +29,6 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
 		{
-//			for (NDArray arr:childs)
-//			{
-//				if (arr.getLength() != host.getLength())
-//					throw new RuntimeException("");
 			/*
 			 addition gradient
 			 a + b = c
@@ -68,7 +45,6 @@ public abstract class GradFunc
 				if (a2.requiresGradient())
 					a2.setFlatGrad(i, host.getFlatGrad(i));
 			}
-			// }
 			return null;
 		}
 	};
@@ -142,7 +118,7 @@ public abstract class GradFunc
 			/* for operand 1.
 			 a / b = c
 			 6 / 3 = 2;
-			 gradient calculaion for division.
+			 gradient calculation for division.
 			 c.grad = 5;
 			 a.grad = c.grad * 1 / b.data
 			 a.grad = 5 * 1 / 3 = 1.6666...
@@ -277,6 +253,94 @@ public abstract class GradFunc
 			return null;
 		}
 	};
+	public static GradFunc convolve1dGradient = new GradFunc("conv1d"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("convolution 1d backward");
+			NDArray a1=childs[0]; // input.
+			NDArray a2=childs[1]; // kernel.
+			float[][]hostGrad=host.base.to2DGradArray();
+			float[][] hout=host.base.to2DArray(null);
+			float[][] inp=a1.base.to2DArray(null);
+			float[] kern=a2.base.toArray();
+			// gradients;
+			float[][] inpGrad=null;
+			boolean inpgrad=a1.requiresGradient();
+			boolean kerngrad=a2.requiresGradient();
+			if (inpgrad)
+				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create array!, grab from input(a1).
+			float[] kgrad=null;
+			if (kerngrad)
+				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create array, grad from kernel(a2).
+			if (inpgrad || kerngrad)
+				for (int or=0;or < hout.length;or++) // output row.
+				{	
+					for (int oc=0;oc < hout[or].length;oc++) // output column.
+					{
+						float fout=hostGrad[or][oc];
+						// reverse kernel.
+						int kpos=kern.length - 1;
+						for (int kc=0;kc < kern.length;kc++)
+						{
+							if (inpgrad)
+								inpGrad[or][oc + kc] += fout * kern[kpos];
+							if (kerngrad)
+								kgrad[kc] += fout * inp[or][oc + kc];
+							kpos--;
+						}
+					}
+				}
+			if (inpgrad)
+				a1.base.setGrad(inpGrad);
+			if (kerngrad)
+				a2.base.setGrad(kgrad);
+			return null;
+		}
+	};
+	public static GradFunc correlate1dGradient = new GradFunc("correlate1d"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("correlation 1d backward");
+			NDArray a1=childs[0]; // input.
+			NDArray a2=childs[1]; // kernel.
+			float[][]hostGrad=host.base.to2DGradArray();
+			float[][] hout=host.base.to2DArray(null);
+			float[][] inp=a1.base.to2DArray(null);
+			float[] kern=a2.base.toArray();
+			// gradients;
+			float[][] inpGrad=null;
+			boolean inpgrad=a1.requiresGradient();
+			boolean kerngrad=a2.requiresGradient();
+			if (inpgrad)
+				inpGrad = a1.base.to2DGradArray(); // new float[inp.length][inp[0].length]; // don't create!, grab from input(a1).
+			float[] kgrad=null;
+			if (kerngrad)
+				kgrad = a2.base.toGradArray(); // new float[kern.length]; // don't create, grad from kernel(a2).
+			if (inpgrad || kerngrad)
+				for (int or=0;or < hout.length;or++) // output row.
+				{	
+					for (int oc=0;oc < hout[or].length;oc++) // output column.
+					{
+						float fout=hostGrad[or][oc];
+						// kernel not reversed.
+						for (int kc=0;kc < kern.length;kc++)
+						{
+							if (inpgrad)
+								inpGrad[or][oc + kc] += fout * kern[kc];
+							if (kerngrad)
+								kgrad[kc] += fout * inp[or][oc + kc];
+						}
+					}
+				}
+			if (inpgrad)
+				a1.base.setGrad(inpGrad);
+			if (kerngrad)
+				a2.base.setGrad(kgrad);
+			return null;
+		}
+	};
 	public static GradFunc itemGradient = new GradFunc("item"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs)
@@ -300,6 +364,27 @@ public abstract class GradFunc
 				lst.addAll(tmpLst);
 				tmpLst.clear();
 			}
+			return null;
+		}
+	};
+	public static GradFunc sumGradient=new GradFunc(){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("sum backward pass.");
+			float g=host.getExactGrad(0);
+			NDArray ar=childs[0];
+			ar.setGrad(g);
+			return null;
+		}
+	};
+	public static GradFunc sumAxesGradient=new GradFunc(){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs)
+		{
+			// print("sum axes backward pass.");
+			NDArray org=childs[0];
+			org.fillGrad(host.getGradient());
 			return null;
 		}
 	};

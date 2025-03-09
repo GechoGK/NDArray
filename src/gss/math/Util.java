@@ -5,6 +5,7 @@ import gss.arr.*;
 import java.util.*;
 
 import gss.arr.NDArray;
+import java.io.*;
 
 public class Util
 {
@@ -349,5 +350,20 @@ public class Util
 			p++;
 		}
 		return f;
+	}
+	public static String genString(String s, int times)
+	{
+		StringBuilder sb=new StringBuilder();
+		for (int i=0;i < times;i++)
+			sb.append(s);
+		return sb.toString();
+	}
+	public static String readString(String path) throws IOException
+	{
+		FileInputStream fis=new FileInputStream(path);
+		byte[] b=new byte[fis.available()];
+		fis.read(b);
+		fis.close();
+		return new String(b);
 	}
 }
