@@ -538,6 +538,55 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	public NDArray max()
+	{
+		float[] dt=base.data.data;
+		float max=dt[0];
+		for (float f:dt)
+			if (f > max)
+				max = f;
+		NDArray ar=new NDArray(new float[]{max}).setEnableGradient(requiresGradient());
+		// backpropagation will be find the max value index the apply to it.
+		return ar;
+	}
+	public int maxIndex()
+	{
+		float[] dt=base.data.data;
+		int index=0;
+		float max=dt[0];
+		for (int i=0;i < dt.length;i++)
+			if (dt[i] > max)
+			{
+				max = dt[i];
+				index = i;
+			}
+		return index;
+	}
+	public NDArray min()
+	{
+		float[] dt=base.data.data;
+		float min=dt[0];
+		for (float f:dt)
+			if (f < min)
+				min = f;
+		NDArray ar=new NDArray(new float[]{min}).setEnableGradient(requiresGradient());
+		// backpropagation will be find the min value index the apply to it.
+		// gradient calculator in progress.
+		return ar;
+	}
+	public int minIndex()
+	{
+		float[] dt=base.data.data;
+		int index=0;
+		float min=dt[0];
+		for (int i=0;i < dt.length;i++)
+			if (dt[i] < min)
+			{
+				min = dt[i];
+				index = i;
+			}
+		return index;
+	}
 	// end arthimetic operations.
 	public NDArray vStack()
 	{

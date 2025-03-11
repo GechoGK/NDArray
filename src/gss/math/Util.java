@@ -163,12 +163,17 @@ public class Util
 	{
 		return arr[arr.length - index - 1]; // 
 	}
-	public static void print(NDArray ar)
+	public static void print(NDArray...ar)
 	{
 		if (ar == null)
 			System.out.println("null array");
-		else
-			print(ar.base);
+		else 
+			for (NDArray n:ar)
+			{
+				if (n == null)
+					System.out.println("null array");
+				print(n.base);
+			}
 	}
 	public static void print(Shape str)
 	{
@@ -198,9 +203,17 @@ public class Util
 				System.out.println();
 			}
 	}
-	public static void printGrad(NDArray ar)
+	public static void printGrad(NDArray...ar)
 	{
-		printGrad(ar.base);
+		if (ar == null)
+			System.out.println("null array");
+		else 
+			for (NDArray n:ar)
+			{
+				if (n == null)
+					System.out.println("null array");
+				printGrad(n.base);
+			}
 	}
 	public static void printGrad(Shape str)
 	{
@@ -235,37 +248,60 @@ public class Util
 				System.out.println();
 			}
 	}
-	public static void print(float[] f)
+	public static void print(float[]...ff)
 	{
-		if (f == null)
+		for (float[] f:ff)
 		{
-			System.out.println("null array");
-			return;
-		}
-		System.out.print("[ ");
-		for (int i=0;i < f.length;i++)
-			System.out.print(f[i] + (i == f.length - 1 ?"": ", "));
-		System.out.println(" ]");
-	}
-	public static void print(float[][] f)
-	{
-		if (f == null)
-		{
-			System.out.println("null array");
-			return;
-		}
-		System.out.print("[");
-		for (int j=0;j < f.length;j++)
-		{
-			System.out.print((j == 0 ?"": " ") + "[ ");
-			for (int i=0;i < f[0].length;i++)
-				System.out.print(f[j][i] + (i == f[0].length - 1 ?"": ", "));
-			System.out.println(" ]" + (j == f.length - 1 ?"]": ""));
+			if (f == null)
+			{
+				System.out.println("null array");
+				return;
+			}
+			System.out.print("[ ");
+			for (int i=0;i < f.length;i++)
+				System.out.print(f[i] + (i == f.length - 1 ?"": ", "));
+			System.out.println(" ]");
 		}
 	}
-	public static void print(Object o)
+	public static void print(float[][]...ff)
 	{
-		System.out.println(o);
+		for (float[][] f:ff)
+		{
+			if (f == null)
+			{
+				System.out.println("null array");
+				return;
+			}
+			System.out.print("[");
+			for (int j=0;j < f.length;j++)
+			{
+				System.out.print((j == 0 ?"": " ") + "[ ");
+				for (int i=0;i < f[0].length;i++)
+					System.out.print(f[j][i] + (i == f[0].length - 1 ?"": ", "));
+				System.out.println(" ]" + (j == f.length - 1 ?"]": ""));
+			}
+		}
+	}
+	public static void print(Object...oo)
+	{
+		for (Object o:oo)
+			if (o instanceof NDArray)
+			{
+				print((NDArray)o);
+			}
+			else if (o instanceof float[])
+			{
+				print((float[])o);
+			}
+			else if (o instanceof float[][])
+			{
+				print((float[][])o);
+			}
+			else
+			{
+				System.out.print(o);
+				System.out.println();
+			}
 	}
 	public static void fill(Shape str, float val)
 	{

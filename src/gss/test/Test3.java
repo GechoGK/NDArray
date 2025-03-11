@@ -23,10 +23,10 @@ public class Test3
 //		test1();
 //		test2();
 //		test3();
-//		// test4();
+//		// test4();  // uses storage access.
 //		test5();
 //		test6();
-//		test7();
+//		// test7(); // uses stoeage acess.
 //		test8();
 
 		a();
@@ -35,7 +35,7 @@ public class Test3
 	void a()
 	{
 		System.out.println("Hello world!");
-		
+
 	}
 	void test8()
 	{
