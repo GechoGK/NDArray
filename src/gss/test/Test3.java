@@ -26,8 +26,9 @@ public class Test3
 //		// test4();  // uses storage access.
 //		test5();
 //		test6();
-//		// test7(); // uses stoeage acess.
+//		// test7();  // uses storage access.
 //		test8();
+//		test9();
 
 		a();
 
@@ -35,6 +36,25 @@ public class Test3
 	void a()
 	{
 		System.out.println("Hello world!");
+
+	}
+	void test9()
+	{
+		System.out.println("Test 9. min/max and log test");
+
+		NDArray arr=NDIO.rand(10);
+		print(arr);
+		print("max ", arr.max());
+		print("max index " + arr.argMax());
+
+		print("min ", arr.min());
+		print("min index " + arr.argMin());
+
+		print(arr.log10());
+		print(arr.log());
+		print(arr.ln());
+
+		print(arr.exp());
 
 	}
 	void test8()

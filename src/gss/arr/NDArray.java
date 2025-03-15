@@ -5,10 +5,23 @@ import java.util.*;
 
 import static gss.math.Util.*;
 
+/*
+ all the implementation of gradientFunctions are set without checking if the NDArray needs gradient function or not.
+ example NDArray arr=....
+ arr.setGradientFunction(...);
+ // here setGradientFunction is automatically applied to all function.
+ but firstvit needa to checknif it have gradientEnabled.
+ :::-   correction
+ if(arr.requiredGradient())
+ .   arr.setGradientFunction(...);
+
+ */
+
 public class NDArray
 {
 	public Shape base;
 	public List<NDArray> childs = new ArrayList<>();
+	public List<Object> params=null;
 	public GradFunc gradientFunction;
 
 	public NDArray(Shape shp)
@@ -240,12 +253,20 @@ public class NDArray
 		//print(Arrays.toString(nshp));
 		return this.view(nshp);
 	}
-	public void setGradientFunction(GradFunc func, NDArray...chlds)
+	public NDArray setGradientFunction(GradFunc func, NDArray...chlds)
 	{
 		this.gradientFunction = func;
 		this.childs.clear();
 		for (NDArray ar:chlds)
 			this.childs.add(ar);
+		return this;
+	}
+	public void setGradientParams(Object...prms)
+	{
+		if (params == null)
+			params = new ArrayList<>();
+		for (Object prm:prms)
+			params.add(prm);
 	}
 	public void backward()
 	{
@@ -253,7 +274,7 @@ public class NDArray
 			return;
 		// throw new RuntimeException("gradient function not found = " + gradientFunction);
 		// System.out.println("backward " + gradientFunction);
-		gradientFunction.backward(this, childs.toArray(new NDArray[0]));
+		gradientFunction.backward(this, childs.toArray(new NDArray[0]), params);
 		for (NDArray arr:childs)
 			arr.backward();
 	}
@@ -538,20 +559,57 @@ public class NDArray
 		}
 		return arrOut;
 	}
+	public NDArray ln()
+	{
+		return log();
+	}
+	public NDArray log()
+	{
+		float[] dt=base.data.data;
+		float[] out=new float[dt.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = (float)Math.log(dt[i]);
+		NDArray ar=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
+		// gradient calculator in progress.
+		ar.setGradientFunction(GradFunc.logEGradient, this);
+		return ar;
+	}
+	public NDArray log10()
+	{
+		float[] dt=base.data.data;
+		float[] out=new float[dt.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = (float)Math.log10(dt[i]);
+		NDArray ar=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
+		// gradient calculator in progress.
+		ar.setGradientFunction(GradFunc.log10Gradient, this);
+		return ar;
+	}
 	public NDArray max()
 	{
 		float[] dt=base.data.data;
 		float max=dt[0];
-		for (float f:dt)
+		int index=0;
+		for (int i=0;i < dt.length;i++)
+		{
+			float f=dt[i];
 			if (f > max)
+			{
 				max = f;
+				index = i;
+			}
+		}
 		NDArray ar=new NDArray(new float[]{max}).setEnableGradient(requiresGradient());
-		// backpropagation will be find the max value index the apply to it.
+		// backpropagation will be find the max value index then apply to it.
+		ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
 		return ar;
 	}
-	public int maxIndex()
+	public int argMax()
 	{
-		float[] dt=base.data.data;
+		// it returns the max index of 1d array.
+		// even your array is multidimensional array it treats as 1d array.
+		// poor implementation.
+		float[] dt=base.toArray();
 		int index=0;
 		float max=dt[0];
 		for (int i=0;i < dt.length;i++)
@@ -566,17 +624,28 @@ public class NDArray
 	{
 		float[] dt=base.data.data;
 		float min=dt[0];
-		for (float f:dt)
+		int index=0;
+		for (int i=0;i < dt.length;i++)
+		{
+			float f=dt[i];
 			if (f < min)
+			{
 				min = f;
+				index = i;
+			}
+		}
 		NDArray ar=new NDArray(new float[]{min}).setEnableGradient(requiresGradient());
-		// backpropagation will be find the min value index the apply to it.
+		// backpropagation will be find the min value index then apply to it.
 		// gradient calculator in progress.
+		ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
 		return ar;
 	}
-	public int minIndex()
+	public int argMin()
 	{
-		float[] dt=base.data.data;
+		// it returns the min index of 1d array.
+		// even your array is multidimensional array it treats as 1d array.
+		// poor implementation.
+		float[] dt=base.toArray();
 		int index=0;
 		float min=dt[0];
 		for (int i=0;i < dt.length;i++)
@@ -586,6 +655,15 @@ public class NDArray
 				index = i;
 			}
 		return index;
+	}
+	public NDArray exp()
+	{
+		float[] dt=base.data.data;
+		float[] out=new float[dt.length];
+		for (int i=0;i < dt.length;i++)
+			out[i] = (float)Math.exp(dt[i]);
+		NDArray arrOut=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
+		return arrOut;
 	}
 	// end arthimetic operations.
 	public NDArray vStack()
@@ -621,6 +699,7 @@ public class NDArray
 		tmp = tmp.view(shp);
 		NDArray out=tmp.copy();
 		out.setGradientFunction(GradFunc.hStackGradient, tmp);
+		out.setGradientFunction(GradFunc.expGradient, this);
 		return out;
 	}
 	private int[] getHStackShape(int[]shp)

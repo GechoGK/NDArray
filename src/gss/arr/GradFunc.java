@@ -7,6 +7,13 @@ import static gss.math.Util.*;
 
 public abstract class GradFunc
 {
+	/*
+	 not tested gradient functions.
+	 --- position gradient
+	 --- logEGradient
+	 --- log10Gradient
+	 */
+
 	// name for debugging purpose.
 	private String name;
 
@@ -18,7 +25,7 @@ public abstract class GradFunc
 	{
 		this.name = name;
 	}
-	public abstract NDArray backward(NDArray host, NDArray...childs)
+	public abstract NDArray backward(NDArray host, NDArray...childs, Object...params)
 	@Override
 	public String toString()
 	{
@@ -27,7 +34,7 @@ public abstract class GradFunc
 	public static GradFunc additionGradient = new GradFunc("addition")
 	{
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			/*
 			 addition gradient
@@ -51,7 +58,7 @@ public abstract class GradFunc
 	public static GradFunc subtractionGradient = new GradFunc("subtraction")
 	{
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 
 			/*
@@ -78,7 +85,7 @@ public abstract class GradFunc
 	public static GradFunc multiplicationGradient = new GradFunc("multiplication")
 	{
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			NDArray a1=childs[0]; // first operand..
 			NDArray a2=childs[1]; // second operand.
@@ -108,7 +115,7 @@ public abstract class GradFunc
 	public static GradFunc divisionGradient = new GradFunc("division")
 	{
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			NDArray a1=childs[0]; // == a  first operand.
 			NDArray a2=childs[1]; // == b  second operand.
@@ -140,7 +147,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc powGradient = new GradFunc("pow"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// this.childs[0].setGrad(this.grad * this.childs[1].data * Math.pow(this.childs[0].data, childs[1].data - 1));
 			// this.childs[1].setGrad(this.grad * (Math.pow(this.childs[0].data, this.childs[1].data) * Math.log(childs[0].data)));
@@ -169,7 +176,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc vStackGradient =new GradFunc("vstack"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// System.out.println("VStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
 			NDArray a=childs[0];
@@ -182,7 +189,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc hStackGradient =new GradFunc("hstack"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// System.out.println("HStack---host length =" + host.getLength() + ", childs length =" + childs[0].getLength());
 			NDArray a=childs[0];
@@ -195,7 +202,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc dotGradient=new GradFunc("dot"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// System.out.println("performing dot product backpropagation");
 			// System.out.println("host = " + host.getDim() + ": " + Arrays.toString(host.getShape()));
@@ -246,7 +253,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc stepGradient = new GradFunc("step"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			if (host.base.data != childs[0].base.data)
 				throw new RuntimeException("unknown step gradient.");
@@ -255,7 +262,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc convolve1dGradient = new GradFunc("conv1d"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// print("convolution 1d backward");
 			NDArray a1=childs[0]; // input.
@@ -300,7 +307,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc correlate1dGradient = new GradFunc("correlate1d"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// print("correlation 1d backward");
 			NDArray a1=childs[0]; // input.
@@ -343,7 +350,7 @@ public abstract class GradFunc
 	};
 	public static GradFunc itemGradient = new GradFunc("item"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// iterate over each stores Value classes and then call backward on them.
 			Value[] vls=host.base.data.getValues();
@@ -367,9 +374,9 @@ public abstract class GradFunc
 			return null;
 		}
 	};
-	public static GradFunc sumGradient=new GradFunc(){
+	public static GradFunc sumGradient=new GradFunc("sum"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// print("sum backward pass.");
 			float g=host.getExactGrad(0);
@@ -378,13 +385,69 @@ public abstract class GradFunc
 			return null;
 		}
 	};
-	public static GradFunc sumAxesGradient=new GradFunc(){
+	public static GradFunc sumAxesGradient=new GradFunc("sumAxes"){
 		@Override
-		public NDArray backward(NDArray host, NDArray[] childs)
+		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
 			// print("sum axes backward pass.");
 			NDArray org=childs[0];
 			org.fillGrad(host.getGradient());
+			return null;
+		}
+	};
+	public static GradFunc positionGradient=new GradFunc("min/max"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			if (params == null || params.length == 0)
+				throw new RuntimeException("unable to comput positionGradient b/c params not found.");
+			NDArray arr=childs[0];
+			arr.base.data.setGrad((int)params[0], host.getFlatGrad(0));
+			return null;
+		}
+	};
+	public static GradFunc logEGradient=new GradFunc("logE/ln"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			NDArray arr=childs[0];
+			float[] gd=host.base.data.getGrads(); // gradient comes from chain rule.
+			float[] dt=arr.base.data.getData(); // use as x.
+			float[] tr=arr.base.data.getGrads(); // trget to store gradient.
+			for (int i=0;i < dt.length;i++)
+			{
+				tr[i] = gd[i] * (1 / dt[i]);
+			}
+			arr.base.setGrad(tr);
+			return null;
+		}
+	};
+	public static GradFunc log10Gradient=new GradFunc("log10"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			NDArray arr=childs[0];
+			float[] gd=host.base.data.getGrads(); // gradient comes from chain rule.
+			float[] dt=arr.base.data.getData(); // use as x.
+			// float[] tr=arr.base.data.getGrads(); // trget to store gradient.
+			for (int i=0;i < dt.length;i++)
+			{
+				arr.base.data.setGrad(i, gd[i] * (1 / (dt[i] * (float)Math.log(10))));
+			}
+			return null;
+		}
+	};
+	public static GradFunc expGradient=new GradFunc("exp"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			float[] grd=host.base.data.getGrads();
+			NDArray ar=childs[0];
+			float[] dt=ar.base.data.getData();
+			for (int i=0;i < grd.length;i++)
+			{
+				ar.base.data.setGrad(i, grd[i] * (float)Math.exp(dt[i]));
+			}
 			return null;
 		}
 	};
