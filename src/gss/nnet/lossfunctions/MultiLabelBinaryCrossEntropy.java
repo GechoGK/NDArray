@@ -6,7 +6,8 @@ import gss.nnet.*;
 import static gss.math.Util.*;
 
 /*
- it doesn't work. not implemented.
+ // not tested.
+ // gradient not implemented.
  */
 
 public class MultiLabelBinaryCrossEntropy extends LossFunc

@@ -413,12 +413,12 @@ public abstract class GradFunc
 			NDArray arr=childs[0];
 			float[] gd=host.base.data.getGrads(); // gradient comes from chain rule.
 			float[] dt=arr.base.data.getData(); // use as x.
-			float[] tr=arr.base.data.getGrads(); // trget to store gradient.
+			// float[] tr=arr.base.data.getGrads(); // trget to store gradient.
 			for (int i=0;i < dt.length;i++)
 			{
-				tr[i] = gd[i] * (1 / dt[i]);
+				arr.base.data.setGrad(i, gd[i] * (1 / dt[i]));
 			}
-			arr.base.setGrad(tr);
+			// arr.base.setGrad(tr);
 			return null;
 		}
 	};

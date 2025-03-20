@@ -138,7 +138,7 @@ public class Test2
 			System.out.println("-----------------------");
 		}
 	}
-	void drawTree(NDArray ar)
+	public static void drawTree(NDArray ar)
     {
 		Value[] vs=ar.base.data.getValues();
 		if (vs == null)
@@ -149,7 +149,7 @@ public class Test2
 		for (Value v:vs)
 			draw(v, "");
 	}
-	void draw(Value v, String t)
+	public static void draw(Value v, String t)
     {
 		System.out.println(t + v);
 		if (v.args != null)

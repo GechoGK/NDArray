@@ -81,4 +81,66 @@ public class TestND
 				}
 		return m;
 	}
+	public static NDArray log(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i].log();
+			out.base.data.setValue(i, v);
+		}
+		return out;
+	}
+	public static NDArray log10(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i].log10();
+			out.base.data.setValue(i, v);
+		}
+		return out;
+	}
+	public static NDArray exp(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i].exp();
+			out.base.data.setValue(i, v);
+		}
+		return out;
+	}
+	public static NDArray relu(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i];
+			v = v.getData() > 0 ?v.step(): new Value(0);
+			out.base.data.setValue(i, v);
+		}
+		return out;
+	}
+	public static NDArray sigmoid(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i];
+			Value fv=new Value(1).div(new Value(1).add(v.mul(new Value(-1)).exp()));
+			out.base.data.setValue(i, fv);
+		}
+		return out;
+	}
 }

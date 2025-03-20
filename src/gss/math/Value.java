@@ -130,6 +130,65 @@ public class Value
 			a2.setGrad(self.getGrad() * (float)Math.pow(a1.getData(), a2.getData()) * (float)Math.log(a1.getData()));
 		}
 	};
+	public Value log()
+	{
+		Value v=new Value((float)Math.log(getData()));
+		v.setOP(logGrad, this);
+		return v;
+	}
+	public static ValueGradFunc logGrad =new ValueGradFunc("log gradient"){
+		@Override
+		public void backward(Value self, Value[] args)
+		{
+			Value a1=args[0];
+			a1.setGrad(self.getGrad() * (1 / a1.getData()));
+		}
+	};
+	public Value log10()
+	{
+		Value v=new Value((float)Math.log10(getData()));
+		v.setOP(log10Grad, this);
+		return v;
+	}
+	public static ValueGradFunc log10Grad =new ValueGradFunc("log10 gradient"){
+		@Override
+		public void backward(Value self, Value[] args)
+		{
+			Value a1=args[0];
+			a1.setGrad(self.getGrad() * (1 / (a1.getData() * (float)Math.log(10))));
+		}
+	};
+	public Value exp()
+	{
+		Value v=new Value((float)Math.exp(getData()));
+		v.setOP(expGrad, this);
+		return v;
+	}
+	public static ValueGradFunc expGrad =new ValueGradFunc("exp gradient"){
+		@Override
+		public void backward(Value self, Value[] args)
+		{
+			Value a1=args[0];
+			a1.setGrad(self.getGrad() * (float)Math.exp(a1.getData()));
+		}
+	};
+	public Value step()
+	{
+		Value v=new Value(getData());
+		v.setOP(stepGrad, this);
+		return v;
+	}
+	// default data value.
+	public static ValueGradFunc stepGrad=new ValueGradFunc("step"){
+		@Override
+		public void backward(Value self, Value[] args)
+		{
+			// if (args.length == 0)
+			// 	return;
+			Value a1=args[0];
+			a1.setGrad(self.getGrad());
+		}
+	};
 	public static abstract class ValueGradFunc
 	{
 		// /* uncomment the when funushed debugging.

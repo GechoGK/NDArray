@@ -15,10 +15,26 @@ public class Sigmoid extends Activation
 		{
 			out[i] = 1 / (1 + (float)Math.exp(-dt[i]));
 		}
-		NDArray arrOut=new NDArray(out).setEnableGradient(arr.requiresGradient());
+		NDArray arrOut=new NDArray(arr.getShape(), out).setEnableGradient(arr.requiresGradient());
 		// gradient in progress.
+		arrOut.setGradientFunction(sigmoidGradient, arr);
 		return arrOut;
 	}
+	public static GradFunc sigmoidGradient=new GradFunc("sigmoid"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			NDArray a1=childs[0];
+			float[] grd=host.base.toArray();
+			//float[] dt=childs[0].base.toArray();
+			for (int i=0;i < grd.length;i++)
+			{
+				a1.base.data.setGrad(i, grd[i] * (1 - grd[i]));
+			}
+			// childs[0].base.data.setGrad(dt);
+			return null;
+		}
+	};
 //	public static Value sigmoid(Value op1)
 //	{
 //		/*

@@ -10,7 +10,7 @@ import static gss.math.Util.*;
  example NDArray arr=....
  arr.setGradientFunction(...);
  // here setGradientFunction is automatically applied to all function.
- but firstvit needa to checknif it have gradientEnabled.
+ but first it needs to check if it have gradientEnabled.
  :::-   correction
  if(arr.requiredGradient())
  .   arr.setGradientFunction(...);
@@ -520,6 +520,7 @@ public class NDArray
 	}
 	public NDArray mod(NDArray other)
 	{
+		// gradient function != addiion   !!!!!!!!!!!!!!
 		int[] shp=getCommonShape(this.base.shape, other.base.shape);
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
@@ -663,6 +664,7 @@ public class NDArray
 		for (int i=0;i < dt.length;i++)
 			out[i] = (float)Math.exp(dt[i]);
 		NDArray arrOut=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
+		arrOut.setGradientFunction(GradFunc.expGradient, this);
 		return arrOut;
 	}
 	// end arthimetic operations.

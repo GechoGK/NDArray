@@ -52,7 +52,7 @@ public class Data
 	public Value getValue(int pos)
 	{
 		if (gradValues == null)
-			gradValues = new Value[data.length];
+			gradValues = new DValue[data.length];
 		Value v=gradValues[pos];
 		if (v == null)	
 		{
@@ -65,7 +65,7 @@ public class Data
 	{
 		// System.out.println("setting flat " + ind + " = " + v);
 		if (gradValues == null)
-		 	gradValues = new Value[data.length];
+		 	gradValues = new DValue[data.length];
 		DValue dv=(DValue)gradValues[pos];
 		if (dv == null)
 		{

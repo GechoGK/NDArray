@@ -18,6 +18,20 @@ public class Tanh extends Activation
 		// gradient in progress.
 		return arrOut;
 	}
+	public static GradFunc tanhGradient=new GradFunc("tanh"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			float[] grd=host.base.toArray();
+			float[] dt=childs[0].base.toArray();
+			for (int i=0;i < dt.length;i++)
+			{
+				dt[i] += 1 - grd[i] * grd[i];
+			}
+			childs[0].base.data.setGrad(dt);
+			return null;
+		}
+	};
 //	public static Value tanh(Value op1)
 //	{
 //		/*
@@ -37,5 +51,5 @@ public class Tanh extends Activation
 //		};
 //		return v;
 //	}
-	
+
 }

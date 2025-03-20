@@ -2,11 +2,12 @@ package gss.test;
 
 import gss.arr.*;
 import gss.math.*;
+import gss.nnet.activations.*;
+import gss.nnet.lossfunctions.*;
+import gss.nnet.optimizers.*;
 import java.util.*;
 
 import static gss.math.Util.*;
-import gss.nnet.lossfunctions.*;
-import gss.nnet.optimizers.*;
 
 public class Test3
 {
@@ -29,14 +30,104 @@ public class Test3
 //		// test7();  // uses storage access.
 //		test8();
 //		test9();
+//		test10();
+//		test11();
 
 		a();
 
 	}
 	void a()
 	{
-		System.out.println("Hello world!");
+		// sigmoid doesn't work.
+		System.out.println("Test 11. relu test");
 
+		NDArray arr1=NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		NDArray arr2=NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		NDArray lg1=new Relu().forward(arr1);
+		NDArray lg2=TestND.relu(arr2);
+		// print(lg1);
+		Test1.test(Util.equals(lg1, lg2), "relu data equals");
+		lg1.setGrad(2);
+		lg2.setGrad(2);
+		lg1.backward();
+		lg2.backward();
+		// printGrad(arr1);
+		Test1.test(Util.equals(arr1, arr2, true), "relu data and gradient equals");
+		print("-----------");
+
+		arr1 = NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		arr2 = NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		lg1 = new Sigmoid().forward(arr1);
+		lg2 = TestND.sigmoid(arr2);
+		print(lg1);
+		print(lg2);
+		Test1.test(Util.equals(lg1, lg2), "sigmoid data equals");
+		lg1.setGrad(2);
+		lg2.setGrad(2);
+		lg1.backward();
+		lg2.backward();
+		printGrad(arr1);
+		printGrad(arr2);
+		Test1.test(Util.equals(arr1, arr2, true), "sigmoid data and gradient equals");
+		print("-----------");
+
+	}
+	void test11()
+	{
+		System.out.println("Test 11. log/ log10/ exp gradients test.");
+		NDArray arr1=NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		NDArray arr2=NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		NDArray lg1=arr1.log();
+		NDArray lg2=TestND.log(arr2);
+		// print(lg1);
+		Test1.test(Util.equals(lg1, lg2), "log data equals");
+		lg1.setGrad(2);
+		lg2.setGrad(2);
+		lg1.backward();
+		lg2.backward();
+		// printGrad(arr1);
+		Test1.test(Util.equals(arr1, arr2, true), "log data and gradient equals");
+		// print("log10 tests done");
+
+		arr1 = NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		arr2 = NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		lg1 = arr1.log10();
+		lg2 = TestND.log10(arr2);
+		// print(lg1);
+		Test1.test(Util.equals(lg1, lg2), "log10 data equals");
+		lg1.setGrad(2);
+		lg2.setGrad(2);
+		lg1.backward();
+		lg2.backward();
+		// printGrad(arr1);
+		Test1.test(Util.equals(arr1, arr2, true), "log10 data and gradient equals");
+		// print("log10 tests done ");
+
+		arr1 = NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		arr2 = NDIO.arange(1, 11).reshape(2, 5).setEnableGradient(true);
+		lg1 = arr1.exp();
+		lg2 = TestND.exp(arr2);
+		// print(lg1);
+		Test1.test(Util.equals(lg1, lg2), "exp data equals");
+		lg1.setGrad(2);
+		lg2.setGrad(2);
+		lg1.backward();
+		lg2.backward();
+		// printGrad(arr1);
+		// printGrad(arr2);
+		Test1.test(Util.equals(arr1, arr2, true), "exp data and gradient equals");
+		// print("exp tests done");
+	}
+	void test10()
+	{
+		System.out.println("Test 10. log gradient using Value class.");
+
+		Value v=new Value(10); 
+		Value v2=v.log();
+		System.out.println(v.getData() + " =log= " + v2.getData() + " == " + v2);
+		v2.setGrad(2);
+		v2.backward();
+		System.out.println(v2.getGrad() + " => " + v.getGrad());
 	}
 	void test9()
 	{
@@ -148,7 +239,7 @@ public class Test3
 //		print("----------");
 //		print(ar);
 //		printGrad(ar);
-//		print("----------");
+		//		print("----------");
 		ar.setGrad(1);
 		ar.backward();
 //		print(ar);
@@ -156,7 +247,7 @@ public class Test3
 //		print("----------");
 //		print(arr);
 //		print("---");
-//		printGrad(arr);
+		//		printGrad(arr);
 
 		float[][] finalGd=
 		{
@@ -189,9 +280,9 @@ public class Test3
 //		print(gdr);
 //		print("---------");
 //		printGrad(arr);
-//		print("---------");
+		//		print("---------");
 		arr.fillGrad(gdr);
-//		printGrad(arr);
+		//		printGrad(arr);
 		float[][][] gd=
 		{
 			{
@@ -266,7 +357,7 @@ public class Test3
 //				{ 16.0f, 17.0f, 18.0f, 19.0f},
 //				{ 20.0f, 21.0f, 22.0f, 23.0f}
 //			}
-//		};
+		//		};
 		float[][] sum0={
 			{12,14,16,18},
 			{20,22,24,26},
@@ -460,7 +551,7 @@ public class Test3
 				backward(vv);
 	}
 	void rawApproximate()
-    {
+	{
 		float lr=0.001f;
 		float t=10;
 		float in=5;
@@ -488,7 +579,7 @@ public class Test3
 
 	}
 	void tree(NDArray v, String t)
-    {
+	{
 		System.out.println(t + v + " ::: " + v.gradientFunction);
 		// printGrad(v);
 		// print("-----------");

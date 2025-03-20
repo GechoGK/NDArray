@@ -54,8 +54,19 @@ public class Softmax
 		}
 		NDArray out= new NDArray(arrOut).reshape(arr.getShape()).setEnableGradient(arr.requiresGradient());
 		// gradient calculator in progress.
+		out.setGradientFunction(softmaxGradient, arr);
 		return out;
 	}
+	public static GradFunc softmaxGradient=new GradFunc("softmax"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			float[] grd=host.base.toArray();
+			float[] dt=childs[0].base.toArray();
+			// softmax in progress.
+			return null;
+		}
+	};
 	public static void main2(String[] args)
 	{
 		float[] input = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
