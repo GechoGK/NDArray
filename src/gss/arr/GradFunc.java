@@ -7,13 +7,6 @@ import static gss.math.Util.*;
 
 public abstract class GradFunc
 {
-	/*
-	 not tested gradient functions.
-	 --- position gradient
-	 --- logEGradient
-	 --- log10Gradient
-	 */
-
 	// name for debugging purpose.
 	private String name;
 
@@ -448,6 +441,14 @@ public abstract class GradFunc
 			{
 				ar.base.data.setGrad(i, grd[i] * (float)Math.exp(dt[i]));
 			}
+			return null;
+		}
+	};
+	public static GradFunc absGradient=new GradFunc("ab"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			// do nothing.
 			return null;
 		}
 	};

@@ -165,6 +165,9 @@ public class Value
 		return v;
 	}
 	public static ValueGradFunc expGrad =new ValueGradFunc("exp gradient"){
+
+		// needs more accurate math.
+
 		@Override
 		public void backward(Value self, Value[] args)
 		{
@@ -187,6 +190,21 @@ public class Value
 			// 	return;
 			Value a1=args[0];
 			a1.setGrad(self.getGrad());
+		}
+	};
+	public Value tanh()
+	{
+		Value v=new Value((float)Math.tanh(getData()));
+		v.setOP(tanhGrad, this);
+		return v;
+	}
+	public static ValueGradFunc tanhGrad =new ValueGradFunc("tanh gradient"){
+		@Override
+		public void backward(Value self, Value[] args)
+		{
+			Value a1=args[0];
+			float th=(float)Math.tanh(a1.getData());
+			a1.setGrad(self.getGrad() * (1f - th * th));
 		}
 	};
 	public static abstract class ValueGradFunc

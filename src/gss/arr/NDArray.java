@@ -657,6 +657,17 @@ public class NDArray
 			}
 		return index;
 	}
+	public NDArray abs()
+	{
+		float[] dt=base.data.data;
+		float[] out=new float[dt.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = Math.abs(dt[i]);
+		NDArray ar=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
+		// gradient calculator in progress.
+		ar.setGradientFunction(GradFunc.absGradient, this);
+		return ar;
+	}
 	public NDArray exp()
 	{
 		float[] dt=base.data.data;
@@ -701,7 +712,6 @@ public class NDArray
 		tmp = tmp.view(shp);
 		NDArray out=tmp.copy();
 		out.setGradientFunction(GradFunc.hStackGradient, tmp);
-		out.setGradientFunction(GradFunc.expGradient, this);
 		return out;
 	}
 	private int[] getHStackShape(int[]shp)

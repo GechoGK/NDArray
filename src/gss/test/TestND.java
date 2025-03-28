@@ -132,6 +132,11 @@ public class TestND
 	}
 	public static NDArray sigmoid(NDArray arr)
 	{
+		/*
+		 float sigmoidForward(float x) {
+		 return 1.0f / (1.0f + (float) Math.exp(-x));
+		 }
+		 */
 		Value[] f=arr.base.toValueArray();
 		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
 		out.setGradientFunction(GradFunc.itemGradient);
@@ -140,6 +145,18 @@ public class TestND
 			Value v=f[i];
 			Value fv=new Value(1).div(new Value(1).add(v.mul(new Value(-1)).exp()));
 			out.base.data.setValue(i, fv);
+		}
+		return out;
+	}
+	public static NDArray tanh(NDArray arr)
+	{
+		Value[] f=arr.base.toValueArray();
+		NDArray out=new NDArray(arr.getShape()).setEnableGradient(arr.requiresGradient());
+		out.setGradientFunction(GradFunc.itemGradient);
+		for (int i=0;i < f.length;i++)
+		{
+			Value v=f[i].tanh();
+			out.base.data.setValue(i, v);
 		}
 		return out;
 	}

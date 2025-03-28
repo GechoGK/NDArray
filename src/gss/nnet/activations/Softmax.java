@@ -57,13 +57,63 @@ public class Softmax
 		out.setGradientFunction(softmaxGradient, arr);
 		return out;
 	}
+	public static float[] softmaxForward(float[] x)
+	{
+		int n = x.length;
+		float[] result = new float[n];
+
+		// Numerical stability: subtract max(x) to avoid overflow
+		float max = x[0];
+		for (float val : x)
+		{
+			if (val > max) max = val;
+		}
+
+		// Compute exponentials and sum
+		float sum = 0.0f;
+		for (int i = 0; i < n; i++)
+		{
+			result[i] = (float) Math.exp(x[i] - max); // Shift by max
+			sum += result[i];
+		}
+
+		// Normalize
+		for (int i = 0; i < n; i++)
+		{
+			result[i] /= sum;
+		}
+		return result;
+	}
+	public static float[] softmaxBackward(float[] grad, float[] x)
+	{
+		int n = x.length;
+		float[] softmax = softmaxForward(x); // Recompute softmax (no caching)
+		float[] gradInput = new float[n];
+
+		// Compute dot product of grad and softmax (gradᵀ ⋅ softmax)
+		float dot = 0.0f;
+		for (int i = 0; i < n; i++)
+		{
+			dot += grad[i] * softmax[i];
+		}
+
+		// Compute gradient for each element: gradInput_i = softmax_i * (grad_i - dot)
+		for (int i = 0; i < n; i++)
+		{
+			gradInput[i] = softmax[i] * (grad[i] - dot);
+		}
+
+		return gradInput;
+	}
 	public static GradFunc softmaxGradient=new GradFunc("softmax"){
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
 			float[] grd=host.base.toArray();
 			float[] dt=childs[0].base.toArray();
+			float[]bc=softmaxBackward(grd, dt);
 			// softmax in progress.
+			childs[0].base.data.setGrad(bc);
 			return null;
 		}
 	};

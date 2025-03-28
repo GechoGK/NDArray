@@ -14,21 +14,29 @@ public class Tanh extends Activation
 		{
 			out[i] = (float)Math.tanh(dt[i]);
 		}
-		NDArray arrOut=new NDArray(out).setEnableGradient(arr.requiresGradient());
-		// gradient in progress.
+		NDArray arrOut=new NDArray(arr.getShape(), out).setEnableGradient(arr.requiresGradient());
+		arrOut.setGradientFunction(tanhGradient, arr);
 		return arrOut;
 	}
 	public static GradFunc tanhGradient=new GradFunc("tanh"){
+		/*
+		 float tanhBackward(float grad, float x) {
+		 float tanh_x = (float) Math.tanh(x); // Recompute tanh(x)
+		 return grad * (1.0f - tanh_x * tanh_x); // Chain rule: grad * (1 - tanh²(x))
+		 }
+		 */
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
-			float[] grd=host.base.toArray();
+			NDArray a1=childs[0];
+			float[] grd=host.base.data.getGrads();
 			float[] dt=childs[0].base.toArray();
 			for (int i=0;i < dt.length;i++)
 			{
-				dt[i] += 1 - grd[i] * grd[i];
+				float th=(float)Math.tanh(dt[i]);
+				a1.base.data.setGrad(i, grd[i] * (1f - th * th));
 			}
-			childs[0].base.data.setGrad(dt);
+			// childs[0].base.data.setGrad(dt);
 			return null;
 		}
 	};

@@ -74,7 +74,7 @@ public class NDIO
 	// the seed value can be -1.
 	public static NDArray rand(int...shape)
 	{
-		return rand(shape, false, 128); // change 128 to -1
+		return rand(shape, false, -1); // change 128 to -1
 	}
 	public static NDArray rand(int[] shape, int seed)
 	{

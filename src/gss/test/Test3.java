@@ -8,6 +8,7 @@ import gss.nnet.optimizers.*;
 import java.util.*;
 
 import static gss.math.Util.*;
+import gss.nnet.*;
 
 public class Test3
 {
@@ -24,22 +25,29 @@ public class Test3
 //		test1();
 //		test2();
 //		test3();
-//		// test4();  // uses storage access.
+//		test4();  // uses storage access.
 //		test5();
 //		test6();
-//		// test7();  // uses storage access.
+//		test7();  // uses storage access.
 //		test8();
 //		test9();
 //		test10();
 //		test11();
+//		test12();
 
 		a();
 
 	}
 	void a()
 	{
-		// sigmoid doesn't work.
-		System.out.println("Test 11. relu test");
+
+		print("All testes finished!");
+
+		
+	}
+	void test12()
+	{
+		System.out.println("Test 12. relu, sigmoid, and tanh test with backpropagation");
 
 		NDArray arr1=NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
 		NDArray arr2=NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
@@ -59,16 +67,34 @@ public class Test3
 		arr2 = NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
 		lg1 = new Sigmoid().forward(arr1);
 		lg2 = TestND.sigmoid(arr2);
-		print(lg1);
-		print(lg2);
+		// print(lg1);
+		// print(lg2);
 		Test1.test(Util.equals(lg1, lg2), "sigmoid data equals");
+		lg1.setGrad(5);
+		lg2.setGrad(5);
+		lg1.backward();
+		lg2.backward();
+		// printGrad(arr1);
+		// printGrad(arr2);
+		Test1.test(Util.equals(arr1, arr2, true, true), "sigmoid data and gradient equals");
+		print("-----------");
+
+		arr1 = NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		arr2 = NDIO.arange(-9, 11).reshape(-1, 5).setEnableGradient(true);
+		lg1 = new Tanh().forward(arr1);
+		lg2 = TestND.tanh(arr2);
+		// print(lg1);
+		// print(lg2);
+		Test1.test(Util.equals(lg1, lg2), "tanh data equals");
 		lg1.setGrad(2);
 		lg2.setGrad(2);
 		lg1.backward();
 		lg2.backward();
-		printGrad(arr1);
-		printGrad(arr2);
-		Test1.test(Util.equals(arr1, arr2, true), "sigmoid data and gradient equals");
+		// printGrad(arr1);
+		// printGrad(arr2);
+		// print("------");
+		// print(arr1.getGradient().sub(arr2.getGradient()));
+		Test1.test(Util.equals(arr1, arr2, true), "tanh data and gradient equals");
 		print("-----------");
 
 	}

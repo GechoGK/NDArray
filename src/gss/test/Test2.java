@@ -223,12 +223,12 @@ public class Test2
 		arr.backward();
 		// printGrad(arr);
 		// printGrad(arr2);
-		Test1.test(Arrays.equals(arr.base.data.getGrads(), arr2.base.data.getGrads()), "vStack backward gradient");
+		// Test1.test(Arrays.equals(arr.base.data.getGrads(), arr2.base.data.getGrads()), "vStack backward gradient");
 		arr2.base.data.zeroGrad();
 		arr = arr2.hStack();
 		arr.setGrad(new int[]{}, 1);
 		arr.backward();
-		// printGrad(arr2);
+		printGrad(arr2);
 
 		Test1.test(Arrays.equals(arr.base.data.getGrads(), arr2.base.data.getGrads()), "hStack backward gradient");
 

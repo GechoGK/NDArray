@@ -6,14 +6,19 @@ import gss.arr.*;
 
 public class Sigmoid extends Activation
 {
+	/*
+	 float sigmoidForward(float x) {
+	 return 1.0f / (1.0f + (float) Math.exp(-x));
+	 }
+	 */
 	@Override
 	public NDArray forward(NDArray arr)
 	{
-		float[] dt=arr.base.data.data;
+		float[] dt=arr.base.data.getData();
 		float[] out=new float[dt.length];
 		for (int i=0;i < dt.length;i++)
 		{
-			out[i] = 1 / (1 + (float)Math.exp(-dt[i]));
+			out[i] = 1f / (1f + (float)Math.exp(-dt[i]));
 		}
 		NDArray arrOut=new NDArray(arr.getShape(), out).setEnableGradient(arr.requiresGradient());
 		// gradient in progress.
@@ -21,15 +26,24 @@ public class Sigmoid extends Activation
 		return arrOut;
 	}
 	public static GradFunc sigmoidGradient=new GradFunc("sigmoid"){
+
+		/*
+		 float sigmoidBackward(float grad, float x) {
+		 float sigmoid_x = 1.0f / (1.0f + (float) Math.exp(-x)); // Recompute σ(x)
+		 return grad * sigmoid_x * (1.0f - sigmoid_x); // Chain rule: grad * σ'(x)
+		 }
+		 */
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
+			// cache sig. for performance
 			NDArray a1=childs[0];
-			float[] grd=host.base.toArray();
-			//float[] dt=childs[0].base.toArray();
+			float[] grd=host.base.data.getGrads();
+			float[] dt=a1.base.data.getData();
 			for (int i=0;i < grd.length;i++)
 			{
-				a1.base.data.setGrad(i, grd[i] * (1 - grd[i]));
+				float sig = 1f / (1f + (float)Math.exp(-dt[i]));
+				a1.base.data.setGrad(i, grd[i] * sig * (1 - sig));
 			}
 			// childs[0].base.data.setGrad(dt);
 			return null;

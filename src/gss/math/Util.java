@@ -323,27 +323,42 @@ public class Util
 				return false;
 		return true;
 	}
-	public static boolean equals(float[] s1, float[] s2)
+	public static boolean equals(float[] s1, float[]s2)
+	{
+		return equals(s1, s2, false);
+	}
+	public static boolean equals(float[] s1, float[] s2, boolean tol)
 	{
 		if (s1 == null || s2 == null)
 			return false;
 		if (s1.length != s2.length)
 			return false;
 		for (int i=0;i < s1.length;i++)
-			if (s1[i] != s2[i])
-				return false;
+			if (tol)
+			{
+				if (Math.abs(s1[i] - s2[i]) > 0.00001f)
+					return false;
+			}
+			else
+			{
+				if (s1[i] != s2[i])
+					return false;
+			}
 		return true;
 	}
 	public static boolean equals(NDArray a1, NDArray a2, boolean...checkGrad)
 	{
 		if (a1 == null || a2 == null)
 			return false;
+		boolean tolerate=false;
+		if (checkGrad.length > 1 && checkGrad[1])
+			tolerate = checkGrad[1];
 		if (!equals(a1.getShape(), a2.getShape()))
 			return false;
 		if (!equals(a1.base.data.getData(), a2.base.data.getData()))
 			return false;
-		if (checkGrad.length != 0 && checkGrad[0])
-			if (!equals(a1.base.data.getGrads(), a2.base.data.getGrads()))
+		if (checkGrad.length > 0 && checkGrad[0])
+			if (!equals(a1.base.data.getGrads(), a2.base.data.getGrads(), tolerate))
 				return false;
 		return true;
 	}

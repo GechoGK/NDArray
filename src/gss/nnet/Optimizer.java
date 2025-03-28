@@ -13,8 +13,12 @@ public class Optimizer
 	{
 		this.learningRate = lr;
 	}
-	public void update(NDArray[] params)
+	public void update(NDArray...params)
 	{
 		// update the parameters based on their gradient.
+	}
+	public void zeroGrad(NDArray...params)
+	{
+		// zero each parameter's gradient.
 	}
 }
