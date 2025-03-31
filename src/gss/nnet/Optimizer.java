@@ -1,4 +1,5 @@
 package gss.nnet;
+
 import gss.arr.*;
 
 public class Optimizer

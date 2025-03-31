@@ -2,7 +2,6 @@ package gss.nnet;
 
 import gss.arr.*;
 
-public abstract class Activation
+public abstract class Activation extends Module
 {
-	public abstract NDArray forward(NDArray arr);
 }

@@ -8,7 +8,6 @@ import gss.nnet.optimizers.*;
 import java.util.*;
 
 import static gss.math.Util.*;
-import gss.nnet.*;
 
 public class Test3
 {
@@ -41,9 +40,172 @@ public class Test3
 	void a()
 	{
 
-		print("All testes finished!");
+		print("approximation test with different loss functions.");
 
-		
+		NDArray w1=NDIO.rand(2, 5).setEnableGradient(true);
+		NDArray w2=NDIO.rand(5, 2).setEnableGradient(true);
+		NDArray b1=NDIO.ones(5).setEnableGradient(true);
+		NDArray b2=NDIO.ones(2).setEnableGradient(true);
+
+		NDArray in=NDIO.rand(2);
+		NDArray tr=new NDArray(new float[]{0,1});
+
+		// trainMSE(w1, w2, b1, b2, in, tr); // ≈ 19755, 24330, 10205, 15488, 7940, 6515, 6515, 6817 millis
+		// trainMAE(w1, w2, b1, b2, in, tr); // ≈ 80709, 33369, 27102, 19464, 15508, 22978  millis
+		// trainBCE(w1, w2, b1, b2, in, tr); // ≈ 79235, 74982, 32427, 15759, 16387, 13459, 16758 millis
+		// trainMCCE(w1, w2, b1, b2, in, tr); // slow and inaccurate // ≈ 79272, 20064, 22044, 30453, 7360, 7421, 5817, 7141, 4452, 5733   millis
+
+		System.out.println("completed!");
+
+	}
+	void trainMSE(NDArray w1, NDArray w2, NDArray b1, NDArray b2, NDArray in, NDArray tr)
+	{
+		NDArray output=null;
+
+		GradientDescent gd=new GradientDescent();
+
+		float loss=Float.MAX_VALUE;
+		long time=System.currentTimeMillis();
+		while (loss >= 0.001f)
+		{
+			NDArray out = in.dot(w1).add(b1);
+			// out = new Sigmoid().forward(out);
+			out = out.dot(w2).add(b2);
+			out = new Sigmoid().forward(out);
+
+			output = out;
+			out = new MSE().forward(out, tr);
+
+			// int counter=counter();
+			// if (counter % 50 == 0)
+			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+
+			loss = out.base.data.data[0];
+
+			out.setGrad(1);
+			out.backward();
+
+			gd.update(w1, w2, b1, b2);
+			gd.zeroGrad(w1, w2, b1, b2);
+		}
+		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
+		print("total time taken : " + time + " millis");
+		print("final output");
+		print(output);
+	}
+	private static int cnt=0;
+	static int counter()
+	{
+		return cnt++;
+	}
+	void trainMAE(NDArray w1, NDArray w2, NDArray b1, NDArray b2, NDArray in, NDArray tr)
+	{
+		NDArray output=null;
+
+		GradientDescent gd=new GradientDescent();
+
+		float loss=Float.MAX_VALUE;
+		long time=System.currentTimeMillis();
+		while (loss >= 0.001f)
+		{
+			NDArray out = in.dot(w1).add(b1);
+			// out = new Sigmoid().forward(out);
+			out = out.dot(w2).add(b2);
+			out = new Sigmoid().forward(out);
+
+			output = out;
+			out = new MAE().forward(out, tr);
+
+			// int counter=counter();
+			// if (counter % 50 == 0)
+			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+
+
+			loss = out.base.data.data[0];
+
+			out.setGrad(1);
+			out.backward();
+
+			gd.update(w1, w2, b1, b2);
+			gd.zeroGrad(w1, w2, b1, b2);
+		}
+		time = System.currentTimeMillis() - time; // ≈ ... millis.
+		print("total time taken : " + time + " millis");
+		print("final output");
+		print(output);
+	}
+	void trainBCE(NDArray w1, NDArray w2, NDArray b1, NDArray b2, NDArray in, NDArray tr)
+	{
+
+		NDArray output=null;
+
+		GradientDescent gd=new GradientDescent();
+
+		float loss=Float.MAX_VALUE;
+		long time=System.currentTimeMillis();
+		while (loss >= 0.001f)
+		{
+			NDArray out = in.dot(w1).add(b1);
+			// out = new Sigmoid().forward(out);
+			out = out.dot(w2).add(b2);
+			out = new Sigmoid().forward(out);
+
+			output = out;
+			out = new BCE().forward(out, tr);
+
+//			int counter=counter();
+//			if (counter % 50 == 0)
+//				System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+
+			loss = out.base.data.data[0];
+
+			out.setGrad(1);
+			out.backward();
+
+			gd.update(w1, w2, b1, b2);
+			gd.zeroGrad(w1, w2, b1, b2);
+		}
+		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
+		print("total time taken : " + time + " millis");
+		print("final output");
+		print(output);
+	}
+	void trainMCCE(NDArray w1, NDArray w2, NDArray b1, NDArray b2, NDArray in, NDArray tr)
+	{
+
+		NDArray output=null;
+
+		GradientDescent gd=new GradientDescent();
+
+		float loss=Float.MAX_VALUE;
+		long time=System.currentTimeMillis();
+		while (loss >= 0.001f)
+		{
+			NDArray out = in.dot(w1).add(b1);
+			// out = new Sigmoid().forward(out);
+			out = out.dot(w2).add(b2);
+			// out = new Sigmoid().forward(out);
+
+			output = out;
+			out = new MCCE().forward(out, tr);
+
+			// int counter=counter();
+			// if (counter % 50 == 0)
+			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+
+
+			loss = out.base.data.data[0];
+
+			out.setGrad(1);
+			out.backward();
+
+			gd.update(w1, w2, b1, b2);
+			gd.zeroGrad(w1, w2, b1, b2);
+		}
+		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
+		print("total time taken : " + time + " millis");
+		print("final output");
+		print(output);
 	}
 	void test12()
 	{
