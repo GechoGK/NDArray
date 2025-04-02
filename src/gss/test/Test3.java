@@ -8,6 +8,9 @@ import gss.nnet.optimizers.*;
 import java.util.*;
 
 import static gss.math.Util.*;
+import gss.nnet.layers.*;
+import gss.nnet.*;
+import gss.*;
 
 public class Test3
 {
@@ -39,20 +42,102 @@ public class Test3
 	}
 	void a()
 	{
+		XORTest();
+	}
+	void XORTest()
+	{
+		/*
+		 test the following packages.
+		 -- Linear
+		 -- MaxPool1d
+		 -- Sequential
+		 -- Module get and set parameters
+		 */
 
+		NDArray x=new NDArray(new float[][]{{0,0},{1,0},{0,1},{1,1}});
+		NDArray y=new NDArray(new float[]{0,1,1,0});
+
+		Linear l1=new Linear(2, 3);
+		Linear l2=new Linear(3, 1);
+
+		Activation a2=new Sigmoid();
+
+		LossFunc lossFunc=new BCE();
+
+		GradientDescent optim=new GradientDescent(l1.getParameters(), l2.getParameters());
+
+		NDArray output=null;
+
+		Controll c=new Controll("stop", "print", "debug");
+		// c.set("debug");
+		c.start();
+
+		int ps=0;
+		float lsv=1000;
+		while (lsv >= 0.02f && !c.get("stop"))
+		{
+			NDArray X = l1.forward(x);
+			X = a2.forward(X);
+			X = l2.forward(X);
+			X = a2.forward(X);
+			output = X;
+
+			NDArray loss=lossFunc.forward(X, y);
+			lsv = loss.base.data.getData(0);
+
+			if (c.get("debug"))
+				System.out.println(ps + " :: " + lsv);
+
+			loss.setGrad(1);
+			loss.backward();
+
+			optim.update();
+			optim.zeroGrad();
+
+			if (c.get("print"))
+			{
+				print(output);
+				c.toggle("print");
+				c.set("debug", false);
+			}
+			ps++;
+		}
+		print(output);
+	}
+	void controllTest()
+	{
+		Controll c=new Controll("start", "stop", "print", "debug");
+		c.start();
+		boolean[] strF=c.get("start", "stop", "print", "debug"); 
+		print(Arrays.toString(strF));
+
+		while (true)
+		{
+			boolean[] str=c.get("start", "stop", "print", "debug");
+			if (!Arrays.equals(strF, str))
+			{
+				print(Arrays.toString(str));
+				strF = str;
+			}
+		}
+	}
+	void approximationWithLossFunctions()
+	{
 		print("approximation test with different loss functions.");
 
-		NDArray w1=NDIO.rand(2, 5).setEnableGradient(true);
-		NDArray w2=NDIO.rand(5, 2).setEnableGradient(true);
+		int input=2;
+		int output=3;
+		NDArray w1=NDIO.rand(input, 5).setEnableGradient(true);
+		NDArray w2=NDIO.rand(5, output).setEnableGradient(true);
 		NDArray b1=NDIO.ones(5).setEnableGradient(true);
-		NDArray b2=NDIO.ones(2).setEnableGradient(true);
+		NDArray b2=NDIO.ones(output).setEnableGradient(true);
 
-		NDArray in=NDIO.rand(2);
-		NDArray tr=new NDArray(new float[]{0,1});
+		NDArray in=NDIO.rand(2, input);
+		NDArray tr=new NDArray(new float[][]{{1,0,1},{0,1,0}});
 
 		// trainMSE(w1, w2, b1, b2, in, tr); // ≈ 19755, 24330, 10205, 15488, 7940, 6515, 6515, 6817 millis
 		// trainMAE(w1, w2, b1, b2, in, tr); // ≈ 80709, 33369, 27102, 19464, 15508, 22978  millis
-		// trainBCE(w1, w2, b1, b2, in, tr); // ≈ 79235, 74982, 32427, 15759, 16387, 13459, 16758 millis
+		trainBCE(w1, w2, b1, b2, in, tr); // ≈ 79235, 74982, 32427, 15759, 16387, 13459, 16758 millis
 		// trainMCCE(w1, w2, b1, b2, in, tr); // slow and inaccurate // ≈ 79272, 20064, 22044, 30453, 7360, 7421, 5817, 7141, 4452, 5733   millis
 
 		System.out.println("completed!");
@@ -62,7 +147,7 @@ public class Test3
 	{
 		NDArray output=null;
 
-		GradientDescent gd=new GradientDescent();
+		GradientDescent gd=new GradientDescent(w1, w2, b1, b2);
 
 		float loss=Float.MAX_VALUE;
 		long time=System.currentTimeMillis();
@@ -85,8 +170,8 @@ public class Test3
 			out.setGrad(1);
 			out.backward();
 
-			gd.update(w1, w2, b1, b2);
-			gd.zeroGrad(w1, w2, b1, b2);
+			gd.update();
+			gd.zeroGrad();
 		}
 		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
 		print("total time taken : " + time + " millis");
@@ -102,7 +187,7 @@ public class Test3
 	{
 		NDArray output=null;
 
-		GradientDescent gd=new GradientDescent();
+		GradientDescent gd=new GradientDescent(w1, w2, b1, b2);
 
 		float loss=Float.MAX_VALUE;
 		long time=System.currentTimeMillis();
@@ -126,8 +211,8 @@ public class Test3
 			out.setGrad(1);
 			out.backward();
 
-			gd.update(w1, w2, b1, b2);
-			gd.zeroGrad(w1, w2, b1, b2);
+			gd.update();
+			gd.zeroGrad();
 		}
 		time = System.currentTimeMillis() - time; // ≈ ... millis.
 		print("total time taken : " + time + " millis");
@@ -139,7 +224,7 @@ public class Test3
 
 		NDArray output=null;
 
-		GradientDescent gd=new GradientDescent();
+		GradientDescent gd=new GradientDescent(w1, w2, b1, b2);
 
 		float loss=Float.MAX_VALUE;
 		long time=System.currentTimeMillis();
@@ -153,17 +238,18 @@ public class Test3
 			output = out;
 			out = new BCE().forward(out, tr);
 
-//			int counter=counter();
-//			if (counter % 50 == 0)
-//				System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+			int counter=counter();
+			if (counter % 100 == 0)
+			// System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+				print(output);
 
 			loss = out.base.data.data[0];
 
 			out.setGrad(1);
 			out.backward();
 
-			gd.update(w1, w2, b1, b2);
-			gd.zeroGrad(w1, w2, b1, b2);
+			gd.update();
+			gd.zeroGrad();
 		}
 		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
 		print("total time taken : " + time + " millis");
@@ -172,10 +258,9 @@ public class Test3
 	}
 	void trainMCCE(NDArray w1, NDArray w2, NDArray b1, NDArray b2, NDArray in, NDArray tr)
 	{
-
 		NDArray output=null;
 
-		GradientDescent gd=new GradientDescent();
+		GradientDescent gd=new GradientDescent(w1, w2, b1, b2);
 
 		float loss=Float.MAX_VALUE;
 		long time=System.currentTimeMillis();
@@ -199,8 +284,8 @@ public class Test3
 			out.setGrad(1);
 			out.backward();
 
-			gd.update(w1, w2, b1, b2);
-			gd.zeroGrad(w1, w2, b1, b2);
+			gd.update();
+			gd.zeroGrad();
 		}
 		time = System.currentTimeMillis() - time; // ≈ 80768 millis.
 		print("total time taken : " + time + " millis");
@@ -343,7 +428,7 @@ public class Test3
 		NDArray w1=NDIO.rand(5).setEnableGradient(true);
 		NDArray b=NDIO.ones(5).setEnableGradient(true);
 		MSE mse=new MSE();
-		GradientDescent gd=new GradientDescent();
+		GradientDescent gd=new GradientDescent(w1, b);
 
 		NDArray in=NDIO.fromArray(new int[]{5}, new float[]{1,2,3,4,5});
 
@@ -358,9 +443,9 @@ public class Test3
 			loss.backward();
 
 			// print(loss);
-			gd.update(w1, b);
+			gd.update();
 
-			gd.zeroGrad(w1, b);
+			gd.zeroGrad();
 
 			count++;
 			if (count % 300 == 0)

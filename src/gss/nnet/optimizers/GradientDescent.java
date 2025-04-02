@@ -1,20 +1,34 @@
 package gss.nnet.optimizers;
 
-import gss.nnet.*;
 import gss.arr.*;
+import gss.nnet.*;
+import java.util.*;
 
 public class GradientDescent extends Optimizer
 {
+	private ArrayList<NDArray>params=new ArrayList<>();
+
 	public GradientDescent()
 	{
 		super();
 	}
-	public GradientDescent(float lr)
+	public GradientDescent(NDArray...prms)//, float lr)
 	{
-		super(lr);
+		super();
+		for (NDArray n:prms)
+			params.add(n);
+	}
+	public GradientDescent(ArrayList<NDArray>...prms)
+	{
+		for (ArrayList<NDArray> ar:prms)
+			params.addAll(ar);
+	}
+	public void setLearninfRate(float lr)
+	{
+		this.learningRate = lr;
 	}
 	@Override
-	public void update(NDArray...params)
+	public void update()
 	{
 		for (NDArray p:params)
 		{
@@ -27,9 +41,9 @@ public class GradientDescent extends Optimizer
 		}
 		// super.update(params);
 	}
-	public void zeroGrad(NDArray...prms)
+	public void zeroGrad()
 	{
-		for (NDArray p:prms)
+		for (NDArray p:params)
 			p.zeroGrad();
 	}
 }

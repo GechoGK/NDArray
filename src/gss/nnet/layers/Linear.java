@@ -20,9 +20,9 @@ public class Linear extends Module
 	}
 	private void init(int in, int out)
 	{
-		weight = newParam(NDIO.rand(in, out));
+		weight = newParam(NDIO.rand(in, out).setEnableGradient(true));
 		if (hasBiase)
-			biase = newParam(NDIO.ones(out));
+			biase = newParam(NDIO.ones(out).setEnableGradient(true));
 	}
 	@Override
 	public NDArray forward(NDArray input)

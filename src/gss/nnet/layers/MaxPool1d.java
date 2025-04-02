@@ -22,22 +22,23 @@ public class MaxPool1d extends Module
 		NDArray out=new NDArray(new int[]{newLen});
 		float[]outArr=out.base.data.getData();
 		float[] in=input.base.data.getData();
-		// fix n should be length of in;
-		// fix p should be n*poolSize and less than n*poolSize + poolSize.
+		int[] index=new int[outArr.length];
 		for (int n=0;n < outArr.length;n++)
 		{
 			int np=n * poolSize;
 			float pmx=-Float.MIN_VALUE;
 			for (int p=np;p < np + poolSize;p++)
-			{
-				pmx = Math.max(pmx, in[p]);
-			}
+				if (in[p] >= pmx)
+				{
+					pmx = in[p];
+					index[n] = p;
+				}
 			outArr[n] = pmx;
 		}
 		int[] nsh=input.getShape();
 		nsh[nsh.length - 1] = nsh[nsh.length - 1] / poolSize;
 		out.reshape(nsh);
-		// out.setGradientFunction(maxPool1dGradient,input);
+		out.setGradientFunction(maxPool1dGradient, input).setGradientParams(index);
 		return out;
 	}
 	public static GradFunc maxPool1dGradient=new GradFunc("maxPool1d"){
@@ -45,8 +46,12 @@ public class MaxPool1d extends Module
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
-			throw new RuntimeException("maxpool1d backward pass not implemented.");
-			// return null;
+			int[] index=(int[])params[0];
+			NDArray ch=childs[0];
+			float[] grd=host.base.data.getData();
+			for (int i=0;i < grd.length;i++)
+				ch.base.data.setGrad(index[i], grd[i]);
+			return null;
 		}
 	};
 }

@@ -4,21 +4,21 @@ import gss.arr.*;
 
 public class Optimizer
 {
-	public float learningRate=0.001f;
+	public float learningRate=0.01f;
 
 	public Optimizer()
 	{
-		this(0.001f);
+		this(0.01f);
 	}
 	public Optimizer(float lr)
 	{
 		this.learningRate = lr;
 	}
-	public void update(NDArray...params)
+	public void update()
 	{
 		// update the parameters based on their gradient.
 	}
-	public void zeroGrad(NDArray...params)
+	public void zeroGrad()
 	{
 		// zero each parameter's gradient.
 	}

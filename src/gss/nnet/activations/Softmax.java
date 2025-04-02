@@ -2,10 +2,12 @@ package gss.nnet.activations;
 
 import java.util.*;
 import gss.arr.*;
+import gss.nnet.*;
 
-public class Softmax
+public class Softmax extends Activation
 {
-	public static NDArray softmax(NDArray arr)
+	@Override
+	public NDArray forward(NDArray arr)
 	{
 		/*
 		 how to calculate?
@@ -121,7 +123,7 @@ public class Softmax
 	{
 		float[] input = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
 		NDArray in=new NDArray(input);
-		NDArray out = softmax(in);
+		NDArray out = new Softmax().forward(in);
 		float[] output=out.base.toArray();
 		System.out.println(Arrays.toString(output)); // Example output (values may vary slightly)
 

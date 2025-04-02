@@ -300,8 +300,9 @@ public class Util
 			else
 			{
 				System.out.print(o);
-				System.out.println();
+				System.out.print(" ");
 			}
+		System.out.println();
 	}
 	public static void fill(Shape str, float val)
 	{
