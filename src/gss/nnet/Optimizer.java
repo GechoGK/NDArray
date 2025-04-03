@@ -1,10 +1,12 @@
 package gss.nnet;
 
 import gss.arr.*;
+import java.util.*;
 
 public class Optimizer
 {
 	public float learningRate=0.01f;
+	public ArrayList<NDArray> params=new ArrayList<>();
 
 	public Optimizer()
 	{

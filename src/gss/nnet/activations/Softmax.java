@@ -115,7 +115,7 @@ public class Softmax extends Activation
 			float[] dt=childs[0].base.toArray();
 			float[]bc=softmaxBackward(grd, dt);
 			// softmax in progress.
-			childs[0].base.data.setGrad(bc);
+			childs[0].base.data.setGrad(bc); // don't use this method.
 			return null;
 		}
 	};

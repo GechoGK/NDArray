@@ -53,7 +53,7 @@ public class MSE extends LossFunc
 			float[] xv=ch.base.data.getData();
 			float[] trLabel=childs[1].base.data.getData();
 			float[] g=MSE.backward(grd, xv, trLabel);
-			ch.base.data.setGrad(g);
+			ch.base.data.setGrad(g); // don't use this method.
 			return null;
 		}
 	};

@@ -274,7 +274,7 @@ public class NDArray
 			return;
 		// throw new RuntimeException("gradient function not found = " + gradientFunction);
 		// System.out.println("backward " + gradientFunction);
-		gradientFunction.backward(this, childs.toArray(new NDArray[0]), params);
+		gradientFunction.backward(this, childs.toArray(new NDArray[0]), params.toArray(new Object[0]));
 		for (NDArray arr:childs)
 			arr.backward();
 	}

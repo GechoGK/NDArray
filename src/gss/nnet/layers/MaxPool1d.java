@@ -19,7 +19,7 @@ public class MaxPool1d extends Module
 			throw new RuntimeException("unable to make maxPool! make sure the pool size is divisble by the total length of the array.");
 		int newLen=input.getLength() / poolSize;
 		// devide the last dim of the input by the pool size and then keep other dims and se that shape to output.
-		NDArray out=new NDArray(new int[]{newLen});
+		NDArray out=new NDArray(new int[]{newLen}).setEnableGradient(input.requiresGradient());
 		float[]outArr=out.base.data.getData();
 		float[] in=input.base.data.getData();
 		int[] index=new int[outArr.length];
@@ -35,20 +35,19 @@ public class MaxPool1d extends Module
 				}
 			outArr[n] = pmx;
 		}
-		int[] nsh=input.getShape();
+		int[] nsh=input.getShape().clone();
 		nsh[nsh.length - 1] = nsh[nsh.length - 1] / poolSize;
 		out.reshape(nsh);
 		out.setGradientFunction(maxPool1dGradient, input).setGradientParams(index);
 		return out;
 	}
 	public static GradFunc maxPool1dGradient=new GradFunc("maxPool1d"){
-
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
 			int[] index=(int[])params[0];
 			NDArray ch=childs[0];
-			float[] grd=host.base.data.getData();
+			float[] grd=host.base.data.getGrads();
 			for (int i=0;i < grd.length;i++)
 				ch.base.data.setGrad(index[i], grd[i]);
 			return null;

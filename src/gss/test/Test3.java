@@ -42,20 +42,50 @@ public class Test3
 	}
 	void a()
 	{
-		XORTest();
+		/*
+		 test the following packages.
+		 -- Linear            ✓
+		 -- MaxPool1d         ✓
+		 -- Sequential        ✓
+		 -- Module parameters ✓
+		 -- Dropout           ✓
+		 */
+	}
+	void dropoutTest()
+	{
+		print("Dropout test");
+		NDArray in=NDIO.rand(2, 5).setEnableGradient(true);
+		Dropout d=new Dropout(0.35f);
+		NDArray out=d.forward(in);
+		print(in);
+		print(out);
+		print(Util.genString("+", 40));
+		out.setGrad(5);
+		out.backward();
+		printGrad(out);
+		print(Util.genString("+", 40));
+		printGrad(in);
+
+	}
+	void maxPool1dTest()
+	{
+		print("MaxPool1d Test.");
+		NDArray arr=new NDArray(new float[]{1,2,1,3,3,5,5,2,4,4,2,5,4,7,9}).setEnableGradient(true);
+		NDArray tar=new NDArray(new float[]{0,1,0,0,0,1,1,0,0,0,0,1,0,0,1}).mul(5);
+		NDArray arr2=new MaxPool1d(3).forward(arr);
+
+		print(arr);
+		arr2.setGrad(5);
+		printGrad(arr2);
+		arr2.backward();
+		printGrad(arr);
+
+		Test1.test(Util.equals(arr.getGradient(), tar), "max pool forward and backward pass equals.");
 	}
 	void XORTest()
 	{
-		/*
-		 test the following packages.
-		 -- Linear
-		 -- MaxPool1d
-		 -- Sequential
-		 -- Module get and set parameters
-		 */
-
-		NDArray x=new NDArray(new float[][]{{0,0},{1,0},{0,1},{1,1}});
-		NDArray y=new NDArray(new float[]{0,1,1,0});
+		NDArray x=new NDArray(new float[][]{{0,1},{0,0},{1,0},{1,1}});
+		NDArray y=new NDArray(new float[]{1,0,1,0});
 
 		Linear l1=new Linear(2, 3);
 		Linear l2=new Linear(3, 1);
@@ -64,12 +94,14 @@ public class Test3
 
 		LossFunc lossFunc=new BCE();
 
-		GradientDescent optim=new GradientDescent(l1.getParameters(), l2.getParameters());
+		Optimizer optim=new Adam(l1.getParameters(), l2.getParameters());
+		// sometimes when we use Adam optimizer it stuck to local minima, or unable to fit the dataset. so keep try again.
+		optim = new GradientDescent(l1.getParameters(), l2.getParameters());
 
 		NDArray output=null;
 
 		Controll c=new Controll("stop", "print", "debug");
-		// c.set("debug");
+		c.set("debug");
 		c.start();
 
 		int ps=0;

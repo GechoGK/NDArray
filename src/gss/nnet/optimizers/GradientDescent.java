@@ -6,8 +6,6 @@ import java.util.*;
 
 public class GradientDescent extends Optimizer
 {
-	private ArrayList<NDArray>params=new ArrayList<>();
-
 	public GradientDescent()
 	{
 		super();
