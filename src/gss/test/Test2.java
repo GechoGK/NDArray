@@ -189,19 +189,19 @@ public class Test2
 
 		// System.out.println("shape =" + Arrays.toString(s.shape));
 
-		int[] sh=s.getShape(3, 2, 4);
+		int[] sh=s.fillShape(3, 2, 4);
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{3,2,4}), "array fill equals 1");
 
-		sh = s.getShape(4, -1); // or new int[]{4,-1}
+		sh = s.fillShape(4, -1); // or new int[]{4,-1}
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{4,6}), "array fill equals 2");
 
-		sh = s.getShape(2, 2, 2, -1); // or new int[]{2,2,2,-1}
+		sh = s.fillShape(2, 2, 2, -1); // or new int[]{2,2,2,-1}
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{2,2,2,3}), "array fill equals 3");
 
-		sh = s.getShape(new int[]{-1});
+		sh = s.fillShape(new int[]{-1});
 		// System.out.println(Arrays.toString(sh));
 		Test1.test(Arrays.equals(sh, new int[]{24}), "array fill equals 4");
 

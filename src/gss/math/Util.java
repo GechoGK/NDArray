@@ -226,7 +226,7 @@ public class Util
 		{
 			System.out.print("[");
 			for (int i=0;i < str.shape[0];i++)
-				System.out.print(str.getExactGrad(i) + ", ");
+				System.out.print(str.getGrad(i) + ", ");
 			System.out.println("]");
 		}
 		else if (str.dim == 2)
@@ -236,7 +236,7 @@ public class Util
 			{
 				System.out.print((j == 0 ?"": " ") + "[");
 				for (int k=0;k < str.shape[1];k++)
-					System.out.print((k == 0 ?" ": ", ") + str.getExactGrad(j, k));
+					System.out.print((k == 0 ?" ": ", ") + str.getGrad(j, k));
 				System.out.print(j == str.shape[0] - 1 ?"]": "]\n");
 			}
 			System.out.println("]");
@@ -409,6 +409,22 @@ public class Util
 		for (int i=0;i < times;i++)
 			sb.append(s);
 		return sb.toString();
+	}
+	public static String decString(String text, String decore, int length)
+	{
+		int tlen=text.length() + 2;
+		int rem=(length - tlen) / 2;
+		String pl=genString(decore, rem);
+		StringBuilder s=new StringBuilder(pl);
+		s.append(" ");
+		s.append(text);
+		s.append(" ");
+		s.append(pl);
+		return s.toString();
+	}
+	public static String decString(String text, int length)
+	{
+		return decString(text, "+", length);
 	}
 	public static String readString(String path) throws IOException
 	{

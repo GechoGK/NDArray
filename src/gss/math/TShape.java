@@ -33,7 +33,7 @@ public class TShape extends Shape
 	@Override
 	public Shape view(int...newShape)
 	{
-		getShape(newShape);
+		fillShape(newShape);
 		TVShape ts=new TVShape(data, newShape, offset, shape, stride);
 		return ts;
 	}

@@ -22,6 +22,7 @@ public class Optimizer
 	}
 	public void zeroGrad()
 	{
-		// zero each parameter's gradient.
+		for (NDArray p:params)
+			p.zeroGrad();
 	}
 }

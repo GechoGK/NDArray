@@ -153,7 +153,7 @@ public class BShape extends Shape
 	@Override
 	public Shape view(int...newShape)
 	{
-		getShape(newShape);
+		fillShape(newShape);
 		return base.view(newShape);
 	}
 	@Override

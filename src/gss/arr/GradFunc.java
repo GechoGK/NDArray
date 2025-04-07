@@ -449,7 +449,7 @@ public abstract class GradFunc
 		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
 		{
 			// do nothing.
-			return null;
+			throw new RuntimeException("gradient not implemented for abs function.");
 		}
 	};
 }

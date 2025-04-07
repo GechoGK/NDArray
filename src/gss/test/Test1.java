@@ -148,7 +148,7 @@ public class Test1
 		// print(s);
 		// System.out.println("---------");
 		s.set(new int[]{0}, 100);
-		s.setExact(new int[]{1,1}, 50);
+		s.setFloat(new int[]{1,1}, 50);
 		s.setFlat(22, 90);
 		// print(s);
 		float[][][] itm=

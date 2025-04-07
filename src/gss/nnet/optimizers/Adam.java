@@ -75,16 +75,6 @@ public class Adam extends Optimizer
     // Update parameters using Adam algorithm
     public float[] update(float[] grad, float[] data, float[] m, float[] v)
 	{
-        // Initialize m and v on first call
-//      if (m == null || v == null)
-//		{
-//            m = new float[data.length]; // already 0.0f
-//            v = new float[data.length]; // already 0.0f;
-//            Arrays.fill(m, 0.0f);
-//            Arrays.fill(v, 0.0f);
-//        }
-//        t++;  // Increment timestep
-
         // Precompute bias correction terms
         float beta1_t = (float) Math.pow(beta1, t);
         float beta2_t = (float) Math.pow(beta2, t);

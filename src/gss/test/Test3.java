@@ -50,6 +50,9 @@ public class Test3
 		 -- Module parameters ✓
 		 -- Dropout           ✓
 		 */
+
+		System.out.println("Hello world!");
+
 	}
 	void dropoutTest()
 	{
@@ -87,8 +90,11 @@ public class Test3
 		NDArray x=new NDArray(new float[][]{{0,1},{0,0},{1,0},{1,1}});
 		NDArray y=new NDArray(new float[]{1,0,1,0});
 
-		Linear l1=new Linear(2, 3);
-		Linear l2=new Linear(3, 1);
+		int hiddenSize=2;
+		// it works with hidden size starts from 2 upto ...
+
+		Linear l1=new Linear(2, hiddenSize);
+		Linear l2=new Linear(hiddenSize, 1);
 
 		Activation a2=new Sigmoid();
 
@@ -96,7 +102,8 @@ public class Test3
 
 		Optimizer optim=new Adam(l1.getParameters(), l2.getParameters());
 		// sometimes when we use Adam optimizer it stuck to local minima, or unable to fit the dataset. so keep try again.
-		optim = new GradientDescent(l1.getParameters(), l2.getParameters());
+		// optim = new GradientDescent(l1.getParameters(), l2.getParameters());
+		// optim = new SGDM(l1.getParameters(), l2.getParameters());
 
 		NDArray output=null;
 
@@ -883,7 +890,7 @@ public class Test3
 		}
 
 	}
-	void tree(NDArray v, String t)
+	public static void tree(NDArray v, String t)
 	{
 		System.out.println(t + v + " ::: " + v.gradientFunction);
 		// printGrad(v);

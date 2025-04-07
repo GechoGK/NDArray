@@ -21,10 +21,6 @@ public class GradientDescent extends Optimizer
 		for (ArrayList<NDArray> ar:prms)
 			params.addAll(ar);
 	}
-	public void setLearninfRate(float lr)
-	{
-		this.learningRate = lr;
-	}
 	@Override
 	public void update()
 	{
@@ -38,10 +34,5 @@ public class GradientDescent extends Optimizer
 				dt[i] -= gr[i] * learningRate;
 		}
 		// super.update(params);
-	}
-	public void zeroGrad()
-	{
-		for (NDArray p:params)
-			p.zeroGrad();
 	}
 }

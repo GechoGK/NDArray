@@ -21,7 +21,7 @@ public class NDArray
 {
 	public Shape base;
 	public List<NDArray> childs = new ArrayList<>();
-	public List<Object> params=null;
+	public List<Object> params=new ArrayList<>();
 	public GradFunc gradientFunction;
 
 	public NDArray(Shape shp)
@@ -46,6 +46,16 @@ public class NDArray
 		this.base = new Shape(new int[]{data.length, data[0].length}, dt);
 	}
 	public NDArray(int[]shape, float[][] data)
+	{
+		float[] dt=Util.flatten(data);
+		this.base = new Shape(shape, dt);
+	}
+	public NDArray(float[][][] data)
+	{
+		float[] dt=Util.flatten(data);
+		this.base = new Shape(new int[]{data.length,data[0].length,data[0][0].length}, dt);
+	}
+	public NDArray(int[]shape, float[][][] data)
 	{
 		float[] dt=Util.flatten(data);
 		this.base = new Shape(shape, dt);
@@ -116,11 +126,11 @@ public class NDArray
 	}
 	public void setGrad(float v)
 	{
-		base.setGrad(new int[]{}, v);
+		base.setFloatGrad(new int[]{}, v);
 	}
 	public void setGrad(int...sh, float v)
 	{
-		base.setGrad(sh, v);
+		base.setFloatGrad(sh, v);
 	}
 	public void fillGrad(NDArray ar)
 	{
@@ -128,7 +138,7 @@ public class NDArray
 	}
 	public void setFloat(int...sh, float v)
 	{
-		base.setExact(sh, v);
+		base.setFloat(sh, v);
 	}
 	public void setFlat(int p, float v)
 	{
@@ -140,7 +150,7 @@ public class NDArray
 	///////// below not tested.
 	public Value getExactValue(int...index)
 	{
-		return base.getExactValue(index);
+		return base.getValue(index);
 	}
 	public Value getFlatValue(int p)
 	{
@@ -148,7 +158,7 @@ public class NDArray
 	}
 	public float getExactGrad(int...index)
 	{
-		return base.getExactGrad(index);
+		return base.getGrad(index);
 	}
 	public float getFlatGrad(int pos)
 	{
@@ -156,7 +166,7 @@ public class NDArray
 	}
 	public void setExactValue(Value v, int...index)
 	{
-		base.setExactValue(v, index);
+		base.setValue(v, index);
 	}
 	public void setFlatValue(Value v, int p)
 	{
@@ -164,7 +174,7 @@ public class NDArray
 	}
 	public void setExactGrad(int[]index, float val)
 	{
-		base.setExactGrad(index, val);
+		base.setGrad(index, val);
 	}
 	public void setFlatGrad(int pos, float val)
 	{

@@ -70,7 +70,7 @@ public class TVShape extends Shape
 	@Override
 	public Shape view(int...newShape)
 	{
-		getShape(newShape);
+		fillShape(newShape);
 		TVShape ts=new TVShape(data, newShape, offset, baseShape, baseStride);
 		return ts;
 	}

@@ -6,7 +6,33 @@ public class Shape implements Cloneable
 {
 	/*
 	 this shape is used to get and set item to and from data.
+	 !!!! attention
+	 for performance improvement.
+	 please review get, set and fill methods.
 
+	 // !!! problem
+	 float[]>>>toArray methods should be removed.
+	 and replaced by other functions like
+	 --- toArray()  return NDArray view as 1d array.
+	 --- to1DArray()
+	 --- to2DArray()
+	 --- to3DArray()
+	 --- toNDArray(int n)
+	 // these functions return the current shape by modifying to a soecific shape as needed.
+	 example.
+	 Shape s=new Shape(3,2,4);
+	 Shape s1=s.to1DArray(); // same as toArray();
+	 print(s1.shape); // (24);
+
+	 Shape s2=s.to2DArray();
+	 print(s2.shape); // (6,4);
+
+	 Shape s3=s.to3DArray();
+	 print(s3.shape); // (3,2,4);
+
+	 Shape sn=s.toNDArray(5);
+	 print(sn.shape); // (1,1,3,2,4);
+	 // done!.
 	 */
 	public Data data;
 	public int[] shape;
@@ -46,7 +72,7 @@ public class Shape implements Cloneable
 	private void init(Data d, int[]sh, int[] strd, int off)
 	{
 		this.data = d;
-		this.shape = sh; // copy this shape is a better idea b/c it may be come from another shape class through NDIO....alike(..). if not copied modifying shape would also change the other unknown shape.
+		this.shape = sh; // copying this shape is a better idea b/c it may be come from another shape class through NDIO....alike(..). if not copied modifying shape would also change the other unknown shape.
 		this.dim = shape.length;
 		if (stride == null)
 			this.stride = Util.sumShapes(sh, null);
@@ -70,13 +96,13 @@ public class Shape implements Cloneable
 			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fill(val);
 	}
-	public void setGrad(int[]index, float val)
+	public void setFloatGrad(int[]index, float val)
 	{
 		if (index.length > shape.length)
 			throw new RuntimeException("index out of bound exception " + Arrays.toString(index));
 		get(index).fillGrad(val);
 	}
-	public void setExact(int[]index, float v)
+	public void setFloat(int[]index, float v)
 	{
 		// if (index.length != shape.length)
 		// 	throw new RuntimeException("ivalid index size :" + Arrays.toString(index) + " >> the index length should be equal to the shape length of the array.");
@@ -86,11 +112,12 @@ public class Shape implements Cloneable
 	// set float value, assuming the array is flat.
 	public void setFlat(int p, float v)
 	{
-		setExact(getShape(p), v);
+		setFloat(getShape(p), v);
 	}
 	// fills the scalar value tot the array data.
 	public void fill(float v)
 	{
+		// jut start from offset to end and set the value "v"
 		for (int i=0;i < length;i++)
 		{
 			int ind=shapeToIndex(getShape(i));
@@ -131,7 +158,7 @@ public class Shape implements Cloneable
 		return getFloat(getShape(p));
 	}
 	// gradient set and get functions.
-	public Value getExactValue(int...index)
+	public Value getValue(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
@@ -139,9 +166,9 @@ public class Shape implements Cloneable
 	}
 	public Value getFlatValue(int p)
 	{
-		return getExactValue(getShape(p));
+		return getValue(getShape(p));
 	}
-	public float getExactGrad(int...index)
+	public float getGrad(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
@@ -149,25 +176,25 @@ public class Shape implements Cloneable
 	}
 	public float getFlatGrad(int index)
 	{
-		return getExactGrad(getShape(index));
+		return getGrad(getShape(index));
 	}
-	public void setExactValue(Value v, int...index)
+	public void setValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
 		data.setValue(ps, v);
 	}
 	public void setFlatValue(Value v, int p)
 	{
-		setExactValue(v, getShape(p));
+		setValue(v, getShape(p));
 	}
-	public void setExactGrad(int[]index, float val)
+	public void setGrad(int[]index, float val)
 	{
 		int ps=shapeToIndex(index);
 		data.setGrad(ps, val);
 	}
 	public void setFlatGrad(int pos, float val)
 	{
-		setExactGrad(getShape(pos), val);
+		setGrad(getShape(pos), val);
 	}
 	/*
 	 // TO-DO for performance.
@@ -181,9 +208,6 @@ public class Shape implements Cloneable
 	// end set and get functions.
 	public int shapeToIndex(int...index)
 	{
-		if (index.length > shape.length) // change this " != " to " > " and implement the if block. or use backward loop.
-			throw new IndexOutOfBoundsException();
-		// System.out.println("finding index =" + Arrays.toString(shape) + ",  " + Arrays.toString(index));
 		int newPos=0;
 		for (int i=0;i < index.length;i++)
 		{
@@ -200,7 +224,7 @@ public class Shape implements Cloneable
 	{
 		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
 		if (index >= length || index < 0)
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException("invalid index " + index + ", it seems out of range.");
 		int[] sh=this.shape;
 		int[] indShape=new int[sh.length];
 		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
@@ -236,7 +260,7 @@ public class Shape implements Cloneable
 	}
 	public Shape view(int...newShape)
 	{
-		getShape(newShape);
+		fillShape(newShape);
 		if (length != Util.length(newShape))
 			throw new RuntimeException("can't view this array into " + Arrays.toString(newShape) + " because the length is not equal");
 		// if newShape length != length
@@ -250,7 +274,7 @@ public class Shape implements Cloneable
 
 		// try to broadcast if posible, if not copy the array.
 		// reshape chnges the shape, also the underlaying data shape.
-		getShape(newShape);
+		fillShape(newShape);
 		int len=Util.length(newShape);
 		if (length != len)
 			throw new RuntimeException("different type of shape is not allowed.");
@@ -267,7 +291,7 @@ public class Shape implements Cloneable
 		return view(newShape);
 	}
 	// this function is used to calculate the index if it have -1 in their item.
-	public int[] getShape(int...shp)
+	public int[] fillShape(int...shp)
 	{
 		int nIndex=-1;
 		for (int i=0;i < shp.length;i++)
@@ -314,7 +338,7 @@ public class Shape implements Cloneable
 		return true;
 	}
 	// to array methods.
-	// for other shapes, implement only this one: te others workoutby themself.
+	// for other shapes, implement only this one: to others workout by themself.
 	public void setGrad(float[]g)
 	{
 		data.setGrad(g);
@@ -323,6 +347,18 @@ public class Shape implements Cloneable
 	{
 		data.setGrad(g);
 	}
+	/*
+	 // remove all  toArray,toGradArray,toValueAray,and fo 2d also
+	 // and replace with the new Array class that will be easier to work with.
+	 why it is abproblem.
+	 because when we call toArray methods it collectes float values from the shape descriptor, it is costy and then also we use array access again.
+	 in order to get elements from the float[] array. that is the second job.
+	 wec can fix this by eliminating the 2nd stage(array elements access.);
+	 we need a class which holds arrat description.
+	 and when we call toArray methods we just return the instance of that class.
+	 then we can get, set, ans change elements from that array.
+
+	 */
 	public float[] toArray(float[]out, int start, int len) // lazy collect.
 	{
 		if (out == null)
@@ -423,7 +459,7 @@ public class Shape implements Cloneable
 		{
 			sh.data.setData(i, getFloat(getShape(i)));
 			if (requiresGradient())
-				sh.data.setGrad(i, getExactGrad(getShape(i)));
+				sh.data.setGrad(i, getGrad(getShape(i)));
 		}
 		return sh;
 	}
@@ -459,6 +495,7 @@ public class Shape implements Cloneable
 		float[] f=new float[this.data.length];
 		for (int i=0;i < f.length;i++)
 			f[i] = this.data.grad[i];
+		// !!! accessing data directly cause issues related with dimension and sub dimensions.
 		Data data=new Data(f);
 		Shape s=new Shape(this.shape);
 		s.data = data;
