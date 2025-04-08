@@ -14,7 +14,7 @@ import gss.*;
 
 public class Test3
 {
-	public static void main(String[]args) throws Exception
+	public static void main2(String[]args) throws Exception
 	{
 
 		new Test3().test();
