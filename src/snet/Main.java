@@ -2,23 +2,24 @@ package snet;
 
 import java.util.*;
 import java.io.*;
+import java.util.concurrent.*;
 
 public class Main
 {
-	public static void main(String[]a)
+	public static void main2(String[]a)
 	{
 		new Main().a();
 	}
 	void a()
 	{
 		LayerDesc ld=new LayerDesc();
-		ld.addLayer(2, 3);
-		ld.addLayer(3, 10);
-		ld.addLayer(10, 3);
-		ld.addLayer(3, 1);
+		ld.addLayer(2, 5, 1); // use tanh for better performance.
+		// ld.addLayer(5, 10, 1);
+		// ld.addLayer(10, 3, 1);
+		ld.addLayer(5, 1);
 		// ^---- network description.
 
-		Genetic gen=new Genetic(100, 0.75f);
+		Genetic gen=new Genetic(100, 0.25f);
 		gen.generate(ld);
 		int count=1;
 		while (count > 0)
@@ -31,7 +32,7 @@ public class Main
 			{
 				int r=saveNet(gen.sortedNets.get(0));
 				if (r == 0)
-					System.out.println("saved generation " + gen.generationCount + "'s best");
+					System.out.println("saved generation " + gen.generationCount + "'s best.");
 			}
 			count++;
 		}

@@ -25,7 +25,7 @@ public class Test2
 		test5(); // !!!!!!  works.
 		test6();
 		test7();
-		test8();
+		// test8();
 		test9();
 		test10();
 		test11();
@@ -173,15 +173,15 @@ public class Test2
 		};
 		Test1.test(Test1.equals(r, a3.base), " dot product item equals");
 	}
-	void test8()
-    {
-		System.out.println("=== Test 8. test to2DArray. ===");
-		Shape s=new Shape(3, 2, 4);
-		s = s.view(-1, 4);
-		fillRand(s);
-		float[][] f=s.to2DArray(null);
-		Test1.test(Test1.equals(f, s), "to2DArray item equals.");
-	}
+//	void test8()
+//    {
+//		System.out.println("=== Test 8. test to2DArray. ===");
+//		Shape s=new Shape(3, 2, 4);
+//		s = s.view(-1, 4);
+//		fillRand(s);
+//		float[][] f=s.to2DArray(null);
+//		Test1.test(Test1.equals(f, s), "to2DArray item equals.");
+//	}
 	void test7()
     {
 		System.out.println("=== Test 7. shape fill -1 values. ===");

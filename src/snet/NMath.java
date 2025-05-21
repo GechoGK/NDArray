@@ -29,6 +29,33 @@ public class NMath
 			out[i] = a[i] + b[i];
 		return out;
 	}
+	public static float[] sub(float[] a, float[] b)
+	{
+		if (a.length != b.length)
+			throw new IllegalArgumentException("two arrays must be equal to add them.");
+		float[] out=new float[a.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = a[i] - b[i];
+		return out;
+	}
+	public static float[] mul(float[] a, float[] b)
+	{
+		if (a.length != b.length)
+			throw new IllegalArgumentException("two arrays must be equal to add them.");
+		float[] out=new float[a.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = a[i] * b[i];
+		return out;
+	}
+	public static float[] div(float[] a, float[] b)
+	{
+		if (a.length != b.length)
+			throw new IllegalArgumentException("two arrays must be equal to add them.");
+		float[] out=new float[a.length];
+		for (int i=0;i < out.length;i++)
+			out[i] = a[i] / b[i];
+		return out;
+	}
 	public static float mapFloat(float mn, float mx, float tmn, float tmx, float val)
 	{
 		return (tmx - tmn) / (mx - mn) * (val - mn) + tmn;

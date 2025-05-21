@@ -12,23 +12,22 @@ public class Genetic
 	public ArrayList<NeuralNetwork> sortedNets;
 	public ArrayList<Agent> agents;
 	private LayerDesc desc;
-	public float factor=0.2f;
+	public float factor=0.1f;
 	public int generationCount=0;
 
-	public Genetic(int pop)
+	public Genetic(float...args)
 	{
-		this.popSize = pop;
-	}
-	public Genetic(int pop, float ratio, float factor)
-	{
-		this.popSize = pop;
-		this.selectionRatio = ratio;
-		this.factor = factor;
-	}
-	public Genetic(int pop, float ratio)
-	{
-		this.popSize = pop;
-		this.selectionRatio = ratio;
+		if (args.length >= 1)
+			this.popSize = (int)args[0];
+		if (args.length >= 2)
+			this.selectionRatio = args[1];
+		if (args.length >= 3)
+			this.factor = args[2];
+		else if (args.length >= 4)
+		{
+			throw new IllegalArgumentException("invalid argument length");
+		}
+
 	}
 	public void generate(LayerDesc desc)
 	{
@@ -53,7 +52,10 @@ public class Genetic
 				public void accept(Agent p1)
 				{
 					if (p1.alive)
+					{
 						p1.process(input);
+						// System.out.println(".");
+					}
 				}
 				@Override
 				public Consumer<Agent> andThen(Consumer<? super Agent> after)
@@ -61,6 +63,7 @@ public class Genetic
 					return null;
 				}
 			});
+		// System.out.println("breeding...");
 		Collections.sort(agents);
 		sortedNets.clear();
 		for (Agent a:agents)

@@ -1,6 +1,6 @@
 package gss.math;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class Shape implements Cloneable
 {
@@ -110,10 +110,10 @@ public class Shape implements Cloneable
 		data.setData(ps, v);
 	}
 	// set float value, assuming the array is flat.
-	public void setFlat(int p, float v)
-	{
-		setFloat(getShape(p), v);
-	}
+//	public void setFlat(int p, float v)
+//	{
+//		setFloat(getShape(p), v);
+//	}
 	// fills the scalar value tot the array data.
 	public void fill(float v)
 	{
@@ -127,6 +127,7 @@ public class Shape implements Cloneable
 	// fills the scalar value to the gradient.
 	public void fillGrad(float v)
 	{
+		// !!! don't assume as a flat array.
 		if (!requiresGradient())
 			throw new RuntimeException("gradient not found :: requiresGradient = " + requiresGradient() + " ?? try enabling it by .setEnableGradient(true);");
 		for (int i=0;i < length;i++)
@@ -153,10 +154,10 @@ public class Shape implements Cloneable
 		// System.out.println(".." + ind);
 		return data.getData(ind);
 	}
-	public float getFlat(int p)
-	{
-		return getFloat(getShape(p));
-	}
+//	public float getFlat(int p)
+//	{
+//		return getFloat(getShape(p));
+//	}
 	// gradient set and get functions.
 	public Value getValue(int...index)
 	{
@@ -164,38 +165,38 @@ public class Shape implements Cloneable
 		// System.out.println(".." + ind);
 		return data.getValue(ind);
 	}
-	public Value getFlatValue(int p)
-	{
-		return getValue(getShape(p));
-	}
+//	public Value getFlatValue(int p)
+//	{
+//		return getValue(getShape(p));
+//	}
 	public float getGrad(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
 		return data.getGrad(ind);
 	}
-	public float getFlatGrad(int index)
-	{
-		return getGrad(getShape(index));
-	}
+//	public float getFlatGrad(int index)
+//	{
+//		return getGrad(getShape(index));
+//	}
 	public void setValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
 		data.setValue(ps, v);
 	}
-	public void setFlatValue(Value v, int p)
-	{
-		setValue(v, getShape(p));
-	}
+//	public void setFlatValue(Value v, int p)
+//	{
+//		setValue(v, getShape(p));
+//	}
 	public void setGrad(int[]index, float val)
 	{
 		int ps=shapeToIndex(index);
 		data.setGrad(ps, val);
 	}
-	public void setFlatGrad(int pos, float val)
-	{
-		setGrad(getShape(pos), val);
-	}
+//	public void setFlatGrad(int pos, float val)
+//	{
+//		setGrad(getShape(pos), val);
+//	}
 	/*
 	 // TO-DO for performance.
 
@@ -220,20 +221,20 @@ public class Shape implements Cloneable
 		int finalIndex=newPos + offset;
 		return finalIndex;
 	}
-	public int[] getShape(int index)
-	{
-		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
-		if (index >= length || index < 0)
-			throw new IndexOutOfBoundsException("invalid index " + index + ", it seems out of range.");
-		int[] sh=this.shape;
-		int[] indShape=new int[sh.length];
-		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
-		{
-			indShape[i] = index % sh[i];
-			index = index / sh[i];
-		}
-		return indShape;
-	}
+//	public int[] getShape(int index)
+//	{
+//		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
+//		if (index >= length || index < 0)
+//			throw new IndexOutOfBoundsException("invalid index " + index + ", it seems out of range.");
+//		int[] sh=this.shape;
+//		int[] indShape=new int[sh.length];
+//		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
+//		{
+//			indShape[i] = index % sh[i];
+//			index = index / sh[i];
+//		}
+//		return indShape;
+//	}
 	public Shape transpose()
 	{
 		int[] ax=new int[shape.length];
@@ -337,120 +338,16 @@ public class Shape implements Cloneable
 		// System.out.println("brodcastable shape " + Arrays.toString(tarShape) + " with " + Arrays.toString(orgShape));
 		return true;
 	}
-	// to array methods.
-	// for other shapes, implement only this one: to others workout by themself.
-	public void setGrad(float[]g)
-	{
-		data.setGrad(g);
-	}
-	public void setGrad(float[][]g)
-	{
-		data.setGrad(g);
-	}
-	/*
-	 // remove all  toArray,toGradArray,toValueAray,and fo 2d also
-	 // and replace with the new Array class that will be easier to work with.
-	 why it is abproblem.
-	 because when we call toArray methods it collectes float values from the shape descriptor, it is costy and then also we use array access again.
-	 in order to get elements from the float[] array. that is the second job.
-	 wec can fix this by eliminating the 2nd stage(array elements access.);
-	 we need a class which holds arrat description.
-	 and when we call toArray methods we just return the instance of that class.
-	 then we can get, set, ans change elements from that array.
-
-	 */
-	public float[] toArray(float[]out, int start, int len) // lazy collect.
-	{
-		if (out == null)
-			out = new float[len];
-		if (out.length < len)
-			throw new RuntimeException("the length of the input array doesn't match the length specified: " + len + " > " + out.length);
-		int str=offset + start;
-		for (int i=0;i < len;i++)
-			out[i] = data.getData(str + i);
-		return out;
-	}
-	public Value[] toValueArray()
-	{
-		Value[] out = new Value[length];
-		int str=offset;
-		for (int i=0;i < length;i++)
-			out[i] = data.getValue(str + i);
-		return out;
-	}
-	public float[] toGradArray()
-	{
-		float[] out = new float[length];
-		int str=offset;
-		for (int i=0;i < length;i++)
-			out[i] = data.getGrad(str + i);
-		return out;
-	}
-	public float[]toArray()
-	{
-		return toArray(null, 0, length);
-	}
-	public float[] toArray(float[]out)
-	{
-		return toArray(out, 0, length);
-	}
-	public float[] toArray(float[]out, int start)
-	{
-		return toArray(out, start, out.length);
-	}
-	public float[]toArray(int start, int end)
-	{
-		return toArray(null, start, end);
-	}
-	public float[]toArray(int start)
-	{
-		return toArray(null, start, length);
-	}
-	public float[][] to2DArray(float[][]out) // lazy collect.
-	{
-		Shape sh=view(-1, shape[shape.length - 1]);
-		if (out == null)
-			out = new float[sh.shape[0]][sh.shape[1]];
-		if (out.length < sh.shape[0] || out[0].length < sh.shape[1])
-			throw new RuntimeException("the length of the input array doesn't match the length specified:");
-		int str=offset;
-		int pos=0;
-		for (int i=0;i < out.length;i++)
-			for (int j=0;j < out[0].length;j++)
-			{
-				out[i][j] = data.getData(str + pos);
-				pos++;
-			}
-		return out;
-	}
-	public Value[][] to2DValueArray() // lazy collect.
-	{
-		Shape sh=view(-1, shape[shape.length - 1]);
-		Value[][]out = new Value[sh.shape[0]][sh.shape[1]];
-		int str=offset;
-		int pos=0;
-		for (int i=0;i < out.length;i++)
-			for (int j=0;j < out[0].length;j++)
-			{
-				out[i][j] = data.getValue(str + pos);
-				pos++;
-			}
-		return out;
-	}
-	public float[][] to2DGradArray() // lazy collect.
-	{
-		Shape sh=view(-1, shape[shape.length - 1]);
-		float[][]out = new float[sh.shape[0]][sh.shape[1]];
-		int str=offset;
-		int pos=0;
-		for (int i=0;i < out.length;i++)
-			for (int j=0;j < out[0].length;j++)
-			{
-				out[i][j] = data.getGrad(str + pos);
-				pos++;
-			}
-		return out;
-	}
+//	// to array methods.
+//	// for other shapes, implement only this one: to others workout by themself.
+//	public void setGrad(float[]g)
+//	{
+//		data.setGrad(g);
+//	}
+//	public void setGrad(float[][]g)
+//	{
+//		data.setGrad(g);
+//	}
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
@@ -466,6 +363,7 @@ public class Shape implements Cloneable
 	@Override
 	protected Shape clone() 
 	{
+		// it doesn't work.
 		Shape s=new Shape(this.shape);
 		s.data = this.data;
 		s.shape = this.shape;
@@ -501,5 +399,20 @@ public class Shape implements Cloneable
 		s.data = data;
 		return s;
 	}
-
+	public Shape toArray()
+	{
+		return reshape(-1);
+	}
+	public Shape to2DArray()
+	{
+		return reshape(-1, shape[shape.length - 1]);
+	}
+	public Shape to3DArray()
+	{
+		int[] sh=new int[3];
+		sh[0] = -1;
+		sh[1] = shape.length >= 2 ?shape[shape.length - 2]: 1;
+		sh[2] = shape[shape.length - 1];
+		return reshape(sh);
+	}
 }

@@ -53,7 +53,6 @@ public abstract class GradFunc
 		@Override
 		public NDArray backward(NDArray host, NDArray[] childs, Object...params)
 		{
-
 			/*
 			 subtraction gradient
 			 a - b = c
@@ -440,6 +439,18 @@ public abstract class GradFunc
 			for (int i=0;i < grd.length;i++)
 			{
 				ar.base.data.setGrad(i, grd[i] * (float)Math.exp(dt[i]));
+			}
+			return null;
+		}
+	};
+	public static GradFunc mergeGradient=new GradFunc("merge"){
+		@Override
+		public NDArray backward(NDArray host, NDArray[] childs, Object[] params)
+		{
+			NDArray grd=host.getGradient();
+			for (int i=0;i < childs.length;i++)
+			{
+				childs[i].fillGrad(grd.get(i));
 			}
 			return null;
 		}

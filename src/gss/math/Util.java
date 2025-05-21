@@ -363,6 +363,22 @@ public class Util
 				return false;
 		return true;
 	}
+//	public static boolean equals(Shape s1, Shape s2, boolean...checkGrad)
+//	{
+//		if (s1 == null || s2 == null)
+//			return false;
+//		boolean tolerate=false;
+//		if (checkGrad.length > 1 && checkGrad[1])
+//			tolerate = checkGrad[1];
+//		if (!equals(s1.shape, s2.shape))
+//			return false;
+//		if (!equals(s1.base.data.getData(), s2.base.data.getData()))
+//			return false;
+//		if (checkGrad.length > 0 && checkGrad[0])
+//			if (!equals(s1.base.data.getGrads(), s2.base.data.getGrads(), tolerate))
+//				return false;
+//		return true;
+//	}
 	public static int[] range(int len)
 	{
 		return range(0, len, 1);

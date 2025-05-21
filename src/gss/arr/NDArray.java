@@ -97,10 +97,10 @@ public class NDArray
 			throw new RuntimeException("index can't be empty :" + Arrays.toString(sh));
 		return base.getFloat(sh);
 	}
-	public float getFlat(int p)
-	{
-		return base.getFlat(p);
-	}
+//	public float getFlat(int p)
+//	{
+//		return base.getFlat(p);
+//	}
 	public void set(float v)
 	{
 		base.set(new int[]{}, v);
@@ -109,21 +109,21 @@ public class NDArray
 	{
 		base.set(sh, v);
 	}
-	public void set(NDArray ar)
-	{
-		set(new int[]{}, ar);
-	}
-	public void set(int...sh, NDArray ar)
-	{
-		// needs improvement.
-		int ps=base.shapeToIndex(sh);
-		float[]f=ar.base.toArray();
-		for (int i=0;i < f.length;i++)
-		{
-			setFlat(ps, f[i]);
-			ps++;
-		}
-	}
+//	public void set(NDArray ar)
+//	{
+//		set(new int[]{}, ar);
+//	}
+//	public void set(int...sh, NDArray ar)
+//	{
+//		// needs improvement.
+//		int ps=base.shapeToIndex(sh);
+//		float[]f=ar.base.toArray();
+//		for (int i=0;i < f.length;i++)
+//		{
+//			setFlat(ps, f[i]);
+//			ps++;
+//		}
+//	}
 	public void setGrad(float v)
 	{
 		base.setFloatGrad(new int[]{}, v);
@@ -140,10 +140,10 @@ public class NDArray
 	{
 		base.setFloat(sh, v);
 	}
-	public void setFlat(int p, float v)
-	{
-		base.setFlat(p, v);
-	}
+//	public void setFlat(int p, float v)
+//	{
+//		base.setFlat(p, v);
+//	}
 	// // // gradient.
 	// gradient set end get functions.
 
@@ -152,34 +152,34 @@ public class NDArray
 	{
 		return base.getValue(index);
 	}
-	public Value getFlatValue(int p)
-	{
-		return base.getFlatValue(p);
-	}
+//	public Value getFlatValue(int p)
+//	{
+//		return base.getFlatValue(p);
+//	}
 	public float getExactGrad(int...index)
 	{
 		return base.getGrad(index);
 	}
-	public float getFlatGrad(int pos)
-	{
-		return base.getFlatGrad(pos);
-	}
+//	public float getFlatGrad(int pos)
+//	{
+//		return base.getFlatGrad(pos);
+//	}
 	public void setExactValue(Value v, int...index)
 	{
 		base.setValue(v, index);
 	}
-	public void setFlatValue(Value v, int p)
-	{
-		base.setFlatValue(v, p);
-	}
+//	public void setFlatValue(Value v, int p)
+//	{
+//		base.setFlatValue(v, p);
+//	}
 	public void setExactGrad(int[]index, float val)
 	{
 		base.setGrad(index, val);
 	}
-	public void setFlatGrad(int pos, float val)
-	{
-		base.setFlatGrad(pos, val);
-	}
+//	public void setFlatGrad(int pos, float val)
+//	{
+//		base.setFlatGrad(pos, val);
+//	}
 	// end set and get functions.
 	// // // end gradient.
 	public NDArray fromShape(Shape str)
@@ -203,9 +203,10 @@ public class NDArray
 		Shape sh=base.broadcast(newShape);
 		if (sh == this.base)
 			return this;
-		NDArray str = fromShape(sh);
-		str.setGradientFunction(GradFunc.stepGradient, this);
-		return str;
+		NDArray arr = fromShape(sh);
+		if (arr.requiresGradient())
+			arr.setGradientFunction(GradFunc.stepGradient, this);
+		return arr;
 	}
 	// view into another shape.
 	public NDArray view(int...newShape)
@@ -213,25 +214,29 @@ public class NDArray
 //		if (base.length != Util.length(newShape))
 //			throw new RuntimeException("invalid array length");
 		NDArray arr = fromShape(base.view(newShape));
-		arr.setGradientFunction(GradFunc.stepGradient, this);
+		if (arr.requiresGradient())
+			arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
 	}
 	public NDArray reshape(int...newShape)
 	{
 		NDArray arr = fromShape(base.reshape(newShape));
-		arr.setGradientFunction(GradFunc.stepGradient, this);
+		if (arr.requiresGradient())
+			arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
 	}
 	public NDArray transpose(int...order)
 	{
 		NDArray arr = fromShape(base.transpose(order));
-		arr.setGradientFunction(GradFunc.stepGradient, this);
+		if (arr.requiresGradient())
+			arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
 	}
 	public NDArray transpose()
 	{
 		NDArray arr = fromShape(base.transpose());
-		arr.setGradientFunction(GradFunc.stepGradient, this);
+		if (arr.requiresGradient())
+			arr.setGradientFunction(GradFunc.stepGradient, this);
 		return arr;
 	}
 	public NDArray trimShape()
@@ -360,7 +365,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -403,7 +409,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.subtractionGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.subtractionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -446,7 +453,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.multiplicationGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.multiplicationGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -491,7 +499,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.divisionGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.divisionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -535,7 +544,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=other.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.additionGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -558,7 +568,8 @@ public class NDArray
 		NDArray a1=broadcast(shp);
 		NDArray a2=exp.broadcast(shp);
 		NDArray arrOut=new NDArray(shp).setEnableGradient(a1.requiresGradient() || a2.requiresGradient());
-		arrOut.setGradientFunction(GradFunc.powGradient, a1, a2);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.powGradient, a1, a2);
 		// System.out.println("length " + a1.getLength() + " == " + a2.getLength());
 		if (a1.getLength() != a2.getLength())
 			throw new RuntimeException("can't make operation with two different array length(" + a1.getLength() + " != " + a2.getLength() + ")");
@@ -593,7 +604,8 @@ public class NDArray
 			out[i] = (float)Math.log10(dt[i]);
 		NDArray ar=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
 		// gradient calculator in progress.
-		ar.setGradientFunction(GradFunc.log10Gradient, this);
+		if (ar.requiresGradient())
+			ar.setGradientFunction(GradFunc.log10Gradient, this);
 		return ar;
 	}
 	public NDArray max()
@@ -612,7 +624,8 @@ public class NDArray
 		}
 		NDArray ar=new NDArray(new float[]{max}).setEnableGradient(requiresGradient());
 		// backpropagation will be find the max value index then apply to it.
-		ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
+		if (ar.requiresGradient())
+			ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
 		return ar;
 	}
 	public int argMax()
@@ -648,7 +661,8 @@ public class NDArray
 		NDArray ar=new NDArray(new float[]{min}).setEnableGradient(requiresGradient());
 		// backpropagation will be find the min value index then apply to it.
 		// gradient calculator in progress.
-		ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
+		if (ar.requiresGradient())
+			ar.setGradientFunction(GradFunc.positionGradient, this).setGradientParams(index);
 		return ar;
 	}
 	public int argMin()
@@ -675,7 +689,8 @@ public class NDArray
 			out[i] = Math.abs(dt[i]);
 		NDArray ar=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
 		// gradient calculator in progress.
-		ar.setGradientFunction(GradFunc.absGradient, this);
+		if (ar.requiresGradient())
+			ar.setGradientFunction(GradFunc.absGradient, this);
 		return ar;
 	}
 	public NDArray exp()
@@ -685,7 +700,8 @@ public class NDArray
 		for (int i=0;i < dt.length;i++)
 			out[i] = (float)Math.exp(dt[i]);
 		NDArray arrOut=new NDArray(out).reshape(getShape()).setEnableGradient(requiresGradient());
-		arrOut.setGradientFunction(GradFunc.expGradient, this);
+		if (arrOut.requiresGradient())
+			arrOut.setGradientFunction(GradFunc.expGradient, this);
 		return arrOut;
 	}
 	// end arthimetic operations.
@@ -694,7 +710,8 @@ public class NDArray
 		int[] shp=getVStackShape(this.base.shape);
 		NDArray tmp= this.view(shp);
 		NDArray out=tmp.copy();
-		out.setGradientFunction(GradFunc.vStackGradient, tmp);
+		if (out.requiresGradient())
+			out.setGradientFunction(GradFunc.vStackGradient, tmp);
 		return out;
 	}
 	private int[] getVStackShape(int[]shp)
@@ -721,7 +738,8 @@ public class NDArray
 		NDArray tmp=this.transpose(tp);
 		tmp = tmp.view(shp);
 		NDArray out=tmp.copy();
-		out.setGradientFunction(GradFunc.hStackGradient, tmp);
+		if (out.requiresGradient())
+			out.setGradientFunction(GradFunc.hStackGradient, tmp);
 		return out;
 	}
 	private int[] getHStackShape(int[]shp)
@@ -792,7 +810,8 @@ public class NDArray
 		float[][] fout=sdot(af, bf);
 		// print(fout.length + ", " + fout[0].length);
 		NDArray out=new NDArray(newShape, fout).setEnableGradient(a.requiresGradient() | b.requiresGradient());
-		out.setGradientFunction(GradFunc.dotGradient, a, b);
+		if (out.requiresGradient())
+			out.setGradientFunction(GradFunc.dotGradient, a, b);
 		return out;
 	}
 	private float[][] sdot(float[][] a1, float[][] a2)
@@ -830,7 +849,8 @@ public class NDArray
 		for (float f:dt)
 			sum += f;
 		NDArray out=new NDArray(new float[]{sum}).setEnableGradient(this.requiresGradient());
-		out.setGradientFunction(GradFunc.sumGradient, this);
+		if (out.requiresGradient())
+			out.setGradientFunction(GradFunc.sumGradient, this);
 		return out;
 	}
 	public NDArray sum(int axes)
@@ -857,7 +877,8 @@ public class NDArray
 		shp[shp.length - 1] = 1;
 		ar = ar.view(shp).transpose(nsh).copy(); // ...
 		ar.setEnableGradient(requiresGradient());
-		ar.setGradientFunction(GradFunc.sumAxesGradient, this);
+		if (ar.requiresGradient())
+			ar.setGradientFunction(GradFunc.sumAxesGradient, this);
 		return ar.trimShape();
 	}
 	private int[] prepareShapeByAxes(int ax)
@@ -895,7 +916,8 @@ public class NDArray
 			out[i] = convolve1d(inpf[i], k, null);
 
 		NDArray fout= new NDArray(out).setEnableGradient(this.requiresGradient() || kernel.requiresGradient());
-		fout.setGradientFunction(GradFunc.convolve1dGradient, this, kernel);
+		if (fout.requiresGradient())
+			fout.setGradientFunction(GradFunc.convolve1dGradient, this, kernel);
 		return fout;
 	}
 	public static float[] convolve1d(float[]d, float[]k, float[]out)
@@ -931,7 +953,8 @@ public class NDArray
 			out[i] = correlate1d(inpf[i], k, null);
 
 		NDArray fout= new NDArray(out).setEnableGradient(this.requiresGradient() || kernel.requiresGradient());
-		fout.setGradientFunction(GradFunc.correlate1dGradient, this, kernel);
+		if (fout.requiresGradient())
+			fout.setGradientFunction(GradFunc.correlate1dGradient, this, kernel);
 		return fout;
 	}
 	public static float[] correlate1d(float[]d, float[]k, float[]out)
@@ -954,6 +977,45 @@ public class NDArray
 		}
 		return out;
 	}
+	public NDArray merge(NDArray other)
+	{
+		return null;
+	}
+	public static NDArray merge(NDArray...arrays)
+	{
+		if (arrays.length == 0)
+			throw new IllegalArgumentException("array size must be jon zero!");
+		int[] shp=arrays[0].getShape();
+		int[] nshp=new int[shp.length + 1];
+		System.arraycopy(shp, 0, nshp, 1, shp.length);
+		nshp[0] = arrays.length;
+		print(".. ", Arrays.toString(shp), ".. ", Arrays.toString(nshp));
+		NDArray out=new NDArray(nshp);
+		int off=0;
+		for (NDArray a:arrays)
+		{
+			if (a.requiresGradient())
+				out.setEnableGradient(true);
+			System.arraycopy(a.base.data.data, 0, out.base.data.data, off, a.base.data.data.length);
+			if (a.requiresGradient())
+				System.arraycopy(a.base.data.grad, 0, out.base.data.grad, off, a.base.data.grad.length);
+			off += a.getLength();
+		}
+		out.setGradientFunction(GradFunc.mergeGradient, arrays);
+		return out;
+	}
 // end operator implementation.
+	public NDArray toArray()
+	{
+		return fromShape(base.toArray());
+	}
+	public NDArray to2DArray()
+	{
+		return fromShape(base.to2DArray());
+	}
+	public NDArray to3DArray()
+	{
+		return fromShape(base.to3DArray());
+	}
 }
 

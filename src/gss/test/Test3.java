@@ -1,20 +1,25 @@
 package gss.test;
 
+import gss.*;
 import gss.arr.*;
 import gss.math.*;
+import gss.nnet.*;
 import gss.nnet.activations.*;
+import gss.nnet.layers.*;
 import gss.nnet.lossfunctions.*;
 import gss.nnet.optimizers.*;
 import java.util.*;
 
 import static gss.math.Util.*;
-import gss.nnet.layers.*;
-import gss.nnet.*;
-import gss.*;
 
 public class Test3
 {
-	public static void main2(String[]args) throws Exception
+	/*
+	 !!! problem
+	 --- fix backpropagation problem, which is remove toArray() method from Shape class.
+	 */
+
+	public static void main(String[]args) throws Exception
 	{
 
 		new Test3().test();
@@ -51,8 +56,45 @@ public class Test3
 		 -- Dropout           ✓
 		 */
 
-		System.out.println("Hello world!");
+		NDArray in=NDIO.rand(1, 10);
 
+		Conv1d c=new Conv1d(10, 1, 2, 3);
+
+		NDArray out=c.forward(in);
+
+		print(out);
+		
+		out.backward();
+
+	}
+	void mergeTest()
+	{
+		print("merge Test");
+
+		NDArray ar1=NDIO.ones(3, 4).mul(5).setEnableGradient(true);
+		NDArray ar2=NDIO.ones(3, 4).mul(7).setEnableGradient(true);
+
+		ar1.setGrad(100);
+		ar2.setGrad(300);
+
+		NDArray ar3=NDArray.merge(ar1, ar2);
+
+		print(ar3);
+		print(genString("*", 30));
+		printGrad(ar3);
+		// merge forward
+		print(genString("-", 30));
+		NDArray grd=NDIO.rand(ar3.getShape());
+		ar3.fillGrad(grd);
+		ar1.zeroGrad();
+		ar2.zeroGrad();
+		ar3.backward();
+		printGrad(ar3);
+		print("...........");
+		printGrad(ar1);
+		print("...........");
+		printGrad(ar2);
+		print("merge test ✓");
 	}
 	void dropoutTest()
 	{

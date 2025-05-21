@@ -16,6 +16,8 @@ public abstract class Module
 	{
 		if (!params.contains(arr))
 			params.add(arr);
+		if (!arr.requiresGradient())
+			arr.setEnableGradient(true);
 		return arr;
 	}
 }
