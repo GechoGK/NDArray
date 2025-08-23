@@ -97,10 +97,10 @@ public class NDArray
 			throw new RuntimeException("index can't be empty :" + Arrays.toString(sh));
 		return base.getFloat(sh);
 	}
-//	public float getFlat(int p)
-//	{
-//		return base.getFlat(p);
-//	}
+	public float getFlat(int p)
+	{
+		return base.getFlat(p);
+	}
 	public void set(float v)
 	{
 		base.set(new int[]{}, v);
@@ -109,21 +109,21 @@ public class NDArray
 	{
 		base.set(sh, v);
 	}
-//	public void set(NDArray ar)
-//	{
-//		set(new int[]{}, ar);
-//	}
-//	public void set(int...sh, NDArray ar)
-//	{
-//		// needs improvement.
-//		int ps=base.shapeToIndex(sh);
-//		float[]f=ar.base.toArray();
-//		for (int i=0;i < f.length;i++)
-//		{
-//			setFlat(ps, f[i]);
-//			ps++;
-//		}
-//	}
+	public void set(NDArray ar)
+	{
+		set(new int[]{}, ar);
+	}
+	public void set(int...sh, NDArray ar)
+	{
+		// needs improvement.
+		int ps=base.shapeToIndex(sh);
+		float[]f=ar.base.toArray();
+		for (int i=0;i < f.length;i++)
+		{
+			setFlat(ps, f[i]);
+			ps++;
+		}
+	}
 	public void setGrad(float v)
 	{
 		base.setFloatGrad(new int[]{}, v);
@@ -140,10 +140,10 @@ public class NDArray
 	{
 		base.setFloat(sh, v);
 	}
-//	public void setFlat(int p, float v)
-//	{
-//		base.setFlat(p, v);
-//	}
+	public void setFlat(int p, float v)
+	{
+		base.setFlat(p, v);
+	}
 	// // // gradient.
 	// gradient set end get functions.
 
@@ -160,26 +160,26 @@ public class NDArray
 	{
 		return base.getGrad(index);
 	}
-//	public float getFlatGrad(int pos)
-//	{
-//		return base.getFlatGrad(pos);
-//	}
+	public float getFlatGrad(int pos)
+	{
+		return base.getFlatGrad(pos);
+	}
 	public void setExactValue(Value v, int...index)
 	{
 		base.setValue(v, index);
 	}
-//	public void setFlatValue(Value v, int p)
-//	{
-//		base.setFlatValue(v, p);
-//	}
+	public void setFlatValue(Value v, int p)
+	{
+		base.setFlatValue(v, p);
+	}
 	public void setExactGrad(int[]index, float val)
 	{
 		base.setGrad(index, val);
 	}
-//	public void setFlatGrad(int pos, float val)
-//	{
-//		base.setFlatGrad(pos, val);
-//	}
+	public void setFlatGrad(int pos, float val)
+	{
+		base.setFlatGrad(pos, val);
+	}
 	// end set and get functions.
 	// // // end gradient.
 	public NDArray fromShape(Shape str)
@@ -790,13 +790,13 @@ public class NDArray
 	{
 		NDArray x=a1.view(-1, Util.getAtR(a1.getShape(), 0));
 		// don't transpose because transposing and hview is computationally expensive, so we use only view.
-		// and also we use anothe toe of dot product. by considering no transpose.
+		// and also we use anothe type of dot product. by considering no transpose.
 		NDArray y=a2.view(-1, Util.getAtR(a2.getShape(), 0));
 		return new NDArray[]{x,y};
 	}
 	public NDArray dot(NDArray b)
 	{
-		// peefect for dot product wothout transposing.
+		// perfect for dot product wothout transposing.
 		if (b.getDim() == 1)
 			b = b.view(b.getShape()[0], 1);
 		int[] newShape=getShapeForDot(this.getShape(), b.getShape());
@@ -1005,17 +1005,17 @@ public class NDArray
 		return out;
 	}
 // end operator implementation.
-	public NDArray toArray()
-	{
-		return fromShape(base.toArray());
-	}
-	public NDArray to2DArray()
-	{
-		return fromShape(base.to2DArray());
-	}
-	public NDArray to3DArray()
-	{
-		return fromShape(base.to3DArray());
-	}
+//	public NDArray toArray()
+//	{
+//		return fromShape(base.toArray());
+//	}
+//	public NDArray to2DArray()
+//	{
+//		return fromShape(base.to2DArray());
+//	}
+//	public NDArray to3DArray()
+//	{
+//		return fromShape(base.to3DArray());
+//	}
 }
 

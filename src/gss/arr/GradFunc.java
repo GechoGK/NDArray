@@ -32,7 +32,7 @@ public abstract class GradFunc
 			/*
 			 addition gradient
 			 a + b = c
-			 c grad = 2
+			 c.grad = 2
 			 a.grad = c.grad * 1
 			 b.gead = c.grad * 1
 			 */

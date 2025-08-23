@@ -110,10 +110,10 @@ public class Shape implements Cloneable
 		data.setData(ps, v);
 	}
 	// set float value, assuming the array is flat.
-//	public void setFlat(int p, float v)
-//	{
-//		setFloat(getShape(p), v);
-//	}
+	public void setFlat(int p, float v)
+	{
+		setFloat(getShape(p), v);
+	}
 	// fills the scalar value tot the array data.
 	public void fill(float v)
 	{
@@ -154,10 +154,10 @@ public class Shape implements Cloneable
 		// System.out.println(".." + ind);
 		return data.getData(ind);
 	}
-//	public float getFlat(int p)
-//	{
-//		return getFloat(getShape(p));
-//	}
+	public float getFlat(int p)
+	{
+		return getFloat(getShape(p));
+	}
 	// gradient set and get functions.
 	public Value getValue(int...index)
 	{
@@ -165,38 +165,38 @@ public class Shape implements Cloneable
 		// System.out.println(".." + ind);
 		return data.getValue(ind);
 	}
-//	public Value getFlatValue(int p)
-//	{
-//		return getValue(getShape(p));
-//	}
+	public Value getFlatValue(int p)
+	{
+		return getValue(getShape(p));
+	}
 	public float getGrad(int...index)
 	{
 		int ind=shapeToIndex(index);
 		// System.out.println(".." + ind);
 		return data.getGrad(ind);
 	}
-//	public float getFlatGrad(int index)
-//	{
-//		return getGrad(getShape(index));
-//	}
+	public float getFlatGrad(int index)
+	{
+		return getGrad(getShape(index));
+	}
 	public void setValue(Value v, int...index)
 	{
 		int ps=shapeToIndex(index);
 		data.setValue(ps, v);
 	}
-//	public void setFlatValue(Value v, int p)
-//	{
-//		setValue(v, getShape(p));
-//	}
+	public void setFlatValue(Value v, int p)
+	{
+		setValue(v, getShape(p));
+	}
 	public void setGrad(int[]index, float val)
 	{
 		int ps=shapeToIndex(index);
 		data.setGrad(ps, val);
 	}
-//	public void setFlatGrad(int pos, float val)
-//	{
-//		setGrad(getShape(pos), val);
-//	}
+	public void setFlatGrad(int pos, float val)
+	{
+		setGrad(getShape(pos), val);
+	}
 	/*
 	 // TO-DO for performance.
 
@@ -221,20 +221,20 @@ public class Shape implements Cloneable
 		int finalIndex=newPos + offset;
 		return finalIndex;
 	}
-//	public int[] getShape(int index)
-//	{
-//		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
-//		if (index >= length || index < 0)
-//			throw new IndexOutOfBoundsException("invalid index " + index + ", it seems out of range.");
-//		int[] sh=this.shape;
-//		int[] indShape=new int[sh.length];
-//		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
-//		{
-//			indShape[i] = index % sh[i];
-//			index = index / sh[i];
-//		}
-//		return indShape;
-//	}
+	public int[] getShape(int index)
+	{
+		// this function used to convert index (0-n) into shaps. by iterating all posible combination of shapes, and it returns the combination at the speciic index.
+		if (index >= length || index < 0)
+			throw new IndexOutOfBoundsException("invalid index " + index + ", it seems out of range.");
+		int[] sh=this.shape;
+		int[] indShape=new int[sh.length];
+		for (int i=sh.length - 1;i >= 0;i--) // count down starts from shape.length -1 down to 0.
+		{
+			indShape[i] = index % sh[i];
+			index = index / sh[i];
+		}
+		return indShape;
+	}
 	public Shape transpose()
 	{
 		int[] ax=new int[shape.length];
@@ -340,14 +340,14 @@ public class Shape implements Cloneable
 	}
 //	// to array methods.
 //	// for other shapes, implement only this one: to others workout by themself.
-//	public void setGrad(float[]g)
-//	{
-//		data.setGrad(g);
-//	}
-//	public void setGrad(float[][]g)
-//	{
-//		data.setGrad(g);
-//	}
+	public void setGrad(float[]g)
+	{
+		data.setGrad(g);
+	}
+	public void setGrad(float[][]g)
+	{
+		data.setGrad(g);
+	}
 	public Shape copy()
 	{
 		Shape sh=new Shape(this.shape);
@@ -399,13 +399,51 @@ public class Shape implements Cloneable
 		s.data = data;
 		return s;
 	}
-	public Shape toArray()
+	public float[] toArray()
 	{
-		return reshape(-1);
+		float[] f=new float[length];
+		for (int i=0;i < length;i++)
+		{
+			f[i] = getFlat(i);
+		}
+		return f;
 	}
-	public Shape to2DArray()
+	public float[] toGradArray()
 	{
-		return reshape(-1, shape[shape.length - 1]);
+		float[] f=new float[length];
+		for (int i=0;i < length;i++)
+		{
+			f[i] = getFlatGrad(i);
+		}
+		return f;
+	}
+	public Value[] toValueArray()
+	{
+		Value[] f=new Value[length];
+		for (int i=0;i < length;i++)
+		{
+			f[i] = getFlatValue(i);
+		}
+		return f;
+	}
+	public float[][] to2DArray(float[][] f)
+	{
+		Shape b= reshape(-1, shape[shape.length - 1]);
+		if (f == null)
+			f = new float[b.shape[0]][b.shape[1]];
+		for (int r=0;r < f.length;r++)
+			for (int c=0;c < f[r].length;c++)
+				f[r][c] = b.getFloat(r, c);
+		return f;
+	}
+	public float[][] to2DGradArray()
+	{
+		Shape b= reshape(-1, shape[shape.length - 1]);
+		float[][] f=new float[b.shape[0]][b.shape[1]];
+		for (int r=0;r < f.length;r++)
+			for (int c=0;c < f[r].length;c++)
+				f[r][c] = b.getFloat(r, c);
+		return f;
 	}
 	public Shape to3DArray()
 	{

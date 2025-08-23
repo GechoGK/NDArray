@@ -42,7 +42,9 @@ public class Test3
 //		test11();
 //		test12();
 
-		a();
+		// a();
+		// XORTest();
+		approximationWithLossFunctions();
 
 	}
 	void a()
@@ -54,6 +56,7 @@ public class Test3
 		 -- Sequential        ✓
 		 -- Module parameters ✓
 		 -- Dropout           ✓
+		 -- Conv1d backward.  X
 		 */
 
 		NDArray in=NDIO.rand(1, 10);
@@ -63,7 +66,7 @@ public class Test3
 		NDArray out=c.forward(in);
 
 		print(out);
-		
+
 		out.backward();
 
 	}
@@ -132,7 +135,7 @@ public class Test3
 		NDArray x=new NDArray(new float[][]{{0,1},{0,0},{1,0},{1,1}});
 		NDArray y=new NDArray(new float[]{1,0,1,0});
 
-		int hiddenSize=2;
+		int hiddenSize=3;
 		// it works with hidden size starts from 2 upto ...
 
 		Linear l1=new Linear(2, hiddenSize);
@@ -142,10 +145,10 @@ public class Test3
 
 		LossFunc lossFunc=new BCE();
 
-		Optimizer optim=new Adam(l1.getParameters(), l2.getParameters());
+		Optimizer optim=new Adam(l1.getParameters(), l2.getParameters()); // very fast. < 15000 iterations.
 		// sometimes when we use Adam optimizer it stuck to local minima, or unable to fit the dataset. so keep try again.
-		// optim = new GradientDescent(l1.getParameters(), l2.getParameters());
-		// optim = new SGDM(l1.getParameters(), l2.getParameters());
+		// optim = new GradientDescent(l1.getParameters(), l2.getParameters()); // very slow. >100,000 iterations.
+		// optim = new SGDM(l1.getParameters(), l2.getParameters()); // very slow. > 100,000 iterations.
 
 		NDArray output=null;
 
@@ -183,6 +186,7 @@ public class Test3
 			}
 			ps++;
 		}
+		print(genString("-", 30));
 		print(output);
 	}
 	void controllTest()
@@ -218,8 +222,8 @@ public class Test3
 
 		// trainMSE(w1, w2, b1, b2, in, tr); // ≈ 19755, 24330, 10205, 15488, 7940, 6515, 6515, 6817 millis
 		// trainMAE(w1, w2, b1, b2, in, tr); // ≈ 80709, 33369, 27102, 19464, 15508, 22978  millis
-		trainBCE(w1, w2, b1, b2, in, tr); // ≈ 79235, 74982, 32427, 15759, 16387, 13459, 16758 millis
-		// trainMCCE(w1, w2, b1, b2, in, tr); // slow and inaccurate // ≈ 79272, 20064, 22044, 30453, 7360, 7421, 5817, 7141, 4452, 5733   millis
+		// trainBCE(w1, w2, b1, b2, in, tr); // ≈ 79235, 74982, 32427, 15759, 16387, 13459, 16758 millis
+		trainMCCE(w1, w2, b1, b2, in, tr); // slow and inaccurate // ≈ 79272, 20064, 22044, 30453, 7360, 7421, 5817, 7141, 4452, 5733   millis
 
 		System.out.println("completed!");
 
@@ -244,7 +248,7 @@ public class Test3
 
 			// int counter=counter();
 			// if (counter % 50 == 0)
-			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+			System.out.println("loss : " + Arrays.toString(out.base.data.data));
 
 			loss = out.base.data.data[0];
 
@@ -284,7 +288,7 @@ public class Test3
 
 			// int counter=counter();
 			// if (counter % 50 == 0)
-			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
+			System.out.println("loss : " + Arrays.toString(out.base.data.data));
 
 
 			loss = out.base.data.data[0];
@@ -319,12 +323,11 @@ public class Test3
 			output = out;
 			out = new BCE().forward(out, tr);
 
-			int counter=counter();
-			if (counter % 100 == 0)
-			// System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
-				print(output);
-
+			// int counter=counter();
+			// if (counter % 100 == 0)
 			loss = out.base.data.data[0];
+
+			System.out.println("loss : " + Arrays.toString(out.base.data.data));
 
 			out.setGrad(1);
 			out.backward();
@@ -350,15 +353,14 @@ public class Test3
 			NDArray out = in.dot(w1).add(b1);
 			// out = new Sigmoid().forward(out);
 			out = out.dot(w2).add(b2);
-			// out = new Sigmoid().forward(out);
+			out = new Sigmoid().forward(out);
 
 			output = out;
 			out = new MCCE().forward(out, tr);
 
 			// int counter=counter();
 			// if (counter % 50 == 0)
-			//  	System.out.println(counter + ". loss : " + Arrays.toString(out.base.data.data) + " >> " + Arrays.toString(output.base.data.data));
-
+			System.out.println("loss : " + Arrays.toString(out.base.data.data));
 
 			loss = out.base.data.data[0];
 
